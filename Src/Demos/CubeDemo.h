@@ -51,6 +51,12 @@ public:
         graphics.Draw(*mesh, *shader);
     }
 
+    void End()
+    {
+        if (mesh) delete mesh;
+        if (shader) delete shader;
+    }
+
   private:
     Camera camera;
     Mesh* mesh;

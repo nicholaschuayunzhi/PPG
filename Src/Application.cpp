@@ -37,5 +37,6 @@ int Application::Run(Demo& demo)
             m_Graphics.Present();
         }
     }
+    demo.End();
     return static_cast<int>(msg.wParam);
 }
