@@ -6,6 +6,7 @@ using namespace DirectX;
 class Mesh;
 class Shader;
 class Window;
+class Texture;
 
 class Graphics
 {
@@ -14,7 +15,7 @@ public:
     ~Graphics();
     void Present();
     void Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearStencil);
-    void Draw(Mesh& mesh, Shader& shader);
+    void Draw(Mesh& mesh, Shader& shader, Texture& texture);
 
     ID3D11Buffer* CreateBuffer(UINT byteWidth, UINT bindFlags, const void* data);
     void UpdateBuffer(ID3D11Buffer* buffer, const void* resource);

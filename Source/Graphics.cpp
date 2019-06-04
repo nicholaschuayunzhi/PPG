@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Graphics.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "Mesh.h"
 
 using namespace DirectX;
@@ -187,7 +188,7 @@ void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
     m_DeviceContext->UpdateSubresource(buffer, 0, nullptr, resource, 0, 0);
 }
 
-void Graphics::Draw(Mesh& mesh, Shader& shader)
+void Graphics::Draw(Mesh& mesh, Shader& shader, Texture& texture)
 {
     m_DeviceContext->RSSetState(m_RasterizerState);
     m_DeviceContext->RSSetViewports(1, &m_Viewport);
@@ -195,6 +196,7 @@ void Graphics::Draw(Mesh& mesh, Shader& shader)
     m_DeviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
 
     shader.Use(m_DeviceContext);
+    texture.Use(m_DeviceContext);
     mesh.Draw(m_DeviceContext);
 }
 

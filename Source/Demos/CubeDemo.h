@@ -5,6 +5,7 @@
 #include "../Camera.h"
 #include "../Graphics.h"
 #include "../Mesh.h"
+#include "../Texture.h"
 #include "../Shader.h"
 
 
@@ -35,6 +36,7 @@ public:
 
         mesh = new Mesh(std::move(vertices), std::move(indices), graphics);
         shader = new Shader(L"VertexShader.cso", L"PixelShader.cso", graphics);
+        texture = new Texture(L"..\\..\\Data\\DirectX9.png", graphics);
         XMMATRIX projection = camera.CalculateProjection(graphics.m_ClientRect);
         graphics.UpdateBuffer(shader->m_MVPBuffer[2], &projection);
         XMMATRIX view = camera.CalculateView();
@@ -48,17 +50,19 @@ public:
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0, 0);
         XMMATRIX model = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
         graphics.UpdateBuffer(shader->m_MVPBuffer[0], &model);
-        graphics.Draw(*mesh, *shader);
+        graphics.Draw(*mesh, *shader, *texture);
     }
 
     void End()
     {
         if (mesh) delete mesh;
         if (shader) delete shader;
+        if (texture) delete texture;
     }
 
   private:
     Camera camera;
     Mesh* mesh;
     Shader* shader;
+    Texture* texture;
   };

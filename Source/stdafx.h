@@ -8,14 +8,15 @@
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 
-// DirectX TK
-#include <Effects.h>
+// DirectXTex
+#include "DirectXTex.h"
 
 // STL includes
 #include <iostream>
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <filesystem>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
