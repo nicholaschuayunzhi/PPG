@@ -17,57 +17,57 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Main.cpp">
+    <ClCompile Include="Source\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\stdafx.cpp">
+    <ClCompile Include="Source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application.cpp">
+    <ClCompile Include="Source\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Window.cpp">
+    <ClCompile Include="Source\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Mesh.cpp">
+    <ClCompile Include="Source\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphics.cpp">
+    <ClCompile Include="Source\Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Shader.cpp">
+    <ClCompile Include="Source\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Camera.cpp">
+    <ClCompile Include="Source\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\stdafx.h">
+    <ClInclude Include="Source\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application.h">
+    <ClInclude Include="Source\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Window.h">
+    <ClInclude Include="Source\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Mesh.h">
+    <ClInclude Include="Source\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Graphics.h">
+    <ClInclude Include="Source\Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Shader.h">
+    <ClInclude Include="Source\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Demos\Demo.h">
+    <ClInclude Include="Source\Demos\Demo.h">
       <Filter>Demos</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Demos\CubeDemo.h">
+    <ClInclude Include="Source\Demos\CubeDemo.h">
       <Filter>Demos</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Camera.h">
+    <ClInclude Include="Source\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

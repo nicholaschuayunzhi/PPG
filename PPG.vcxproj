@@ -142,30 +142,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Application.cpp" />
-    <ClCompile Include="Src\Camera.cpp" />
-    <ClCompile Include="Src\Mesh.cpp" />
-    <ClCompile Include="Src\Graphics.cpp" />
-    <ClCompile Include="Src\Main.cpp" />
-    <ClCompile Include="Src\Shader.cpp" />
-    <ClCompile Include="Src\stdafx.cpp">
+    <ClCompile Include="Source\Application.cpp" />
+    <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\Mesh.cpp" />
+    <ClCompile Include="Source\Graphics.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Shader.cpp" />
+    <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Src\Window.cpp" />
+    <ClCompile Include="Source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Application.h" />
-    <ClInclude Include="Src\Camera.h" />
-    <ClInclude Include="Src\Demos\CubeDemo.h" />
-    <ClInclude Include="Src\Demos\Demo.h" />
-    <ClInclude Include="Src\Mesh.h" />
-    <ClInclude Include="Src\Graphics.h" />
-    <ClInclude Include="Src\Shader.h" />
-    <ClInclude Include="Src\stdafx.h" />
-    <ClInclude Include="Src\Window.h" />
+    <ClInclude Include="Source\Application.h" />
+    <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\Demos\CubeDemo.h" />
+    <ClInclude Include="Source\Demos\Demo.h" />
+    <ClInclude Include="Source\Mesh.h" />
+    <ClInclude Include="Source\Graphics.h" />
+    <ClInclude Include="Source\Shader.h" />
+    <ClInclude Include="Source\stdafx.h" />
+    <ClInclude Include="Source\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\PixelShader.hlsl">
