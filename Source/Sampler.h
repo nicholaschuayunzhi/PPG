@@ -3,11 +3,11 @@
 
 class Graphics;
 
-class Texture
+class Sampler
 {
 public:
-    Texture(LPCWSTR texturePath, Graphics& graphics);
-    ~Texture();
+    Sampler(Graphics& graphics);
+    ~Sampler();
     void Use(ID3D11DeviceContext* deviceContext, UINT startSlot);
-    ID3D11ShaderResourceView* m_Texture;
+    ID3D11SamplerState* m_Sampler;
 };

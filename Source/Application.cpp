@@ -16,6 +16,7 @@ Application::Application(HINSTANCE hInstance, int cmdShow) :
 
 int Application::Run(Demo& demo)
 {
+    m_Graphics.SetUp();
     demo.Start(m_Graphics);
     MSG msg = { 0 };
     static DWORD previousTime = timeGetTime();

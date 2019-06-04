@@ -132,7 +132,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     rasterizerDesc.DepthBiasClamp = 0.0f;
     rasterizerDesc.DepthClipEnable = TRUE;
     rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-    rasterizerDesc.FrontCounterClockwise = FALSE;
+    rasterizerDesc.FrontCounterClockwise = TRUE;
     rasterizerDesc.MultisampleEnable = FALSE;
     rasterizerDesc.ScissorEnable = FALSE;
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
@@ -188,16 +188,12 @@ void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
     m_DeviceContext->UpdateSubresource(buffer, 0, nullptr, resource, 0, 0);
 }
 
-void Graphics::Draw(Mesh& mesh, Shader& shader, Texture& texture)
+void Graphics::SetUp()
 {
     m_DeviceContext->RSSetState(m_RasterizerState);
     m_DeviceContext->RSSetViewports(1, &m_Viewport);
     m_DeviceContext->OMSetRenderTargets(1, &m_RenderTargetView, m_DepthStencilView);
     m_DeviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
-
-    shader.Use(m_DeviceContext);
-    texture.Use(m_DeviceContext);
-    mesh.Draw(m_DeviceContext);
 }
 
 void Graphics::Present()
