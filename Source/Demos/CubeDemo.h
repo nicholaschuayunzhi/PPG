@@ -90,6 +90,7 @@ public:
         if (mesh) delete mesh;
         if (shader) delete shader;
         if (texture) delete texture;
+        if (sampler) delete sampler;
     }
 
   private:
