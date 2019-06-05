@@ -16,5 +16,6 @@ private:
     Graphics m_Graphics; // graphics depends on window
     static LRESULT CALLBACK WindowCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     static void RecordInput(WPARAM wParam);
+    static void ClearInput(WPARAM wParam);
     static Input input;
 };

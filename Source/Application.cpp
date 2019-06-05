@@ -38,7 +38,6 @@ int Application::Run(Demo& demo)
             m_Graphics.Clear(Colors::CornflowerBlue, 1.0f, 0);
             demo.Update(m_Graphics, input, deltaTime);
             m_Graphics.Present();
-            input = Key::NONE;
         }
     }
     demo.End();
@@ -64,15 +63,42 @@ LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wPa
             }
             break;
         case WM_KEYDOWN:
-            {
-                RecordInput(wParam);
-                break;
-            }
+            RecordInput(wParam);
+            break;
+        case WM_KEYUP:
+            ClearInput(wParam);
+            break;
         default:
            return DefWindowProc(hwnd, message, wParam, lParam);
     }
 
     return 0;
+}
+
+void Application::ClearInput(WPARAM wParam)
+{
+    switch (wParam)
+    {
+        case 'W':
+        case VK_UP:
+            input &= ~Key::UP;
+            break;
+        case 'S':
+        case VK_DOWN:
+            input &= ~Key::DOWN;
+            break;
+        case 'A':
+        case VK_LEFT:
+            input &= ~Key::LEFT;
+            break;
+        case 'D':
+        case VK_RIGHT:
+            input &= ~Key::RIGHT;
+            break;
+        default:
+            return;
+        }
+    return;
 }
 
 void Application::RecordInput(WPARAM wParam)
