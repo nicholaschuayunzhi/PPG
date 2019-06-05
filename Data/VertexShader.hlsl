@@ -1,16 +1,16 @@
 cbuffer PerObject : register(b0)
 {
-    matrix worldMatrix;
+    matrix model;
 }
 
 cbuffer PerFrame : register(b1)
 {
-    matrix viewMatrix;
+    matrix view;
 }
 
 cbuffer PerApplication : register(b2)
 {
-    matrix projectionMatrix;
+    matrix projection;
 }
 
 struct AppData
@@ -22,15 +22,23 @@ struct AppData
 
 struct VertexShaderOutput
 {
-    float4 position: SV_POSITION;
-    float2 texCoord: TEXCOORD0;
+    float4 position : SV_POSITION;
+    float4 wPosition: POSITION;
+    float3 normal   : NORMAL;
+    float2 texCoord : TEXCOORD0;
 };
 
 VertexShaderOutput main(AppData IN)
 {
     VertexShaderOutput OUT;
-    matrix mvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));
-    OUT.position = mul(mvp, float4(IN.position, 1.0f));
+    OUT.wPosition = mul(model, float4(IN.position, 1.0f));
+    matrix vp = mul(projection, view);
+    OUT.position = mul(vp, OUT.wPosition);
     OUT.texCoord = IN.texCoord;
+
+    // assume a uniform scaling is observed
+    // otherwise have have to multiply by transpose(inverse(model))
+    // inverse should be calculated in the application (CPU)
+    OUT.normal = mul(model, float4(IN.normal, 0)).xyz;
     return OUT;
 }

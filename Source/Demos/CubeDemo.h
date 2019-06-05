@@ -8,6 +8,7 @@
 #include "../Texture.h"
 #include "../Shader.h"
 #include "../Sampler.h"
+#include "../Light.h"
 
 
 class CubeDemo : public Demo
@@ -60,12 +61,21 @@ public:
 
         cubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
         shader = new Shader(L"VertexShader.cso", L"PixelShader.cso", graphics);
-        texture = new Texture(L"..\\..\\Data\\DirectX9.png", graphics);
+        texture = new Texture(L"..\\..\\Data\\Container.jpg", graphics);
         sampler = new Sampler(graphics);
 
         XMMATRIX projection = camera.CalculateProjection(graphics.m_ClientRect);
-        graphics.UpdateBuffer(shader->m_MVPBuffer[2], &projection);
-        graphics.UpdateBuffer(shader->m_MVPBuffer[0], &XMMatrixIdentity());
+        mvp[0] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
+        mvp[1] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
+        mvp[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &projection);
+
+        XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
+        lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.4, 0);
+        lp.m_Lights[0].m_Color = XMFLOAT4(Colors::CornflowerBlue);
+        lp.m_Lights[0].m_Direction = XMFLOAT4(0, 0, 0.5, 0);
+        lp.m_Lights[0].m_LightType = LightType::DirectionalLight;
+        lp.m_Lights[0].m_Enabled = 1;
+        lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -86,13 +96,22 @@ public:
             camera.m_EyePosition += XMVectorSet(x, 0, z, 0) * camera.m_Speed * deltaTime;
             camera.m_LookAt = camera.m_EyePosition + XMVectorSet(0, 0, 1, 0);
         }
-
         XMMATRIX view = camera.CalculateView();
-        graphics.UpdateBuffer(shader->m_MVPBuffer[1], &view);
+        graphics.UpdateBuffer(mvp[1], &view);
+        XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
+        graphics.UpdateBuffer(lightsBuffer, &lp);
+
+        static float angle = 0.0f;
+        angle += 90.0f * deltaTime;
+        XMVECTOR rotationAxis = XMVectorSet(0, 1, -1, 0);
+        XMMATRIX model = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
+        graphics.UpdateBuffer(mvp[0], &model);
 
         auto deviceContext = graphics.m_DeviceContext;
 
         shader->Use(deviceContext);
+        deviceContext->VSSetConstantBuffers(0, 3, mvp);
+        deviceContext->PSSetConstantBuffers(0, 1, &lightsBuffer);
         texture->Use(deviceContext, 0);
         sampler->Use(deviceContext, 0);
         cubeMesh->Draw(deviceContext);
@@ -104,6 +123,10 @@ public:
         if (shader) delete shader;
         if (texture) delete texture;
         if (sampler) delete sampler;
+        SafeRelease(mvp[0]);
+        SafeRelease(mvp[1]);
+        SafeRelease(mvp[2]);
+        SafeRelease(lightsBuffer);
     }
 
   private:
@@ -112,4 +135,7 @@ public:
     Shader* shader;
     Texture* texture;
     Sampler* sampler;
+    ID3D11Buffer* lightsBuffer;
+    ID3D11Buffer* mvp[3];
+    LightProperties lp;
   };

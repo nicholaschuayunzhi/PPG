@@ -49,26 +49,17 @@ Shader::Shader(LPCWSTR vertexPath, LPCWSTR pixelPath, Graphics& graphics)
     }
 
     SafeRelease(pixelShaderBlob);
-
-    m_MVPBuffer[0] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, nullptr);
-    m_MVPBuffer[1] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, nullptr);
-    m_MVPBuffer[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, nullptr);
 }
 
 Shader::~Shader()
 {
     SafeRelease(m_VertexShader);
     SafeRelease(m_PixelShader);
-    SafeRelease(m_MVPBuffer[0]);
-    SafeRelease(m_MVPBuffer[1]);
-    SafeRelease(m_MVPBuffer[2]);
 }
 
 void Shader::Use(ID3D11DeviceContext* deviceContext)
 {
     deviceContext->IASetInputLayout(m_InputLayout);
     deviceContext->VSSetShader(m_VertexShader, nullptr, 0);
-    deviceContext->VSSetConstantBuffers(0, 3, m_MVPBuffer);
-
     deviceContext->PSSetShader(m_PixelShader, nullptr, 0);
 }
