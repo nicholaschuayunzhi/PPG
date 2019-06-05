@@ -11,5 +11,5 @@ XMMATRIX Camera::CalculateProjection(RECT clientRect)
 
 XMMATRIX Camera::CalculateView()
 {
-    return XMMatrixLookAtLH(m_eyePosition, m_focusPoint, m_upDirection);
+    return XMMatrixLookAtLH(m_EyePosition, m_LookAt, m_UpDirection);
 }

@@ -2,10 +2,9 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "Graphics.h"
+#include "Input.h"
 
 class Demo;
-class Window;
-class Graphics;
 
 class Application
 {
@@ -15,4 +14,7 @@ public:
 private:
     Window m_Window;
     Graphics m_Graphics; // graphics depends on window
+    static LRESULT CALLBACK WindowCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static void RecordInput(WPARAM wParam);
+    static Input input;
 };

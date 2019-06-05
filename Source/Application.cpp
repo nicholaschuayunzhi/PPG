@@ -3,9 +3,12 @@
 #include "Demos/Demo.h"
 #include "Graphics.h"
 #include "Window.h"
+#include "Input.h"
+
+Input Application::input;
 
 Application::Application(HINSTANCE hInstance, int cmdShow) :
-    m_Window(hInstance, cmdShow, "DirectXWindowClass", "PPG"),
+    m_Window(hInstance, cmdShow, &WindowCallback, "DirectXWindowClass", "PPG"),
     m_Graphics(hInstance, true, m_Window)
 {
     if (!DirectX::XMVerifyCPUSupport())
@@ -32,12 +35,68 @@ int Application::Run(Demo& demo)
             DWORD currentTime = timeGetTime();
             float deltaTime = (currentTime - previousTime) / 1000.0f;
             previousTime = currentTime;
-
-            m_Graphics.Clear(Colors::BlanchedAlmond, 1.0f, 0);
-            demo.Update(m_Graphics, deltaTime);
+            m_Graphics.Clear(Colors::CornflowerBlue, 1.0f, 0);
+            demo.Update(m_Graphics, input, deltaTime);
             m_Graphics.Present();
+            input = Key::NONE;
         }
     }
     demo.End();
     return static_cast<int>(msg.wParam);
+}
+
+LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    PAINTSTRUCT paintStruct;
+    HDC hDC;
+
+    switch (message)
+    {
+        case WM_PAINT:
+            {
+                hDC = BeginPaint(hwnd, &paintStruct);
+                EndPaint(hwnd, &paintStruct);
+            }
+            break;
+        case WM_DESTROY:
+            {
+                PostQuitMessage(0);
+            }
+            break;
+        case WM_KEYDOWN:
+            {
+                RecordInput(wParam);
+                break;
+            }
+        default:
+           return DefWindowProc(hwnd, message, wParam, lParam);
+    }
+
+    return 0;
+}
+
+void Application::RecordInput(WPARAM wParam)
+{
+    switch (wParam)
+    {
+        case 'W':
+        case VK_UP:
+           input |= Key::UP;
+           break;
+        case 'S':
+        case VK_DOWN:
+           input |= Key::DOWN;
+           break;
+        case 'A':
+        case VK_LEFT:
+           input |= Key::LEFT;
+           break;
+        case 'D':
+        case VK_RIGHT:
+            input |= Key::RIGHT;
+            break;
+        default:
+            return;
+    }
+    return;
 }

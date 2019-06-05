@@ -7,6 +7,7 @@ public:
     Window(
         HINSTANCE hInstance,
         int cmdShow,
+        WNDPROC windowCallback,
         LPCSTR windowClassName,
         LPCSTR windowName,
         LONG windowWidth = 1280,
@@ -14,6 +15,4 @@ public:
     );
     HWND m_WindowHandle = 0;
     RECT GetWindowRect();
-private:
-    static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

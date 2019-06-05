@@ -4,6 +4,7 @@
 Window::Window(
     HINSTANCE hInstance,
     int cmdShow,
+    WNDPROC windowCallback,
     LPCSTR windowClassName,
     LPCSTR windowName,
     LONG windowWidth,
@@ -13,7 +14,7 @@ Window::Window(
     WNDCLASSEX wndClass = { 0 };
     wndClass.cbSize = sizeof(WNDCLASSEX);
     wndClass.style = CS_HREDRAW | CS_VREDRAW;
-    wndClass.lpfnWndProc = &WndProc;
+    wndClass.lpfnWndProc = windowCallback;
     wndClass.hInstance = hInstance;
     wndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -41,31 +42,6 @@ Window::Window(
 
     ShowWindow(m_WindowHandle, cmdShow);
     UpdateWindow(m_WindowHandle);
-}
-
-LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    PAINTSTRUCT paintStruct;
-    HDC hDC;
-
-    switch (message)
-    {
-        case WM_PAINT:
-        {
-            hDC = BeginPaint(hwnd, &paintStruct);
-            EndPaint(hwnd, &paintStruct);
-        }
-        break;
-        case WM_DESTROY:
-        {
-            PostQuitMessage(0);
-        }
-        break;
-        default:
-            return DefWindowProc(hwnd, message, wParam, lParam);
-    }
-
-    return 0;
 }
 
 RECT Window::GetWindowRect()

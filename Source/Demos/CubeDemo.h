@@ -58,36 +58,49 @@ public:
            20, 21, 22, 20, 22, 23
         };
 
-        mesh = new Mesh(std::move(vertices), std::move(indices), graphics);
+        cubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
         shader = new Shader(L"VertexShader.cso", L"PixelShader.cso", graphics);
         texture = new Texture(L"..\\..\\Data\\DirectX9.png", graphics);
         sampler = new Sampler(graphics);
 
         XMMATRIX projection = camera.CalculateProjection(graphics.m_ClientRect);
         graphics.UpdateBuffer(shader->m_MVPBuffer[2], &projection);
-        XMMATRIX view = camera.CalculateView();
-        graphics.UpdateBuffer(shader->m_MVPBuffer[1], &view);
+        graphics.UpdateBuffer(shader->m_MVPBuffer[0], &XMMatrixIdentity());
     }
 
-    void Update(Graphics& graphics, float deltaTime) override
+    void Update(Graphics& graphics, Input input, float deltaTime) override
     {
-        static float angle = 0.0f;
-        angle += 90.0f * deltaTime;
-        XMVECTOR rotationAxis = XMVectorSet(0, 1, -1, 0);
-        XMMATRIX model = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
-        graphics.UpdateBuffer(shader->m_MVPBuffer[0], &model);
+
+        if (input != Key::NONE)
+        {
+            float x = 0;
+            float z = 0;
+            if (input & Key::UP)
+                z += 1;
+            if (input & Key::DOWN)
+                z -= 1;
+            if (input & Key::LEFT)
+                x -= 1;
+            if (input & Key::RIGHT)
+                x += 1;
+            camera.m_EyePosition += XMVectorSet(x, 0, z, 0) * camera.m_Speed * deltaTime;
+            camera.m_LookAt = camera.m_EyePosition + XMVectorSet(0, 0, 1, 0);
+        }
+
+        XMMATRIX view = camera.CalculateView();
+        graphics.UpdateBuffer(shader->m_MVPBuffer[1], &view);
 
         auto deviceContext = graphics.m_DeviceContext;
 
         shader->Use(deviceContext);
         texture->Use(deviceContext, 0);
         sampler->Use(deviceContext, 0);
-        mesh->Draw(deviceContext);
+        cubeMesh->Draw(deviceContext);
     }
 
     void End()
     {
-        if (mesh) delete mesh;
+        if (cubeMesh) delete cubeMesh;
         if (shader) delete shader;
         if (texture) delete texture;
         if (sampler) delete sampler;
@@ -95,7 +108,7 @@ public:
 
   private:
     Camera camera;
-    Mesh* mesh;
+    Mesh* cubeMesh;
     Shader* shader;
     Texture* texture;
     Sampler* sampler;
