@@ -8,6 +8,7 @@
 #include "../Shader.h"
 #include "../Sampler.h"
 #include "../Light.h"
+#include "../Material.h"
 
 class CubeDemo : public Demo
 {
@@ -67,10 +68,19 @@ public:
         mvp[1] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
         mvp[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &projection);
 
+        material.m_Emissive = XMFLOAT4(0, 0, 0, 0);
+        material.m_Ambient = XMFLOAT4(0.1, 0.2f, 0.2f, 0);
+        material.m_Diffuse = XMFLOAT4(0.5f, 0.5f, 0.2f, 0);
+        material.m_Specular = XMFLOAT4(1, 1, 1, 0);
+        material.m_Shininess = 32;
+        material.m_UseTexture = 1;
+
+        materialBuffer = graphics.CreateBuffer(sizeof(Material), D3D11_BIND_CONSTANT_BUFFER, &material);
+
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.4, 0);
         lp.m_Lights[0].m_Color = XMFLOAT4(Colors::CornflowerBlue);
-        lp.m_Lights[0].m_Direction = XMFLOAT4(0, 0, 0.5, 0);
+        lp.m_Lights[0].m_Direction = XMFLOAT4(1, -1, 1, 0);
         lp.m_Lights[0].m_LightType = LightType::DirectionalLight;
         lp.m_Lights[0].m_Enabled = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
@@ -86,9 +96,9 @@ public:
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         graphics.UpdateBuffer(lightsBuffer, &lp);
 
-        static float angle = 0.0f;
-        angle += 90.0f * deltaTime;
-        XMVECTOR rotationAxis = XMVectorSet(0, 1, -1, 0);
+        static float angle = 45.0f;
+        //angle += 90.0f * deltaTime;
+        XMVECTOR rotationAxis = XMVectorSet(0, 1, 0, 0);
         XMMATRIX model = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
         graphics.UpdateBuffer(mvp[0], &model);
 
@@ -96,7 +106,8 @@ public:
 
         shader->Use(deviceContext);
         deviceContext->VSSetConstantBuffers(0, 3, mvp);
-        deviceContext->PSSetConstantBuffers(0, 1, &lightsBuffer);
+        deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
+        deviceContext->PSSetConstantBuffers(1, 1, &lightsBuffer);
         texture->Use(deviceContext, 0);
         sampler->Use(deviceContext, 0);
         cubeMesh->Draw(deviceContext);
@@ -117,10 +128,12 @@ public:
 private:
     Camera camera;
     LightProperties lp;
+    Material material;
     Mesh* cubeMesh;
     Shader* shader;
     Texture* texture;
     Sampler* sampler;
     ID3D11Buffer* lightsBuffer;
+    ID3D11Buffer* materialBuffer;
     ID3D11Buffer* mvp[3];
 };

@@ -169,6 +169,7 @@
     <ClInclude Include="Source\Demos\Demo.h" />
     <ClInclude Include="Source\Input.h" />
     <ClInclude Include="Source\Light.h" />
+    <ClInclude Include="Source\Material.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Graphics.h" />
     <ClInclude Include="Source\Sampler.h" />

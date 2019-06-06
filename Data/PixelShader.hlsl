@@ -6,6 +6,17 @@
 Texture2D Texture : register(t0);
 sampler Sampler: register(s0);
 
+cbuffer Material : register(b0)
+{
+    float4 matEmissive;
+    float4 matAmbient;
+    float4 matDiffuse;
+    float4 matSpecular;
+
+    float matShininess;
+    int useTexture;
+}
+
 struct Light
 {
     float4 position;
@@ -16,7 +27,7 @@ struct Light
     int enabled;
 };
 
-cbuffer LightProperties : register(b0)
+cbuffer LightProperties : register(b1)
 {
     float4 eyePosition;
     float4 globalAmbient;
@@ -33,10 +44,6 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
-    float matShininess = 10;
-    float matDiffuse = globalAmbient;
-    float matSpecular = globalAmbient;
-
     float4 diffuse = float4(0, 0, 0, 0);
     float4 specular = float4(0, 0, 0, 0);
 
@@ -59,10 +66,15 @@ float4 main(PixelShaderInput IN) : SV_TARGET
                 return float4(1, 0, 1, 1);
         }
     }
-    float4 matColor =
-        globalAmbient +
-        matDiffuse * diffuse +
-        matSpecular * specular;
-    //float4 texColor = Texture.Sample(Sampler, IN.texCoord);
-    return float4(matColor.xyz, 1);
+    float4 color =
+        matEmissive +
+        matAmbient * globalAmbient +
+        matDiffuse * saturate(diffuse) +
+        matSpecular * saturate(specular);
+
+    if (useTexture)
+    {
+        color *= Texture.Sample(Sampler, IN.texCoord);
+    }
+    return color;
 }
