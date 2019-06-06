@@ -23,6 +23,11 @@ int Application::Run(Demo& demo)
     demo.Start(m_Graphics);
     MSG msg = { 0 };
     static DWORD previousTime = timeGetTime();
+
+    HWND hDesktop = GetDesktopWindow();
+    RECT desktop;
+    GetWindowRect(hDesktop, &desktop);
+
     while (msg.message != WM_QUIT)
     {
         if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -35,6 +40,12 @@ int Application::Run(Demo& demo)
             DWORD currentTime = timeGetTime();
             float deltaTime = (currentTime - previousTime) / 1000.0f;
             previousTime = currentTime;
+
+            POINT cursorPos;
+            GetCursorPos(&cursorPos);
+            input.mouseX = (cursorPos.x - (desktop.right / 2.0f)) / 500.0f;
+            input.mouseY = (cursorPos.y - (desktop.bottom / 2.0f)) / 500.0f;
+
             m_Graphics.Clear(Colors::CornflowerBlue, 1.0f, 0);
             demo.Update(m_Graphics, input, deltaTime);
             m_Graphics.Present();
@@ -69,7 +80,7 @@ LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wPa
             ClearInput(wParam);
             break;
         default:
-           return DefWindowProc(hwnd, message, wParam, lParam);
+            return DefWindowProc(hwnd, message, wParam, lParam);
     }
 
     return 0;
@@ -80,20 +91,22 @@ void Application::ClearInput(WPARAM wParam)
     switch (wParam)
     {
         case 'W':
-        case VK_UP:
-            input &= ~Key::UP;
+            input.key &= ~Key::FRONT;
             break;
         case 'S':
-        case VK_DOWN:
-            input &= ~Key::DOWN;
+            input.key &= ~Key::BACK;
             break;
         case 'A':
-        case VK_LEFT:
-            input &= ~Key::LEFT;
+            input.key &= ~Key::LEFT;
             break;
         case 'D':
-        case VK_RIGHT:
-            input &= ~Key::RIGHT;
+            input.key &= ~Key::RIGHT;
+            break;
+        case 'Q':
+            input.key &= ~Key::UP;
+            break;
+        case 'E':
+            input.key &= ~Key::DOWN;
             break;
         default:
             return;
@@ -106,21 +119,22 @@ void Application::RecordInput(WPARAM wParam)
     switch (wParam)
     {
         case 'W':
-        case VK_UP:
-           input |= Key::UP;
-           break;
-        case 'S':
-        case VK_DOWN:
-           input |= Key::DOWN;
-           break;
-        case 'A':
-        case VK_LEFT:
-           input |= Key::LEFT;
-           break;
-        case 'D':
-        case VK_RIGHT:
-            input |= Key::RIGHT;
+            input.key |= Key::FRONT;
             break;
+        case 'S':
+            input.key |= Key::BACK;
+            break;
+        case 'A':
+            input.key |= Key::LEFT;
+            break;
+        case 'D':
+            input.key |= Key::RIGHT;
+            break;
+        case 'Q':
+            input.key |= Key::UP;
+            break;
+        case 'E':
+            input.key |= Key::DOWN;
         default:
             return;
     }

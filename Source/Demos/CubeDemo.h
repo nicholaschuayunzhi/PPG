@@ -1,6 +1,5 @@
 #pragma once
 #include "../stdafx.h"
-
 #include "Demo.h"
 #include "../Camera.h"
 #include "../Graphics.h"
@@ -9,7 +8,6 @@
 #include "../Shader.h"
 #include "../Sampler.h"
 #include "../Light.h"
-
 
 class CubeDemo : public Demo
 {
@@ -80,24 +78,24 @@ public:
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
     {
+        XMVECTOR viewRotation = XMVector3Normalize(XMVectorSet(input.mouseX, -input.mouseY, 1, 0));
 
-        if (input != Key::NONE)
+        if (input.key != Key::NONE)
         {
-            float x = 0;
-            float z = 0;
-            if (input & Key::UP)
-                z += 1;
-            if (input & Key::DOWN)
-                z -= 1;
-            if (input & Key::LEFT)
-                x -= 1;
-            if (input & Key::RIGHT)
-                x += 1;
-            camera.m_EyePosition += XMVectorSet(x, 0, z, 0) * camera.m_Speed * deltaTime;
-            camera.m_LookAt = camera.m_EyePosition + XMVectorSet(0, 0, 1, 0);
+            float x = 0.0f, y = 0.0f, z = 0.0f;
+            if (input.key & Key::FRONT) z += 1.0f;
+            if (input.key & Key::BACK) z -= 1.0f;
+            if (input.key & Key::LEFT) x += 1.0f;
+            if (input.key & Key::RIGHT) x -= 1.0f;
+            if (input.key & Key::UP) y += 1.0f;
+            if (input.key & Key::DOWN) y -= 1.0f;
+            camera.m_EyePosition += XMVector3Rotate(XMVectorSet(x, y, z, 0), viewRotation) * camera.m_Speed * deltaTime;
         }
+        camera.m_LookAt = camera.m_EyePosition + XMVector3Rotate(XMVectorSet(0, 0, 1, 0), viewRotation);
+
         XMMATRIX view = camera.CalculateView();
         graphics.UpdateBuffer(mvp[1], &view);
+
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         graphics.UpdateBuffer(lightsBuffer, &lp);
 
@@ -129,13 +127,13 @@ public:
         SafeRelease(lightsBuffer);
     }
 
-  private:
+private:
     Camera camera;
+    LightProperties lp;
     Mesh* cubeMesh;
     Shader* shader;
     Texture* texture;
     Sampler* sampler;
     ID3D11Buffer* lightsBuffer;
     ID3D11Buffer* mvp[3];
-    LightProperties lp;
-  };
+};
