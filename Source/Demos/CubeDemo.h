@@ -78,20 +78,7 @@ public:
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
     {
-        XMVECTOR viewRotation = XMVector3Normalize(XMVectorSet(input.mouseX, -input.mouseY, 1, 0));
-
-        if (input.key != Key::NONE)
-        {
-            float x = 0.0f, y = 0.0f, z = 0.0f;
-            if (input.key & Key::FRONT) z += 1.0f;
-            if (input.key & Key::BACK) z -= 1.0f;
-            if (input.key & Key::LEFT) x += 1.0f;
-            if (input.key & Key::RIGHT) x -= 1.0f;
-            if (input.key & Key::UP) y += 1.0f;
-            if (input.key & Key::DOWN) y -= 1.0f;
-            camera.m_EyePosition += XMVector3Rotate(XMVectorSet(x, y, z, 0), viewRotation) * camera.m_Speed * deltaTime;
-        }
-        camera.m_LookAt = camera.m_EyePosition + XMVector3Rotate(XMVectorSet(0, 0, 1, 0), viewRotation);
+        camera.HandleMovement(input, deltaTime);
 
         XMMATRIX view = camera.CalculateView();
         graphics.UpdateBuffer(mvp[1], &view);
