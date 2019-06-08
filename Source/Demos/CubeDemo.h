@@ -96,6 +96,13 @@ public:
         lp.m_Lights[1].m_Position = XMFLOAT4(0, 5, 5, 1);
         lp.m_Lights[1].m_LightType = LightType::PointLight;
         lp.m_Lights[1].m_Enabled = 1;
+
+        lp.m_Lights[2].m_Color = XMFLOAT4(Colors::White);
+        XMStoreFloat4(&(lp.m_Lights[2].m_Position), camera.m_EyePosition);
+        XMStoreFloat4(&(lp.m_Lights[2].m_Direction), camera.m_Forward);
+        lp.m_Lights[2].m_LightType = LightType::SpotLight;
+        lp.m_Lights[2].m_SpotAngle = XMConvertToRadians(10.0f);
+        lp.m_Lights[2].m_Enabled = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
     }
 
@@ -107,6 +114,8 @@ public:
         graphics.UpdateBuffer(mvp[1], &view);
 
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
+        XMStoreFloat4(&(lp.m_Lights[2].m_Position), camera.m_EyePosition); // spot light is a flash light
+        XMStoreFloat4(&(lp.m_Lights[2].m_Direction), camera.m_Forward);
         graphics.UpdateBuffer(lightsBuffer, &lp);
 
         // Cube

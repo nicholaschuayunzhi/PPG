@@ -20,6 +20,7 @@ _declspec(align(16)) struct Light
     float m_ConstantAttenuation = 1.0f;
     float m_LinearAttenuation = 0.09f;
     float m_QuadAttenuation = 0.032f;
+    float m_SpotAngle;
 
     int m_LightType;
     int m_Enabled;

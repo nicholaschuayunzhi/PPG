@@ -26,6 +26,7 @@ struct Light
     float constantAtt;
     float linearAtt;
     float quadAtt;
+    float spotAngle;
 
     int lightType;
     int enabled;
@@ -70,7 +71,9 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 N = normalize(IN.normal);
     float3 V = normalize(eyePosition.xyz - IN.wPosition.xyz);
     float3 L;
+    float distance;
     LightingResult result;
+    float attenuation;
 
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
@@ -85,12 +88,25 @@ float4 main(PixelShaderInput IN) : SV_TARGET
                 break;
             case POINT_LIGHT:
                 L = light.position.xyz - IN.wPosition.xyz;
-                float distance = length(L);
+                distance = length(L);
                 L = normalize(L);
                 result = CalculatePhongLighting(L, N, V, light.color, matShininess);
-                float attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
+                attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
                 diffuse += attenuation * result.diffuse;
                 specular += attenuation * result.specular;
+                break;
+            case SPOT_LIGHT:
+                L = light.position.xyz - IN.wPosition.xyz;
+                distance = length(L);
+                L = normalize(L);
+                result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+                attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
+                float minCos = cos(light.spotAngle);
+                float maxCos = (minCos + 1.0f) / 2.0f; // squash between [0, 1]
+                float cosAngle = dot(light.direction.xyz, -L);
+                float intensity = smoothstep(minCos, maxCos, cosAngle);
+                diffuse += intensity * attenuation * result.diffuse;
+                specular += intensity * attenuation * result.specular;
                 break;
             default:
                 return float4(1, 0, 1, 1);

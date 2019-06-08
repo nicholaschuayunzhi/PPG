@@ -28,5 +28,6 @@ void Camera::HandleMovement(Input input, float deltaTime)
         if (input.key & Key::DOWN) y -= 1.0f;
         m_EyePosition += XMVector3Rotate(XMVectorSet(x, y, z, 0), viewRotation) * m_Speed * deltaTime;
     }
-    m_LookAt = m_EyePosition + XMVector3Rotate(XMVectorSet(0, 0, 1, 0), viewRotation);
+    m_Forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), viewRotation);
+    m_LookAt = m_EyePosition + m_Forward;
 }
