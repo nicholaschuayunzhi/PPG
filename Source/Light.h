@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#define MAX_LIGHTS 1
+#define MAX_LIGHTS 3
 
 enum LightType
 {
@@ -16,6 +16,10 @@ _declspec(align(16)) struct Light
     XMFLOAT4 m_Position;
     XMFLOAT4 m_Direction;
     XMFLOAT4 m_Color;
+
+    float m_ConstantAttenuation = 1.0f;
+    float m_LinearAttenuation = 0.09f;
+    float m_QuadAttenuation = 0.032f;
 
     int m_LightType;
     int m_Enabled;

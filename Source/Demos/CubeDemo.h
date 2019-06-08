@@ -73,16 +73,29 @@ public:
         material.m_Diffuse = XMFLOAT4(0.5f, 0.5f, 0.2f, 0);
         material.m_Specular = XMFLOAT4(1, 1, 1, 0);
         material.m_Shininess = 32;
-        material.m_UseTexture = 1;
-
+        material.m_UseTexture = 0;
         materialBuffer = graphics.CreateBuffer(sizeof(Material), D3D11_BIND_CONSTANT_BUFFER, &material);
+
+        lightMaterial.m_Emissive = XMFLOAT4(Colors::Red);
+        lightMaterial.m_Ambient = XMFLOAT4(Colors::Red);
+        lightMaterial.m_Diffuse = XMFLOAT4(Colors::Red);
+        lightMaterial.m_Specular = XMFLOAT4(Colors::Red);
+        lightMaterial.m_Shininess = 0;
+        lightMaterial.m_UseTexture = 0;
+        lightMaterialBuffer = graphics.CreateBuffer(sizeof(Material), D3D11_BIND_CONSTANT_BUFFER, &lightMaterial);
 
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.4, 0);
+
         lp.m_Lights[0].m_Color = XMFLOAT4(Colors::CornflowerBlue);
         lp.m_Lights[0].m_Direction = XMFLOAT4(1, -1, 1, 0);
         lp.m_Lights[0].m_LightType = LightType::DirectionalLight;
         lp.m_Lights[0].m_Enabled = 1;
+
+        lp.m_Lights[1].m_Color = XMFLOAT4(Colors::Red);
+        lp.m_Lights[1].m_Position = XMFLOAT4(0, 5, 5, 1);
+        lp.m_Lights[1].m_LightType = LightType::PointLight;
+        lp.m_Lights[1].m_Enabled = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
     }
 
@@ -96,6 +109,7 @@ public:
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         graphics.UpdateBuffer(lightsBuffer, &lp);
 
+        // Cube
         static float angle = 45.0f;
         //angle += 90.0f * deltaTime;
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0, 0);
@@ -108,7 +122,18 @@ public:
         deviceContext->VSSetConstantBuffers(0, 3, mvp);
         deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
         deviceContext->PSSetConstantBuffers(1, 1, &lightsBuffer);
-        texture->Use(deviceContext, 0);
+        texture->Use(deviceContext, 0); // not in use
+        sampler->Use(deviceContext, 0);
+        cubeMesh->Draw(deviceContext);
+
+        // Point Light Cube
+        model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(0, 5, 5));
+
+        graphics.UpdateBuffer(mvp[0], &model);
+        shader->Use(deviceContext);
+        deviceContext->VSSetConstantBuffers(0, 3, mvp);
+        deviceContext->PSSetConstantBuffers(0, 1, &lightMaterialBuffer);
+        deviceContext->PSSetConstantBuffers(1, 1, &lightsBuffer);
         sampler->Use(deviceContext, 0);
         cubeMesh->Draw(deviceContext);
     }
@@ -129,11 +154,13 @@ private:
     Camera camera;
     LightProperties lp;
     Material material;
+    Material lightMaterial;
     Mesh* cubeMesh;
     Shader* shader;
     Texture* texture;
     Sampler* sampler;
     ID3D11Buffer* lightsBuffer;
     ID3D11Buffer* materialBuffer;
+    ID3D11Buffer* lightMaterialBuffer;
     ID3D11Buffer* mvp[3];
 };

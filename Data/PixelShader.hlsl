@@ -1,4 +1,4 @@
-#define MAX_LIGHTS 1
+#define MAX_LIGHTS 3
 #define DIRECTIONAL_LIGHT 0
 #define POINT_LIGHT 1
 #define SPOT_LIGHT 2
@@ -23,6 +23,10 @@ struct Light
     float4 direction;
     float4 color;
 
+    float constantAtt;
+    float linearAtt;
+    float quadAtt;
+
     int lightType;
     int enabled;
 };
@@ -42,6 +46,22 @@ struct PixelShaderInput
     float2 texCoord : TEXCOORD0;
 };
 
+struct LightingResult
+{
+    float4 diffuse;
+    float4 specular;
+};
+
+LightingResult CalculatePhongLighting(float3 L, float3 N, float3 V, float4 lightColor, float matShininess)
+{
+    LightingResult result;
+    result.diffuse = max(0, dot(N, L)) * lightColor;
+    float3 R = normalize(reflect(-L, N));
+    float RdotV = max(0, dot(R, V));
+    result.specular = lightColor * pow(RdotV, matShininess);
+    return result;
+}
+
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float4 diffuse = float4(0, 0, 0, 0);
@@ -49,6 +69,8 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
     float3 N = normalize(IN.normal);
     float3 V = normalize(eyePosition.xyz - IN.wPosition.xyz);
+    float3 L;
+    LightingResult result;
 
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
@@ -56,11 +78,19 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         switch (abs(light.lightType))
         {
             case DIRECTIONAL_LIGHT:
-                float3 L = -normalize(light.direction.xyz);
-                diffuse += max(0, dot(N, L)) * light.color;
-                float3 R = normalize(reflect(-L, N));
-                float RdotV = max(0, dot(R, V));
-                specular += light.color * pow(RdotV, matShininess);
+                L = -normalize(light.direction.xyz);
+                result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+                diffuse += result.diffuse;
+                specular += result.specular;
+                break;
+            case POINT_LIGHT:
+                L = light.position.xyz - IN.wPosition.xyz;
+                float distance = length(L);
+                L = normalize(L);
+                result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+                float attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
+                diffuse += attenuation * result.diffuse;
+                specular += attenuation * result.specular;
                 break;
             default:
                 return float4(1, 0, 1, 1);
