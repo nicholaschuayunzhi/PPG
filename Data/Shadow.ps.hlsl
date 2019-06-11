@@ -4,6 +4,7 @@
 #define SPOT_LIGHT 2
 
 Texture2D Texture : register(t0);
+Texture2D ShadowMap : register(t1);
 sampler Sampler: register(s0);
 
 cbuffer Material : register(b0)
@@ -44,6 +45,7 @@ struct PixelShaderInput
     float4 position : SV_POSITION;
     float4 pos      : POSITION0;
     float4 wPosition: POSITION1;
+    float4 lightPos : POSITION2;
     float3 normal   : NORMAL;
     float2 texCoord : TEXCOORD0;
 };
@@ -82,12 +84,20 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         switch (abs(light.lightType))
         {
             case DIRECTIONAL_LIGHT:
+                float3 projCoords = IN.lightPos.xyz / IN.lightPos.w;
+                float currentDepth = projCoords.z;
+                projCoords = (projCoords + 1) / 2.0; // change to [0 - 1]
+                projCoords.y = -projCoords.y; // bottom right corner is (1, -1) in NDC so we have to flip it
+                float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy).r;
+                if (closestDepth < currentDepth - 0.001f)
+                    break;
                 L = -normalize(light.direction.xyz);
                 result = CalculatePhongLighting(L, N, V, light.color, matShininess);
                 diffuse += result.diffuse;
                 specular += result.specular;
                 break;
             case POINT_LIGHT:
+
                 L = light.position.xyz - IN.wPosition.xyz;
                 distance = length(L);
                 L = normalize(L);

@@ -91,12 +91,24 @@
     <ClInclude Include="Source\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Demos\ShadowDemo.h">
+      <Filter>Demos</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\PixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Data\VertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\ShadowMap.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\Shadow.vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\Shadow.ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

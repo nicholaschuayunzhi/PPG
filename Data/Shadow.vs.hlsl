@@ -13,6 +13,11 @@ cbuffer PerApplication : register(b2)
     matrix projection;
 }
 
+cbuffer Light : register(b3)
+{
+    matrix lightViewProjection;
+}
+
 struct AppData
 {
     float3 position: POSITION;
@@ -25,6 +30,7 @@ struct VertexShaderOutput
     float4 position : SV_POSITION;
     float4 pos      : POSITION0;
     float4 wPosition: POSITION1;
+    float4 lightPos : POSITION2;
     float3 normal   : NORMAL;
     float2 texCoord : TEXCOORD0;
 };
@@ -37,6 +43,7 @@ VertexShaderOutput main(AppData IN)
     OUT.position = mul(vp, OUT.wPosition);
     OUT.pos = OUT.position;
     OUT.texCoord = IN.texCoord;
+    OUT.lightPos = mul(lightViewProjection, OUT.wPosition);
 
     // assume a uniform scaling is observed
     // otherwise have have to multiply by transpose(inverse(model))

@@ -80,7 +80,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     hr = m_Device->CreateRenderTargetView(backBuffer, nullptr, &m_RenderTargetView);
     if (FAILED(hr))
     {
-        throw std::exception("Graphics::Failed to Create Back Buffer");
+        throw std::exception("Graphics::Failed to Create Back Buffer RTV");
     }
 
     SafeRelease(backBuffer);
