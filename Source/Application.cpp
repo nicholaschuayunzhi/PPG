@@ -63,17 +63,17 @@ LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wPa
     switch (message)
     {
         case WM_PAINT:
-            {
-                hDC = BeginPaint(hwnd, &paintStruct);
-                EndPaint(hwnd, &paintStruct);
-            }
+            hDC = BeginPaint(hwnd, &paintStruct);
+            EndPaint(hwnd, &paintStruct);
             break;
         case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        case WM_KEYDOWN:
+            if (wParam == VK_ESCAPE)
             {
                 PostQuitMessage(0);
             }
-            break;
-        case WM_KEYDOWN:
             RecordInput(wParam);
             break;
         case WM_KEYUP:
@@ -82,7 +82,6 @@ LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wPa
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
     }
-
     return 0;
 }
 
@@ -110,7 +109,7 @@ void Application::ClearInput(WPARAM wParam)
             break;
         default:
             return;
-        }
+    }
     return;
 }
 
@@ -135,6 +134,7 @@ void Application::RecordInput(WPARAM wParam)
             break;
         case 'E':
             input.key |= Key::DOWN;
+            break;
         default:
             return;
     }
