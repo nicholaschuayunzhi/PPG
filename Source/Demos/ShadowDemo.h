@@ -135,6 +135,22 @@ public:
 
         // Reset State
         graphics.SetUp();
+
+        _declspec(align(16)) struct ShadowMapConstant
+        {
+            float mapWidth;
+            float mapHeight;
+            int lightIndex;
+        };
+
+        RECT clientRect = graphics.m_ClientRect;
+        ShadowMapConstant shadowMapConstant = {
+            static_cast<float>(clientRect.right - clientRect.left),
+            static_cast<float>(clientRect.bottom - clientRect.top),
+            0
+        };
+        // Create Constants
+        shadowMapCBuffer = graphics.CreateBuffer(sizeof(ShadowMapConstant), D3D11_BIND_CONSTANT_BUFFER, &shadowMapConstant);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -156,6 +172,7 @@ public:
         deviceContext->VSSetConstantBuffers(3, 1, &lightVPBuffer);
         deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
         deviceContext->PSSetConstantBuffers(1, 1, &lightsBuffer);
+        deviceContext->PSSetConstantBuffers(2, 1, &shadowMapCBuffer);
 
         // Cube
         static float angle = 45.0f;
@@ -187,6 +204,7 @@ public:
         if (shadowMapShader) delete shadowMapShader;
         if (shadowMapTexture) delete shadowMapTexture;
         SafeRelease(lightVPBuffer);
+        SafeRelease(shadowMapCBuffer);
     }
 
 private:
@@ -208,4 +226,5 @@ private:
     Texture* shadowMapTexture;
     XMMATRIX lightViewProjection;
     ID3D11Buffer* lightVPBuffer;
+    ID3D11Buffer* shadowMapCBuffer;
 };

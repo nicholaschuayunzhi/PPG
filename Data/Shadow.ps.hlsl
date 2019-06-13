@@ -50,6 +50,13 @@ struct PixelShaderInput
     float2 texCoord : TEXCOORD0;
 };
 
+cbuffer ShadowMapConstants : register(b2)
+{
+    float mapWidth;
+    float mapHeight;
+    int mapLightIndex;
+}
+
 struct LightingResult
 {
     float4 diffuse;
@@ -64,6 +71,30 @@ LightingResult CalculatePhongLighting(float3 L, float3 N, float3 V, float4 light
     float RdotV = max(0, dot(R, V));
     result.specular = lightColor * pow(RdotV, matShininess);
     return result;
+}
+
+float ShadowFactor(float4 lightSpacePosition)
+{
+    float3 projCoords = lightSpacePosition.xyz / lightSpacePosition.w;
+    float currentDepth = projCoords.z;
+
+    if (currentDepth > 1)
+        return 0;
+
+    projCoords = (projCoords + 1) / 2.0; // change to [0 - 1]
+    projCoords.y = -projCoords.y; // bottom right corner is (1, -1) in NDC so we have to flip it
+
+    float2 texelSize = float2(2, 2) / float2(mapWidth, mapHeight);
+
+    float shadow = 0;
+    for (int x = -1; x < 2; ++x)
+    for (int y = -1; y < 2; ++y)
+    {
+        float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy + float2(x, y) * texelSize).r;
+        shadow += (closestDepth < currentDepth - 0.001f) * 1;
+    }
+    shadow /= 9;
+    return shadow;
 }
 
 float4 main(PixelShaderInput IN) : SV_TARGET
@@ -84,20 +115,13 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         switch (abs(light.lightType))
         {
             case DIRECTIONAL_LIGHT:
-                float3 projCoords = IN.lightPos.xyz / IN.lightPos.w;
-                float currentDepth = projCoords.z;
-                projCoords = (projCoords + 1) / 2.0; // change to [0 - 1]
-                projCoords.y = -projCoords.y; // bottom right corner is (1, -1) in NDC so we have to flip it
-                float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy).r;
-                if (closestDepth < currentDepth - 0.001f)
-                    break;
+                float lightFactor = (mapLightIndex == i) ? 1 - ShadowFactor(IN.lightPos) : 1;
                 L = -normalize(light.direction.xyz);
                 result = CalculatePhongLighting(L, N, V, light.color, matShininess);
-                diffuse += result.diffuse;
-                specular += result.specular;
+                diffuse += lightFactor * result.diffuse;
+                specular += lightFactor * result.specular;
                 break;
             case POINT_LIGHT:
-
                 L = light.position.xyz - IN.wPosition.xyz;
                 distance = length(L);
                 L = normalize(L);
