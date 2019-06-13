@@ -27,6 +27,7 @@ int Application::Run(Demo& demo)
     HWND hDesktop = GetDesktopWindow();
     RECT desktop;
     GetWindowRect(hDesktop, &desktop);
+    long prevMouseX = 0, prevMouseY = 0;
 
     while (msg.message != WM_QUIT)
     {
@@ -43,12 +44,19 @@ int Application::Run(Demo& demo)
 
             POINT cursorPos;
             GetCursorPos(&cursorPos);
-            input.mouseX = (cursorPos.x - (desktop.right / 2.0f)) / 500.0f;
-            input.mouseY = (cursorPos.y - (desktop.bottom / 2.0f)) / 500.0f;
+
+            if (input.mouse & Mouse::RMB_DOWN)
+            {
+                input.deltaMouseX = (cursorPos.x - prevMouseX) / 500.0f;
+                input.deltaMouseY = (cursorPos.y - prevMouseY) / 500.0f;
+            }
 
             m_Graphics.Clear(Colors::CornflowerBlue, 1.0f, 0);
             demo.Update(m_Graphics, input, deltaTime);
             m_Graphics.Present();
+
+            prevMouseX = cursorPos.x;
+            prevMouseY = cursorPos.y;
         }
     }
     demo.End();
@@ -73,11 +81,16 @@ LRESULT CALLBACK Application::WindowCallback(HWND hwnd, UINT message, WPARAM wPa
             if (wParam == VK_ESCAPE)
             {
                 PostQuitMessage(0);
+                break;
             }
+        case WM_RBUTTONDOWN:
             RecordInput(wParam);
             break;
         case WM_KEYUP:
             ClearInput(wParam);
+            break;
+        case WM_RBUTTONUP:
+            ClearInput(VK_RBUTTON);
             break;
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
@@ -107,6 +120,9 @@ void Application::ClearInput(WPARAM wParam)
         case 'E':
             input.key &= ~Key::DOWN;
             break;
+        case VK_RBUTTON:
+            input.mouse &= ~Mouse::RMB_DOWN;
+            break;
         default:
             return;
     }
@@ -134,6 +150,9 @@ void Application::RecordInput(WPARAM wParam)
             break;
         case 'E':
             input.key |= Key::DOWN;
+            break;
+        case VK_RBUTTON:
+            input.mouse |= Mouse::RMB_DOWN;
             break;
         default:
             return;
