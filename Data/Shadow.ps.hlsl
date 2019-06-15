@@ -84,14 +84,14 @@ float ShadowFactor(float4 lightSpacePosition)
     projCoords = (projCoords + 1) / 2.0; // change to [0 - 1]
     projCoords.y = -projCoords.y; // bottom right corner is (1, -1) in NDC so we have to flip it
 
-    float2 texelSize = float2(2, 2) / float2(mapWidth, mapHeight);
+    float2 texelSize = float2(1, 1) / float2(mapWidth, mapHeight);
 
     float shadow = 0;
     for (int x = -1; x < 2; ++x)
     for (int y = -1; y < 2; ++y)
     {
         float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy + float2(x, y) * texelSize).r;
-        shadow += (closestDepth < currentDepth - 0.001f) * 1;
+        shadow += (closestDepth < currentDepth - 0.001f);
     }
     shadow /= 9;
     return shadow;
