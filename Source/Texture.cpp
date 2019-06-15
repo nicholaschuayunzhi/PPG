@@ -10,12 +10,24 @@ Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
         throw std::exception("Texture::File not found");
     }
 
+    WCHAR ext[_MAX_EXT];
+    _wsplitpath_s(texturePath, nullptr, 0, nullptr, 0, nullptr, 0, ext, _MAX_EXT);
+    HRESULT hr;
     ScratchImage image;
     TexMetadata metadata;
-    HRESULT hr = LoadFromWICFile(texturePath, WIC_FLAGS_FORCE_RGB, &metadata, image);
+
+    if (_wcsicmp(ext, L".dds") == 0)
+    {
+        hr = LoadFromDDSFile(texturePath, WIC_FLAGS_FORCE_RGB, &metadata, image);
+    }
+    else
+    {
+        hr = LoadFromWICFile(texturePath, WIC_FLAGS_FORCE_RGB, &metadata, image);
+    }
+
     if (FAILED(hr))
     {
-        throw std::exception("Texture::Failed to Load WIC File");
+        throw std::exception("Texture::Failed to Load Texture File");
     }
 
     hr = CreateShaderResourceView(graphics.m_Device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), &m_TextureSRV);
