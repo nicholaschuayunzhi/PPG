@@ -29,9 +29,8 @@ struct VertexShaderOutput
 VertexShaderOutput main(AppData IN)
 {
     VertexShaderOutput OUT;
-    float4 worldPosition = mul(model, float4(IN.position, 1.0f));
-    matrix vp = mul(projection, view);
-    OUT.position = mul(vp, worldPosition);
-    OUT.texCoord = mul(model, worldPosition.xyz);
+    matrix mvp = mul(mul(projection, view), model);
+    OUT.position = mul(mvp, float4(IN.position, 1.0f));
+    OUT.texCoord = IN.position;
     return OUT;
 }

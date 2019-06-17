@@ -205,7 +205,7 @@ public:
         skyboxShader->Use(deviceContext);
         skyboxTexture->Use(deviceContext, 0);
         sampler->Use(deviceContext, 0);
-        model = XMMatrixMultiply(XMMatrixScaling(100, 50, 100), XMMatrixTranslationFromVector(camera.m_EyePosition));
+        model = XMMatrixMultiply(XMMatrixScaling(50, 50, 50), XMMatrixTranslationFromVector(camera.m_EyePosition));
         graphics.UpdateBuffer(mvp[0], &model);
         skyboxMesh->Draw(deviceContext);
     }
