@@ -23,6 +23,7 @@ struct AppData
     float3 position: POSITION;
     float3 normal  : NORMAL;
     float2 texCoord: TEXCOORD;
+    float3 tangent : TANGENT;
 };
 
 struct VertexShaderOutput
@@ -32,6 +33,8 @@ struct VertexShaderOutput
     float4 wPosition: POSITION1;
     float4 lightPos : POSITION2;
     float3 normal   : NORMAL;
+    float3 tangent  : TANGENT;
+    float3 binormal : BINORMAL;
     float2 texCoord : TEXCOORD0;
 };
 
@@ -48,6 +51,8 @@ VertexShaderOutput main(AppData IN)
     // assume a uniform scaling is observed
     // otherwise have have to multiply by transpose(inverse(model))
     // inverse should be calculated in the application (CPU)
-    OUT.normal = mul(model, float4(IN.normal, 0)).xyz;
+    OUT.normal = normalize(mul(model, float4(IN.normal, 0)).xyz);
+    OUT.tangent = normalize(mul(model, float4(IN.tangent, 0)).xyz);
+    OUT.binormal = normalize(cross(OUT.tangent, OUT.normal));
     return OUT;
 }

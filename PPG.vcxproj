@@ -167,6 +167,7 @@
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\Demos\CubeDemo.h" />
     <ClInclude Include="Source\Demos\Demo.h" />
+    <ClInclude Include="Source\Demos\NormalMapDemo.h" />
     <ClInclude Include="Source\Demos\ShadowDemo.h" />
     <ClInclude Include="Source\Demos\SkyboxDemo.h" />
     <ClInclude Include="Source\Input.h" />

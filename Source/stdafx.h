@@ -33,3 +33,17 @@ inline void SafeRelease(T& ptr)
         ptr = NULL;
     }
 }
+
+
+inline DirectX::XMFLOAT3 XMFLOAT3Subtract(DirectX::XMFLOAT3 a, DirectX::XMFLOAT3 b)
+{
+    return { a.x - b.x,
+             a.y - b.y,
+             a.z - b.z };
+}
+
+inline DirectX::XMFLOAT2 XMFLOAT2Subtract(DirectX::XMFLOAT2 a, DirectX::XMFLOAT2 b)
+{
+    return { a.x - b.x,
+             a.y - b.y };
+}

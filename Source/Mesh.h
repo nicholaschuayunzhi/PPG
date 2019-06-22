@@ -9,6 +9,11 @@ struct Vertex
     XMFLOAT3 Position;
     XMFLOAT3 Normal;
     XMFLOAT2 TexCoord;
+    XMFLOAT3 Tangent;
+
+    Vertex(XMFLOAT3 pos, XMFLOAT3 norm, XMFLOAT2 texC) :
+        Position(pos), Normal(norm), TexCoord(texC), Tangent()
+    {}
 };
 
 class Graphics;

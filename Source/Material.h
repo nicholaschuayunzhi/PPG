@@ -12,4 +12,5 @@ _declspec(align(16)) struct Material
 
     float m_Shininess;
     int m_UseTexture;
+    int m_UseNormalMap;
 };

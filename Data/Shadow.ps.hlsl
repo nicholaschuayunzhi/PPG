@@ -5,6 +5,8 @@
 
 Texture2D Texture : register(t0);
 Texture2D ShadowMap : register(t1);
+Texture2D NormalMap : register(t2);
+
 sampler Sampler: register(s0);
 
 cbuffer Material : register(b0)
@@ -16,6 +18,7 @@ cbuffer Material : register(b0)
 
     float matShininess;
     int useTexture;
+    int useNormalMap;
 }
 
 struct Light
@@ -47,6 +50,8 @@ struct PixelShaderInput
     float4 wPosition: POSITION1;
     float4 lightPos : POSITION2;
     float3 normal   : NORMAL;
+    float3 tangent  : TANGENT;
+    float3 binormal : BINORMAL;
     float2 texCoord : TEXCOORD0;
 };
 
@@ -109,9 +114,19 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     LightingResult result;
     float attenuation;
 
+    if (useNormalMap)
+    {
+        float3 bumpNormal = NormalMap.Sample(Sampler, IN.texCoord).xyz;
+        bumpNormal = normalize((bumpNormal * 2) - 1.0);
+        N = bumpNormal.x * IN.tangent + bumpNormal.y * IN.binormal + bumpNormal.z * IN.normal;
+        N = normalize(N);
+    }
+
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light light = Lights[i];
+        if (light.enabled == 0)
+            continue;
         switch (abs(light.lightType))
         {
             case DIRECTIONAL_LIGHT:

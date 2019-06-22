@@ -4,6 +4,8 @@
 #define SPOT_LIGHT 2
 
 Texture2D Texture : register(t0);
+Texture2D NormalMap : register(t1);
+
 sampler Sampler: register(s0);
 
 cbuffer Material : register(b0)
@@ -15,6 +17,7 @@ cbuffer Material : register(b0)
 
     float matShininess;
     int useTexture;
+    int useNormalMap;
 }
 
 struct Light
@@ -45,6 +48,8 @@ struct PixelShaderInput
     float4 pos      : POSITION0;
     float4 wPosition: POSITION1;
     float3 normal   : NORMAL;
+    float3 tangent  : TANGENT;
+    float3 binormal : BINORMAL;
     float2 texCoord : TEXCOORD0;
 };
 
@@ -68,7 +73,6 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float4 diffuse = float4(0, 0, 0, 0);
     float4 specular = float4(0, 0, 0, 0);
-
     float3 N = normalize(IN.normal);
     float3 V = normalize(eyePosition.xyz - IN.wPosition.xyz);
     float3 L;
@@ -76,9 +80,19 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     LightingResult result;
     float attenuation;
 
+    if (useNormalMap)
+    {
+        float3 bumpNormal = NormalMap.Sample(Sampler, IN.texCoord).xyz;
+        bumpNormal = normalize((bumpNormal * 2) - 1.0);
+        N = bumpNormal.x * IN.tangent + bumpNormal.y * IN.binormal + bumpNormal.z * IN.normal;
+        N = normalize(N);
+    }
+
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light light = Lights[i];
+        if (light.enabled == 0)
+            continue;
         switch (abs(light.lightType))
         {
             case DIRECTIONAL_LIGHT:
