@@ -15,8 +15,8 @@ public:
     XMVECTOR m_Forward = FORWARD;
     XMVECTOR m_Right = RIGHT;
     XMVECTOR m_LookAt = m_EyePosition + m_Forward;
-    XMVECTOR m_RotationQuaternion = XMQuaternionIdentity();
-
+    float m_Pitch = 0;
+    float m_Yaw = 0;
 
     float m_Speed = 10;
     XMMATRIX CalculateProjection(RECT clientRect);

@@ -29,10 +29,10 @@ void Camera::HandleMovement(Input input, float deltaTime)
     }
     if (input.mouse & Mouse::RMB_DOWN)
     {
-        // Weird locking at 90 degree angles.
-        XMVECTOR viewRotation = XMQuaternionRotationRollPitchYaw(input.deltaMouseY, input.deltaMouseX, 0);
-        m_RotationQuaternion = XMQuaternionMultiply(viewRotation, m_RotationQuaternion);
-        m_Forward = XMVector3Normalize(XMVector3Rotate(FORWARD, m_RotationQuaternion));
+        m_Pitch += input.deltaMouseY;
+        m_Yaw += input.deltaMouseX;
+        XMVECTOR viewRotation = XMQuaternionRotationRollPitchYaw(m_Pitch, m_Yaw, 0);
+        m_Forward = XMVector3Normalize(XMVector3Rotate(FORWARD, viewRotation));
         m_Right = XMVector3Normalize(XMVector3Cross(UP, m_Forward));
     }
 
