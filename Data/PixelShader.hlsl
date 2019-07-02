@@ -82,6 +82,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
     if (useNormalMap)
     {
+        float3 calcN = cross(IN.binormal, IN.tangent);
         float3 bumpNormal = NormalMap.Sample(Sampler, IN.texCoord).xyz;
         bumpNormal = normalize((bumpNormal * 2) - 1.0);
         N = bumpNormal.x * IN.tangent + bumpNormal.y * IN.binormal + bumpNormal.z * IN.normal;
@@ -127,15 +128,24 @@ float4 main(PixelShaderInput IN) : SV_TARGET
                 return float4(1, 0, 1, 1);
         }
     }
-    float4 color =
-        matEmissive +
-        matAmbient * globalAmbient +
-        matDiffuse * saturate(diffuse) +
-        matSpecular * saturate(specular);
 
+    float4 color = float4(1, 0, 1, 1);
     if (useTexture)
     {
-        color *= Texture.Sample(Sampler, IN.texCoord);
+        float4 texColor = Texture.Sample(Sampler, IN.texCoord);
+        color =
+            matEmissive +
+            texColor * saturate(globalAmbient) +
+            texColor * saturate(diffuse) +
+            matSpecular * saturate(specular);
+    }
+    else
+    {
+        color =
+            matEmissive +
+            matAmbient * saturate(globalAmbient) +
+            matDiffuse * saturate(diffuse) +
+            matSpecular * saturate(specular);
     }
     return color;
 }

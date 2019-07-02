@@ -124,7 +124,6 @@ public:
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0, 0);
         XMMATRIX model = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
         graphics.UpdateBuffer(mvp[0], &model);
-
         auto deviceContext = graphics.m_DeviceContext;
 
         shader->Use(deviceContext);

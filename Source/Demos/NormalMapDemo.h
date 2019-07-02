@@ -11,11 +11,15 @@
 #include "../Sampler.h"
 #include "../Light.h"
 #include "../Material.h"
+
+#include "../Model.h"
+
 class NormalMapDemo : public Demo
 {
 public:
     void Start(Graphics& graphics) override
     {
+        stormtrooper = new Model("..\\..\\Data\\Models\\stormtrooper\\stormtrooper.obj", graphics);
         std::vector<Vertex> vertices;
         vertices.reserve(24);
 
@@ -59,13 +63,12 @@ public:
            20, 21, 22, 20, 22, 23
         };
 
-
         std::vector<Vertex> planeVertices;
         planeVertices.reserve(4);
         planeVertices.push_back({ XMFLOAT3(-1.0f,  0.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(0.0f, 0.0f) });
-        planeVertices.push_back({ XMFLOAT3(-1.0f,  0.0f, -1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
+        planeVertices.push_back({ XMFLOAT3(-1.0f,  0.0f, -1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
         planeVertices.push_back({ XMFLOAT3(1.0f,  0.0f, -1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 1.0f) });
-        planeVertices.push_back({ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
+        planeVertices.push_back({ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
         std::vector<WORD> planeIndices = { 0, 1, 2, 0, 2, 3 };
 
         cubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
@@ -81,9 +84,9 @@ public:
         mvp[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &projection);
 
         material.m_Emissive = XMFLOAT4(0, 0, 0, 0);
-        material.m_Ambient = XMFLOAT4(0.1, 0.2f, 0.2f, 0);
-        material.m_Diffuse = XMFLOAT4(0.8f, 0.5f, 0.2f, 0);
-        material.m_Specular = XMFLOAT4(1, 1, 1, 0);
+        material.m_Ambient = XMFLOAT4(0.5, 0.5f, 0.5f, 0);
+        material.m_Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 0);
+        material.m_Specular = XMFLOAT4(0.8, 0.8, 0.8, 0);
         material.m_Shininess = 32;
         material.m_UseTexture = 1;
         material.m_UseNormalMap = 1;
@@ -100,11 +103,10 @@ public:
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.2, 0);
         lp.m_Lights[0].m_Color = lightColour;
-        lp.m_Lights[0].m_Position = XMFLOAT4(0, 3, 0, 0);
+        lp.m_Lights[0].m_Position = XMFLOAT4(4, 3, 0, 0);
         lp.m_Lights[0].m_LightType = LightType::PointLight;
         lp.m_Lights[0].m_Enabled = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
-
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -116,7 +118,6 @@ public:
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
 
         // Cube
-
         auto deviceContext = graphics.m_DeviceContext;
         shader->Use(deviceContext);
         deviceContext->VSSetConstantBuffers(0, 3, mvp);
@@ -124,24 +125,28 @@ public:
         sampler->Use(deviceContext, 0);
 
         // Point Light Cube
-        static float phase = 45.0f;
+        static float phase = -45.0f;
         phase += 90.0f * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
-        XMMATRIX model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(0, 3, zDisplacement));
-        lp.m_Lights[0].m_Position = XMFLOAT4(0, 3, zDisplacement, 0);
+        XMMATRIX model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(4, 3, zDisplacement));
+        lp.m_Lights[0].m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
         graphics.UpdateBuffer(lightsBuffer, &lp);
         graphics.UpdateBuffer(mvp[0], &model);
         deviceContext->PSSetConstantBuffers(0, 1, &lightMaterialBuffer);
         cubeMesh->Draw(deviceContext);
 
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0.3, 0);
-        model = XMMatrixTranslation(0, -1, 0);
-        model = XMMatrixMultiply(XMMatrixScaling(5, 5, 5), XMMatrixMultiply(XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(phase / 10.0f)), model));
+        model = XMMatrixMultiply(XMMatrixScaling(5, 5, 5), XMMatrixTranslation(0, -1, 0));
         graphics.UpdateBuffer(mvp[0], &model);
         deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
         texture->Use(deviceContext, 0);
         normalMap->Use(deviceContext, 1);
         planeMesh->Draw(deviceContext);
+
+        model = XMMatrixTranslation(0, -1, 0);
+        graphics.UpdateBuffer(mvp[0], &model);
+        deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
+        stormtrooper->Draw(deviceContext);
     }
 
     void End()
@@ -152,6 +157,8 @@ public:
         if (texture) delete texture;
         if (normalMap) delete normalMap;
         if (sampler) delete sampler;
+        if (stormtrooper) delete stormtrooper;
+
         SafeRelease(mvp[0]);
         SafeRelease(mvp[1]);
         SafeRelease(mvp[2]);
@@ -159,6 +166,7 @@ public:
     }
 
 private:
+    Model* stormtrooper;
     Camera camera;
     LightProperties lp;
     Material material;

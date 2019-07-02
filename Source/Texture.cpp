@@ -18,7 +18,11 @@ Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
 
     if (_wcsicmp(ext, L".dds") == 0)
     {
-        hr = LoadFromDDSFile(texturePath, WIC_FLAGS_FORCE_RGB, &metadata, image);
+        hr = LoadFromDDSFile(texturePath, DDS_FLAGS_FORCE_RGB, &metadata, image);
+    }
+    else if (_wcsicmp(ext, L".tga") == 0)
+    {
+        hr = LoadFromTGAFile(texturePath, &metadata, image);
     }
     else
     {
@@ -91,6 +95,16 @@ Texture::Texture(int width, int height, Graphics& graphics)
     {
         throw std::exception("Texture::Failed to create shader resource view");
     }
+}
+
+Texture::Texture(Texture&& texture)
+{
+    m_Texture = texture.m_Texture;
+    m_TextureSRV = texture.m_TextureSRV;
+    m_TextureRTV = texture.m_TextureRTV;
+    texture.m_Texture = NULL;
+    texture.m_TextureSRV = NULL;
+    texture.m_TextureRTV = NULL;
 }
 
 void Texture::Use(ID3D11DeviceContext* deviceContext, UINT startSlot)

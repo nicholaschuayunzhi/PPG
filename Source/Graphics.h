@@ -3,10 +3,7 @@
 
 using namespace DirectX;
 
-class Mesh;
-class Shader;
 class Window;
-class Texture;
 
 class Graphics
 {

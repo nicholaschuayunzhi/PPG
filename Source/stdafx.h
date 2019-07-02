@@ -1,5 +1,6 @@
 #pragma once
 // System includes
+#define NOMINMAX //https://stackoverflow.com/questions/5004858/stdmin-gives-error
 #include <windows.h>
 
 // DirectX includes
@@ -22,6 +23,7 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "assimp-vc142-mtd.lib")
 
 // Safely release a COM object.
 template<typename T>

@@ -19,6 +19,7 @@ struct AppData
     float3 normal  : NORMAL;
     float2 texCoord: TEXCOORD;
     float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
 };
 
 struct VertexShaderOutput
@@ -46,6 +47,6 @@ VertexShaderOutput main(AppData IN)
     // inverse should be calculated in the application (CPU)
     OUT.normal = normalize(mul(model, float4(IN.normal, 0)).xyz);
     OUT.tangent = normalize(mul(model, normalize(float4(IN.tangent, 0))).xyz);
-    OUT.binormal = normalize(cross(OUT.normal, OUT.tangent));
+    OUT.binormal = normalize(mul(model, normalize(float4(IN.binormal, 0))).xyz);
     return OUT;
 }
