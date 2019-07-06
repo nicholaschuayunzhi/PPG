@@ -78,10 +78,8 @@ public:
         normalMap = new Texture(L"..\\..\\Data\\Brick_Wall_014_NORM.jpg", graphics);
         sampler = new Sampler(graphics);
 
-        XMMATRIX projection = camera.CalculateProjection(graphics.m_ClientRect);
-        mvp[0] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
-        mvp[1] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
-        mvp[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &projection);
+        camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
+        modelBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
 
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
@@ -110,34 +108,33 @@ public:
     void Update(Graphics& graphics, Input input, float deltaTime) override
     {
         camera.HandleMovement(input, deltaTime);
-
-        XMMATRIX view = camera.CalculateView();
-        graphics.UpdateBuffer(mvp[1], &view);
+        camera.UpdateView(graphics, camera.CalculateView());
         lightManager.SetEyePosition(camera.m_EyePosition);
 
         static float phase = -45.0f;
         phase += 90.0f * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
         XMMATRIX model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(4, 3, zDisplacement));
+        graphics.UpdateBuffer(modelBuffer, &model);
         Light& pointLight = lightManager.GetLight(0);
         pointLight.m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
         lightManager.Update(graphics);
 
         auto deviceContext = graphics.m_DeviceContext;
+        camera.Use(deviceContext);
         shader->Use(deviceContext);
         lightManager.Use(deviceContext, 1); // should be linked to material + shader
-        deviceContext->VSSetConstantBuffers(0, 3, mvp);
         sampler->Use(deviceContext, 0);
-        graphics.UpdateBuffer(mvp[0], &model);
+        deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
         cubeMesh->Draw(deviceContext, &lightMaterial);
 
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0.3, 0);
         model = XMMatrixMultiply(XMMatrixScaling(5, 5, 5), XMMatrixTranslation(0, -1, 0));
-        graphics.UpdateBuffer(mvp[0], &model);
+        graphics.UpdateBuffer(modelBuffer, &model);
         planeMesh->Draw(deviceContext, &planeMaterial);
 
         model = XMMatrixTranslation(0, -1, 0);
-        graphics.UpdateBuffer(mvp[0], &model);
+        graphics.UpdateBuffer(modelBuffer, &model);
         stormtrooper->Draw(deviceContext);
     }
 
@@ -151,9 +148,7 @@ public:
         if (sampler) delete sampler;
         if (stormtrooper) delete stormtrooper;
 
-        SafeRelease(mvp[0]);
-        SafeRelease(mvp[1]);
-        SafeRelease(mvp[2]);
+        SafeRelease(modelBuffer);
     }
 
 private:
@@ -170,5 +165,5 @@ private:
     Texture* normalMap;
     Sampler* sampler;
     LightManager lightManager;
-    ID3D11Buffer* mvp[3];
+    ID3D11Buffer* modelBuffer;
 };

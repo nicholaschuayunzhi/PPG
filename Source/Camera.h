@@ -4,9 +4,13 @@
 
 using namespace DirectX;
 
+class Graphics;
+
 class Camera
 {
 public:
+    Camera() = default;
+    ~Camera();
     const XMVECTOR FORWARD = XMVectorSet(0, 0, 1, 0);
     const XMVECTOR RIGHT = XMVectorSet(0, 0, 1, 0);
     const XMVECTOR UP = XMVectorSet(0, 1, 0, 0);
@@ -22,4 +26,10 @@ public:
     XMMATRIX CalculateProjection(RECT clientRect);
     XMMATRIX CalculateView();
     void HandleMovement(Input input, float deltaTime);
+    void UpdateView(Graphics& graphics, XMMATRIX view);
+    void UpdateProjection(Graphics& graphics, XMMATRIX proj);
+    void Use(ID3D11DeviceContext* deviceContext);
+private:
+    ID3D11Buffer* m_ViewBuffer;
+    ID3D11Buffer* m_ProjBuffer;
 };

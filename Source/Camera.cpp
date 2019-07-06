@@ -1,5 +1,12 @@
 #include "stdafx.h"
 #include "Camera.h"
+#include "Graphics.h"
+
+Camera::~Camera()
+{
+    SafeRelease(m_ViewBuffer);
+    SafeRelease(m_ProjBuffer);
+}
 
 XMMATRIX Camera::CalculateProjection(RECT clientRect)
 {
@@ -38,4 +45,34 @@ void Camera::HandleMovement(Input input, float deltaTime)
 
     m_EyePosition += ((z * m_Forward) + (y * UP) + (x * m_Right)) * m_Speed * deltaTime;
     m_LookAt = m_EyePosition + m_Forward;
+}
+
+void Camera::UpdateView(Graphics& graphics, XMMATRIX view)
+{
+    if (m_ViewBuffer == nullptr)
+    {
+        m_ViewBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &view);
+    }
+    else
+    {
+        graphics.UpdateBuffer(m_ViewBuffer, &view);
+    }
+}
+
+void Camera::UpdateProjection(Graphics& graphics, XMMATRIX proj)
+{
+    if (m_ProjBuffer == nullptr)
+    {
+        m_ProjBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &proj);
+    }
+    else
+    {
+        graphics.UpdateBuffer(m_ProjBuffer, &proj);
+    }
+}
+
+void Camera::Use(ID3D11DeviceContext* deviceContext)
+{
+    deviceContext->VSSetConstantBuffers(1, 1, &m_ViewBuffer);
+    deviceContext->VSSetConstantBuffers(2, 1, &m_ProjBuffer);
 }
