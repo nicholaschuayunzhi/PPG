@@ -32,3 +32,23 @@ _declspec(align(16)) struct LightProperties
     XMFLOAT4 m_GlobalAmbient;
     Light m_Lights[MAX_LIGHTS];
 };
+
+class Graphics;
+
+class LightManager
+{
+public:
+    LightManager() = default;
+    ~LightManager();
+    void Update(Graphics& graphics);
+    void Use(ID3D11DeviceContext* deviceContext, UINT slot = 0);
+    Light& GetLight(unsigned int index);
+    XMFLOAT4& GetEyePosition();
+    LightManager& AddLight(Light& light);
+    LightManager& SetGlobalAmbient(XMFLOAT4 colour);
+    LightManager& SetEyePosition(XMVECTOR eyePositionVec);
+    unsigned int m_NumLights = 0;
+private:
+    ID3D11Buffer* m_Buffer;
+    LightProperties m_LightProps;
+};

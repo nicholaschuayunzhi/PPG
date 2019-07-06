@@ -95,13 +95,16 @@ public:
             .SetEmissive(lightColour.x, lightColour.y, lightColour.z)
             .Update(graphics);
 
-        XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
-        lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.2, 0);
-        lp.m_Lights[0].m_Color = lightColour;
-        lp.m_Lights[0].m_Position = XMFLOAT4(4, 3, 0, 0);
-        lp.m_Lights[0].m_LightType = LightType::PointLight;
-        lp.m_Lights[0].m_Enabled = 1;
-        lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
+        Light pointLight;
+        pointLight.m_Color = lightColour;
+        pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
+        pointLight.m_LightType = LightType::PointLight;
+
+        lightManager
+            .AddLight(pointLight)
+            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0))
+            .SetEyePosition(camera.m_EyePosition)
+            .Update(graphics);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -110,22 +113,21 @@ public:
 
         XMMATRIX view = camera.CalculateView();
         graphics.UpdateBuffer(mvp[1], &view);
-        XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
+        lightManager.SetEyePosition(camera.m_EyePosition);
 
-        // Cube
-        auto deviceContext = graphics.m_DeviceContext;
-        shader->Use(deviceContext);
-        deviceContext->VSSetConstantBuffers(0, 3, mvp);
-        deviceContext->PSSetConstantBuffers(1, 1, &lightsBuffer);
-        sampler->Use(deviceContext, 0);
-
-        // Point Light Cube
         static float phase = -45.0f;
         phase += 90.0f * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
         XMMATRIX model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(4, 3, zDisplacement));
-        lp.m_Lights[0].m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
-        graphics.UpdateBuffer(lightsBuffer, &lp);
+        Light& pointLight = lightManager.GetLight(0);
+        pointLight.m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
+        lightManager.Update(graphics);
+
+        auto deviceContext = graphics.m_DeviceContext;
+        shader->Use(deviceContext);
+        lightManager.Use(deviceContext, 1); // should be linked to material + shader
+        deviceContext->VSSetConstantBuffers(0, 3, mvp);
+        sampler->Use(deviceContext, 0);
         graphics.UpdateBuffer(mvp[0], &model);
         cubeMesh->Draw(deviceContext, &lightMaterial);
 
@@ -152,7 +154,6 @@ public:
         SafeRelease(mvp[0]);
         SafeRelease(mvp[1]);
         SafeRelease(mvp[2]);
-        SafeRelease(lightsBuffer);
     }
 
 private:
@@ -168,6 +169,6 @@ private:
     Texture* texture;
     Texture* normalMap;
     Sampler* sampler;
-    ID3D11Buffer* lightsBuffer;
+    LightManager lightManager;
     ID3D11Buffer* mvp[3];
 };
