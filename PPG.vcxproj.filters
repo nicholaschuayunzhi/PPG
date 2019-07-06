@@ -53,6 +53,9 @@
     <ClCompile Include="Source\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -134,8 +137,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dll\assimp-vc142-mtd.dll">
-      <Filter>DLLs</Filter>
-    </None>
+    <CopyFileToFolders Include="Dll\assimp-vc142-mtd.dll" />
   </ItemGroup>
 </Project>

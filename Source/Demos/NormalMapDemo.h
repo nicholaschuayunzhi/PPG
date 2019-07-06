@@ -83,22 +83,17 @@ public:
         mvp[1] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
         mvp[2] = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &projection);
 
-        material.m_Emissive = XMFLOAT4(0, 0, 0, 0);
-        material.m_Ambient = XMFLOAT4(0.5, 0.5f, 0.5f, 0);
-        material.m_Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 0);
-        material.m_Specular = XMFLOAT4(0.8, 0.8, 0.8, 0);
-        material.m_Shininess = 32;
-        material.m_UseTexture = 1;
-        material.m_UseNormalMap = 1;
-        materialBuffer = graphics.CreateBuffer(sizeof(Material), D3D11_BIND_CONSTANT_BUFFER, &material);
+        planeMaterial
+            .SetAmbient(0.1, 0.1, 0.1)
+            .SetSpecular(0.5, 0.5, 0.5)
+            .SetShininess(32)
+            .UseDiffuseMap(texture)
+            .UseNormalMap(normalMap)
+            .Update(graphics);
 
-        lightMaterial.m_Emissive = lightColour;
-        lightMaterial.m_Ambient = lightColour;
-        lightMaterial.m_Diffuse = lightColour;
-        lightMaterial.m_Specular = lightColour;
-        lightMaterial.m_Shininess = 0;
-        lightMaterial.m_UseTexture = 0;
-        lightMaterialBuffer = graphics.CreateBuffer(sizeof(Material), D3D11_BIND_CONSTANT_BUFFER, &lightMaterial);
+        lightMaterial
+            .SetEmissive(lightColour.x, lightColour.y, lightColour.z)
+            .Update(graphics);
 
         XMStoreFloat4(&(lp.m_EyePosition), camera.m_EyePosition);
         lp.m_GlobalAmbient = XMFLOAT4(0.2, 0.2, 0.2, 0);
@@ -132,20 +127,15 @@ public:
         lp.m_Lights[0].m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
         graphics.UpdateBuffer(lightsBuffer, &lp);
         graphics.UpdateBuffer(mvp[0], &model);
-        deviceContext->PSSetConstantBuffers(0, 1, &lightMaterialBuffer);
-        cubeMesh->Draw(deviceContext);
+        cubeMesh->Draw(deviceContext, &lightMaterial);
 
         XMVECTOR rotationAxis = XMVectorSet(0, 1, 0.3, 0);
         model = XMMatrixMultiply(XMMatrixScaling(5, 5, 5), XMMatrixTranslation(0, -1, 0));
         graphics.UpdateBuffer(mvp[0], &model);
-        deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
-        texture->Use(deviceContext, 0);
-        normalMap->Use(deviceContext, 1);
-        planeMesh->Draw(deviceContext);
+        planeMesh->Draw(deviceContext, &planeMaterial);
 
         model = XMMatrixTranslation(0, -1, 0);
         graphics.UpdateBuffer(mvp[0], &model);
-        deviceContext->PSSetConstantBuffers(0, 1, &materialBuffer);
         stormtrooper->Draw(deviceContext);
     }
 
@@ -169,7 +159,7 @@ private:
     Model* stormtrooper;
     Camera camera;
     LightProperties lp;
-    Material material;
+    Material planeMaterial;
     Material lightMaterial;
     XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
     Mesh* planeMesh;
@@ -179,7 +169,5 @@ private:
     Texture* normalMap;
     Sampler* sampler;
     ID3D11Buffer* lightsBuffer;
-    ID3D11Buffer* materialBuffer;
-    ID3D11Buffer* lightMaterialBuffer;
     ID3D11Buffer* mvp[3];
 };

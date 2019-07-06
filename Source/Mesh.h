@@ -20,6 +20,7 @@ struct Vertex
 
 class Graphics;
 class Texture;
+class Material;
 
 class Mesh
 {
@@ -28,7 +29,7 @@ public:
     Mesh() = default;
     Mesh(Mesh&& mesh);
     ~Mesh();
-    void Draw(ID3D11DeviceContext* deviceContext);
+    void Draw(ID3D11DeviceContext* deviceContext, Material* material);
 private:
     std::vector<Vertex> m_Vertices;
     std::vector<WORD> m_Indices;

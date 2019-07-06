@@ -3,8 +3,9 @@
 #define POINT_LIGHT 1
 #define SPOT_LIGHT 2
 
-Texture2D Texture : register(t0);
+Texture2D Diffuse : register(t0);
 Texture2D NormalMap : register(t1);
+Texture2D Specular : register(t2);
 
 sampler Sampler: register(s0);
 
@@ -16,8 +17,9 @@ cbuffer Material : register(b0)
     float4 matSpecular;
 
     float matShininess;
-    int useTexture;
-    int useNormalMap;
+    int useDiffuse;
+    int useNormal;
+    int useSpecular;
 }
 
 struct Light
@@ -80,7 +82,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     LightingResult result;
     float attenuation;
 
-    if (useNormalMap)
+    if (useNormal)
     {
         float3 calcN = cross(IN.binormal, IN.tangent);
         float3 bumpNormal = NormalMap.Sample(Sampler, IN.texCoord).xyz;
@@ -129,23 +131,10 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         }
     }
 
-    float4 color = float4(1, 0, 1, 1);
-    if (useTexture)
-    {
-        float4 texColor = Texture.Sample(Sampler, IN.texCoord);
-        color =
-            matEmissive +
-            texColor * saturate(globalAmbient) +
-            texColor * saturate(diffuse) +
-            matSpecular * saturate(specular);
-    }
-    else
-    {
-        color =
-            matEmissive +
-            matAmbient * saturate(globalAmbient) +
-            matDiffuse * saturate(diffuse) +
-            matSpecular * saturate(specular);
-    }
-    return color;
+      float4 finalDiffuse = useDiffuse ? Diffuse.Sample(Sampler, IN.texCoord) : matDiffuse;
+      float4 finalSpecular = useSpecular ? Specular.Sample(Sampler, IN.texCoord) : matSpecular;
+      return matEmissive +
+          matAmbient * saturate(globalAmbient) +
+          finalDiffuse * saturate(diffuse) +
+          finalSpecular * saturate(specular);
 }

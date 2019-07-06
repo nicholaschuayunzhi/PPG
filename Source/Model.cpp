@@ -6,6 +6,7 @@
 #include "Graphics.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Material.h"
 
 Model::Model(std::string fileName, Graphics& graphics) :
     m_Graphics(graphics)
@@ -66,14 +67,27 @@ void Model::processNode(aiNode* node)
         }
 
         m_Meshes.emplace_back(vertices, indices, m_Graphics, false);
+
+        Material material;
         if (mesh->mMaterialIndex >= 0)
         {
             aiMaterial* mat = m_Scene->mMaterials[mesh->mMaterialIndex];
-            Texture* diffuseTex = loadTexture(aiTextureType_DIFFUSE, mat);
-            m_Diffuse.push_back(diffuseTex);
-            Texture* normalMap = loadTexture(aiTextureType_HEIGHT, mat);
-            m_Normal.push_back(normalMap);
+            Texture* diffuse = loadTexture(aiTextureType_DIFFUSE, mat);
+            Texture* normal = loadTexture(aiTextureType_HEIGHT, mat);
+            Texture* specular = loadTexture(aiTextureType_SPECULAR, mat);
+            if (diffuse) material.UseDiffuseMap(diffuse);
+            if (normal) material.UseNormalMap(normal);
+            if (specular) material.UseSpecularMap(specular);
         }
+        else
+        {
+            material
+                .SetAmbient(1, 0, 1)
+                .SetDiffuse(1, 0, 1)
+                .SetSpecular(1, 0, 1);
+        }
+        material.Update(m_Graphics);
+        m_Materials.push_back(std::move(material));
     }
 
     for (UINT i = 0; i < node->mNumChildren; i++)
@@ -113,12 +127,7 @@ void Model::Draw(ID3D11DeviceContext* deviceContext)
     for (int i = 0; i < m_Meshes.size(); ++i)
     {
         Mesh& mesh = m_Meshes[i];
-        Texture* diffuse = m_Diffuse[i];
-        if (diffuse)
-            diffuse->Use(deviceContext, 0);
-        Texture* normal = m_Normal[i];
-        if (normal)
-            normal->Use(deviceContext, 1);
-        mesh.Draw(deviceContext);
+        Material* mat = &m_Materials[i];
+        mesh.Draw(deviceContext, mat);
     }
 }

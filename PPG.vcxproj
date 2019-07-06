@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\Material.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Graphics.cpp" />
     <ClCompile Include="Source\Main.cpp" />

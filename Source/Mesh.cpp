@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Material.h"
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<WORD> indices, Graphics& graphics, bool calcTangents /*= true*/) :
     m_Vertices(std::move(vertices)),
@@ -71,8 +72,9 @@ Mesh::~Mesh()
     SafeRelease(m_VertexBuffer);
 }
 
-void Mesh::Draw(ID3D11DeviceContext* deviceContext)
+void Mesh::Draw(ID3D11DeviceContext* deviceContext, Material* material)
 {
+    if (material) material->Use(deviceContext);
     const UINT offset = 0;
     deviceContext->IASetVertexBuffers(0, 1, &m_VertexBuffer, &m_VertexStride, &offset);
     deviceContext->IASetIndexBuffer(m_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);

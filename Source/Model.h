@@ -17,8 +17,7 @@ public:
     void Draw(ID3D11DeviceContext* deviceContext);
 private:
     std::vector<Mesh> m_Meshes;
-    std::vector<Texture*> m_Diffuse;
-    std::vector<Texture*> m_Normal;
+    std::vector<Material> m_Materials;
     std::map<std::string, Texture> m_Textures;
 
     const aiScene* m_Scene;
