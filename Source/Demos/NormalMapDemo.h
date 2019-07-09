@@ -11,8 +11,8 @@
 #include "../Sampler.h"
 #include "../Light.h"
 #include "../Material.h"
-
 #include "../Model.h"
+#include "../Transform.h"
 
 class NormalMapDemo : public Demo
 {
@@ -71,11 +71,11 @@ public:
         planeVertices.push_back({ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
         std::vector<WORD> planeIndices = { 0, 1, 2, 0, 2, 3 };
 
-        cubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
+        lightCubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
         planeMesh = new Mesh(std::move(planeVertices), std::move(planeIndices), graphics);
         shader = new Shader(L"VertexShader.cso", L"PixelShader.cso", graphics);
-        texture = new Texture(L"..\\..\\Data\\Brick_Wall_014_COLOR.jpg", graphics);
-        normalMap = new Texture(L"..\\..\\Data\\Brick_Wall_014_NORM.jpg", graphics);
+        brickTexture = new Texture(L"..\\..\\Data\\Brick_Wall_014_COLOR.jpg", graphics);
+        brickNormalMap = new Texture(L"..\\..\\Data\\Brick_Wall_014_NORM.jpg", graphics);
         sampler = new Sampler(graphics);
 
         camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
@@ -85,8 +85,8 @@ public:
             .SetAmbient(0.1, 0.1, 0.1)
             .SetSpecular(0.5, 0.5, 0.5)
             .SetShininess(32)
-            .UseDiffuseMap(texture)
-            .UseNormalMap(normalMap)
+            .UseDiffuseMap(brickTexture)
+            .UseNormalMap(brickNormalMap)
             .Update(graphics);
 
         lightMaterial
@@ -103,6 +103,18 @@ public:
             .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0))
             .SetEyePosition(camera.m_EyePosition)
             .Update(graphics);
+
+        stormTfm
+            .SetPosition(0, -1, 0)
+            .UniformScale(0.8f);
+
+        planeTfm
+            .SetPosition(0, -1, 0)
+            .UniformScale(5);
+
+        lightCubeTfm
+            .SetPosition(4, 3, 0)
+            .UniformScale(0.5);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -111,13 +123,15 @@ public:
         camera.UpdateView(graphics, camera.CalculateView());
         lightManager.SetEyePosition(camera.m_EyePosition);
 
-        static float phase = -45.0f;
-        phase += 90.0f * deltaTime;
+        static float phase = 0;
+        phase += 90 * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
-        XMMATRIX model = XMMatrixMultiply(XMMatrixScaling(0.5, 0.5, 0.5), XMMatrixTranslation(4, 3, zDisplacement));
-        graphics.UpdateBuffer(modelBuffer, &model);
+
+        lightCubeTfm
+            .SetPosition(4, 3, zDisplacement);
+
         Light& pointLight = lightManager.GetLight(0);
-        pointLight.m_Position = XMFLOAT4(4, 3, zDisplacement, 0);
+        XMStoreFloat4(&(pointLight.m_Position), lightCubeTfm.position);
         lightManager.Update(graphics);
 
         auto deviceContext = graphics.m_DeviceContext;
@@ -126,25 +140,24 @@ public:
         lightManager.Use(deviceContext, 1); // should be linked to material + shader
         sampler->Use(deviceContext, 0);
         deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
-        cubeMesh->Draw(deviceContext, &lightMaterial);
 
-        XMVECTOR rotationAxis = XMVectorSet(0, 1, 0.3, 0);
-        model = XMMatrixMultiply(XMMatrixScaling(5, 5, 5), XMMatrixTranslation(0, -1, 0));
-        graphics.UpdateBuffer(modelBuffer, &model);
+        lightCubeTfm.Update(graphics, modelBuffer);
+        lightCubeMesh->Draw(deviceContext, &lightMaterial);
+
+        planeTfm.Update(graphics, modelBuffer);
         planeMesh->Draw(deviceContext, &planeMaterial);
 
-        model = XMMatrixTranslation(0, -1, 0);
-        graphics.UpdateBuffer(modelBuffer, &model);
+        stormTfm.Update(graphics, modelBuffer);
         stormtrooper->Draw(deviceContext);
     }
 
     void End()
     {
         if (planeMesh) delete planeMesh;
-        if (cubeMesh) delete cubeMesh;
+        if (lightCubeMesh) delete lightCubeMesh;
         if (shader) delete shader;
-        if (texture) delete texture;
-        if (normalMap) delete normalMap;
+        if (brickTexture) delete brickTexture;
+        if (brickNormalMap) delete brickNormalMap;
         if (sampler) delete sampler;
         if (stormtrooper) delete stormtrooper;
 
@@ -152,18 +165,26 @@ public:
     }
 
 private:
-    Model* stormtrooper;
-    Camera camera;
-    LightProperties lp;
-    Material planeMaterial;
-    Material lightMaterial;
-    XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
-    Mesh* planeMesh;
-    Mesh* cubeMesh;
     Shader* shader;
-    Texture* texture;
-    Texture* normalMap;
+    Texture* brickTexture;
+    Texture* brickNormalMap;
     Sampler* sampler;
+
+    Camera camera;
+
+    Transform planeTfm;
+    Material planeMaterial;
+    Mesh* planeMesh;
+
+    Transform lightCubeTfm;
+    Mesh* lightCubeMesh;
+    Material lightMaterial;
+
+    Transform stormTfm;
+    Model* stormtrooper;
+
     LightManager lightManager;
+    XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
+
     ID3D11Buffer* modelBuffer;
 };
