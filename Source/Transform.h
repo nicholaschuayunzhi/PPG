@@ -19,6 +19,7 @@ public:
     Transform& RotateEulerAngles(float x, float y, float z);
     Transform& UniformScale(float s);
     void Update(Graphics& graphics, ID3D11Buffer* buffer);
+    XMMATRIX GetModel();
 private:
     float dirty;
     XMMATRIX model;

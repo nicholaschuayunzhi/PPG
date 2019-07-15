@@ -13,13 +13,13 @@
 #include "../Material.h"
 #include "../Model.h"
 #include "../Transform.h"
+#include "../Scene.h"
 
 class NormalMapDemo : public Demo
 {
 public:
     void Start(Graphics& graphics) override
     {
-        stormtrooper = new Model("..\\..\\Data\\Models\\stormtrooper\\stormtrooper.obj", graphics);
         std::vector<Vertex> vertices;
         vertices.reserve(24);
 
@@ -78,9 +78,6 @@ public:
         brickNormalMap = new Texture(L"..\\..\\Data\\Brick_Wall_014_NORM.jpg", graphics);
         sampler = new Sampler(graphics);
 
-        camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
-        modelBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
-
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
             .SetSpecular(0.5, 0.5, 0.5)
@@ -98,57 +95,46 @@ public:
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
-        lightManager
+        scene.lightManager
             .AddLight(pointLight)
-            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0))
-            .SetEyePosition(camera.m_EyePosition)
-            .Update(graphics);
+            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0));
 
-        stormTfm
-            .SetPosition(0, -1, 0)
-            .UniformScale(0.8f);
+        lightCube = scene.CreateSceneObject("LightCube", lightCubeMesh, &lightMaterial);
+        plane = scene.CreateSceneObject("Plane", planeMesh, &planeMaterial);
+        stormtrooper = ModelLoader::LoadModelToScene("..\\..\\Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
 
-        planeTfm
-            .SetPosition(0, -1, 0)
-            .UniformScale(5);
-
-        lightCubeTfm
-            .SetPosition(4, 3, 0)
+        lightCube->m_Transform
             .UniformScale(0.5);
+
+        plane->m_Transform
+            .SetPosition(0, -1, 0)
+            .UniformScale(3);
+
+        stormtrooper->m_Root->m_Transform
+            .SetPosition(0, -1, 0)
+            .RotateEulerAngles(0.3, 0, 0)
+            .UniformScale(1);
+
+        scene.Start(graphics);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
     {
-        camera.HandleMovement(input, deltaTime);
-        camera.UpdateView(graphics, camera.CalculateView());
-        lightManager.SetEyePosition(camera.m_EyePosition);
-
         static float phase = 0;
         phase += 90 * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
+        lightCube->m_Transform.SetPosition(2, 3, zDisplacement);
 
-        lightCubeTfm
-            .SetPosition(4, 3, zDisplacement);
+        Light& pointLight = scene.lightManager.GetLight(0);
+        XMStoreFloat4(&(pointLight.m_Position), lightCube->m_Transform.position);
+        scene.lightManager.Update(graphics);
 
-        Light& pointLight = lightManager.GetLight(0);
-        XMStoreFloat4(&(pointLight.m_Position), lightCubeTfm.position);
-        lightManager.Update(graphics);
+        scene.Update(graphics, input, deltaTime);
 
         auto deviceContext = graphics.m_DeviceContext;
-        camera.Use(deviceContext);
         shader->Use(deviceContext);
-        lightManager.Use(deviceContext, 1); // should be linked to material + shader
         sampler->Use(deviceContext, 0);
-        deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
-
-        lightCubeTfm.Update(graphics, modelBuffer);
-        lightCubeMesh->Draw(deviceContext, &lightMaterial);
-
-        planeTfm.Update(graphics, modelBuffer);
-        planeMesh->Draw(deviceContext, &planeMaterial);
-
-        stormTfm.Update(graphics, modelBuffer);
-        stormtrooper->Draw(deviceContext);
+        scene.Render(graphics);
     }
 
     void End()
@@ -160,31 +146,25 @@ public:
         if (brickNormalMap) delete brickNormalMap;
         if (sampler) delete sampler;
         if (stormtrooper) delete stormtrooper;
-
-        SafeRelease(modelBuffer);
     }
 
 private:
+    Scene scene;
+    XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
+
     Shader* shader;
     Texture* brickTexture;
     Texture* brickNormalMap;
     Sampler* sampler;
 
-    Camera camera;
-
-    Transform planeTfm;
     Material planeMaterial;
     Mesh* planeMesh;
 
-    Transform lightCubeTfm;
     Mesh* lightCubeMesh;
     Material lightMaterial;
 
-    Transform stormTfm;
     Model* stormtrooper;
 
-    LightManager lightManager;
-    XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
-
-    ID3D11Buffer* modelBuffer;
+    SceneObject* plane;
+    SceneObject* lightCube;
 };

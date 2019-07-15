@@ -42,13 +42,17 @@ Transform& Transform::UniformScale(float s)
 
 void Transform::Update(Graphics& graphics, ID3D11Buffer* buffer)
 {
+    graphics.UpdateBuffer(buffer, &GetModel());
+}
+
+XMMATRIX Transform::GetModel()
+{
     if (dirty)
     {
         model = XMMatrixMultiply(XMMatrixScaling(scale, scale, scale),
-                XMMatrixMultiply(XMMatrixRotationRollPitchYawFromVector(rotation),
-                                 XMMatrixTranslationFromVector(position)));
+            XMMatrixMultiply(XMMatrixRotationRollPitchYawFromVector(rotation),
+                XMMatrixTranslationFromVector(position)));
         dirty = false;
     }
-
-    graphics.UpdateBuffer(buffer, &model);
+    return model;
 }

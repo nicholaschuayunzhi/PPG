@@ -167,6 +167,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Sampler.cpp" />
+    <ClCompile Include="Source\Scene.cpp" />
     <ClCompile Include="Source\Shader.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -193,6 +194,7 @@
     <ClInclude Include="Source\Graphics.h" />
     <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\Sampler.h" />
+    <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\Shader.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\Texture.h" />
