@@ -12,7 +12,7 @@ public:
     Camera() = default;
     ~Camera();
     const XMVECTOR FORWARD = XMVectorSet(0, 0, 1, 0);
-    const XMVECTOR RIGHT = XMVectorSet(0, 0, 1, 0);
+    const XMVECTOR RIGHT = XMVectorSet(1, 0, 0, 0);
     const XMVECTOR UP = XMVectorSet(0, 1, 0, 0);
 
     XMVECTOR m_EyePosition = XMVectorSet(0, 0, -10, 1);
