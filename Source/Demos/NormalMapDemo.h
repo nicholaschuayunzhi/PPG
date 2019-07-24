@@ -95,9 +95,15 @@ public:
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
+        Light dirLight;
+        dirLight.m_Color = lightColour;
+        dirLight.m_Direction = XMFLOAT4(-1, 0, 1, 0);
+        dirLight.m_LightType = LightType::DirectionalLight;
+
         scene.lightManager
             .AddLight(pointLight)
-            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0));
+            .AddLight(dirLight)
+            .SetGlobalAmbient(XMFLOAT4(0, 0, 0, 0));
 
         lightCube = scene.CreateSceneObject("LightCube", lightCubeMesh, &lightMaterial);
         plane = scene.CreateSceneObject("Plane", planeMesh, &planeMaterial);
@@ -115,6 +121,7 @@ public:
             .RotateEulerAngles(0.3, 0, 0)
             .UniformScale(1);
 
+        scene.LoadSkyBox(graphics, L"..\\..\\Data\\skybox.dds");
         scene.Start(graphics);
     }
 
