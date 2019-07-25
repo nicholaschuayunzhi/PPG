@@ -75,6 +75,7 @@ void Scene::DrawSkyBox(Graphics& graphics)
         skyBox->m_Shader->Use(devCon);
         skyBox->m_Texture->Use(devCon, 0);
         skyBox->m_Mesh->Draw(devCon, nullptr);
+        Texture::SetNullSrv(devCon, 0);
     }
 }
 

@@ -2,6 +2,8 @@
 #include "Texture.h"
 #include "Graphics.h"
 
+ID3D11ShaderResourceView* Texture::nullSRV[] = { nullptr };
+
 Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
 {
     std::experimental::filesystem::path filePath(texturePath);
@@ -110,6 +112,11 @@ Texture::Texture(Texture&& texture)
 void Texture::Use(ID3D11DeviceContext* deviceContext, UINT startSlot)
 {
     deviceContext->PSSetShaderResources(startSlot, 1, &m_TextureSRV);
+}
+
+void Texture::SetNullSrv(ID3D11DeviceContext* deviceContext, UINT startSlot)
+{
+    deviceContext->PSSetShaderResources(startSlot, 1, nullSRV);
 }
 
 Texture::~Texture()
