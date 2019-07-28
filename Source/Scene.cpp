@@ -34,31 +34,6 @@ void Scene::Update(Graphics& graphics, Input input, float deltaTime)
     lightManager.SetEyePosition(camera.m_EyePosition);
 }
 
-void Scene::Render(Graphics& graphics)
-{
-    auto deviceContext = graphics.m_DeviceContext;
-    camera.Use(deviceContext);
-    deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
-    lightManager.Use(deviceContext, 1); // should be linked to material + shader
-    DrawSceneRecursive(rootNode, XMMatrixIdentity(), graphics);
-  }
-
-void Scene::DrawSceneRecursive(SceneObject* obj, XMMATRIX model, Graphics& graphics)
-{
-    if (obj == nullptr) return;
-    if (&obj->m_Parent != obj) // not root node
-    {
-        model = XMMatrixMultiply(obj->m_Transform.GetModel(), model);
-        graphics.UpdateBuffer(modelBuffer, &model);
-        obj->m_Mesh->Draw(graphics.m_DeviceContext, obj->m_Material);
-    }
-
-    for (SceneObject* child : obj->m_Children)
-    {
-        DrawSceneRecursive(child, model, graphics);
-    }
-}
-
 void Scene::UseModel(Graphics& graphics)
 {
     auto deviceContext = graphics.m_DeviceContext;

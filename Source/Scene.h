@@ -23,11 +23,9 @@ public:
     SceneObject* rootNode;
     void Start(Graphics& graphics);
     void Update(Graphics& graphics, Input input, float deltaTime);
-    void Render(Graphics& graphics);
     void UseModel(Graphics& graphics);
     void UpdateModel(Graphics& graphics, XMMATRIX& model);
 private:
-    void DrawSceneRecursive(SceneObject* obj, XMMATRIX model, Graphics& graphics);
     ID3D11Buffer* modelBuffer;
 };
 

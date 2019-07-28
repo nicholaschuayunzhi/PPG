@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Material.h"
 
 ForwardPass::ForwardPass(Graphics& graphics)
 {
@@ -28,7 +29,11 @@ void ForwardPass::DrawSceneRecursive(SceneObject& obj, XMMATRIX model)
 {
     model = XMMatrixMultiply(obj.m_Transform.GetModel(), model);
     _Scene->UpdateModel(*_Graphics, model);
-    obj.m_Mesh->Draw(_Graphics->m_DeviceContext, obj.m_Material);
+
+    auto devCon = _Graphics->m_DeviceContext;
+    obj.m_Material->Use(devCon);
+    obj.m_Mesh->Draw(devCon);
+
     for (auto child : obj.m_Children)
     {
         DrawSceneRecursive(*child, model);

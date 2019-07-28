@@ -66,6 +66,6 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
     shader->Use(deviceContext);
     scene.UpdateModel(graphics, model);
     skyboxTexture->Use(deviceContext, 0);
-    skyboxMesh->Draw(deviceContext, nullptr);
+    skyboxMesh->Draw(deviceContext);
     Texture::SetNullSrv(deviceContext, 0);
 }

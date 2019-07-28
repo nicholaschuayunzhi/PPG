@@ -29,7 +29,7 @@ public:
     Mesh() = default;
     Mesh(Mesh&& mesh);
     ~Mesh();
-    void Draw(ID3D11DeviceContext* deviceContext, Material* material);
+    void Draw(ID3D11DeviceContext* deviceContext);
 private:
     std::vector<Vertex> m_Vertices;
     std::vector<WORD> m_Indices;

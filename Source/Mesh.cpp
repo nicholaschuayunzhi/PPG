@@ -72,9 +72,8 @@ Mesh::~Mesh()
     SafeRelease(m_VertexBuffer);
 }
 
-void Mesh::Draw(ID3D11DeviceContext* deviceContext, Material* material)
+void Mesh::Draw(ID3D11DeviceContext* deviceContext)
 {
-    if (material) material->Use(deviceContext);
     const UINT offset = 0;
     deviceContext->IASetVertexBuffers(0, 1, &m_VertexBuffer, &m_VertexStride, &offset);
     deviceContext->IASetIndexBuffer(m_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
