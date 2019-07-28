@@ -41,7 +41,6 @@ void Scene::Render(Graphics& graphics)
     deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
     lightManager.Use(deviceContext, 1); // should be linked to material + shader
     DrawSceneRecursive(rootNode, XMMatrixIdentity(), graphics);
-    DrawSkyBox(graphics);
   }
 
 void Scene::DrawSceneRecursive(SceneObject* obj, XMMATRIX model, Graphics& graphics)
@@ -60,23 +59,15 @@ void Scene::DrawSceneRecursive(SceneObject* obj, XMMATRIX model, Graphics& graph
     }
 }
 
-void Scene::LoadSkyBox(Graphics& graphics, LPCWSTR fileName)
+void Scene::UseModel(Graphics& graphics)
 {
-    skyBox = std::make_unique<SkyBox>(graphics, fileName);
+    auto deviceContext = graphics.m_DeviceContext;
+    deviceContext->VSSetConstantBuffers(0, 1, &modelBuffer);
 }
 
-void Scene::DrawSkyBox(Graphics& graphics)
+void Scene::UpdateModel(Graphics& graphics, XMMATRIX& model)
 {
-    if (skyBox)
-    {
-        auto model = XMMatrixMultiply(skyBox->m_Model, XMMatrixTranslationFromVector(camera.m_EyePosition));
-        graphics.UpdateBuffer(modelBuffer, &model);
-        auto devCon = graphics.m_DeviceContext;
-        skyBox->m_Shader->Use(devCon);
-        skyBox->m_Texture->Use(devCon, 0);
-        skyBox->m_Mesh->Draw(devCon, nullptr);
-        Texture::SetNullSrv(devCon, 0);
-    }
+    graphics.UpdateBuffer(modelBuffer, &model);
 }
 
 SceneObject* Scene::CreateSceneObject(std::string name, Mesh* mesh, Material* material, SceneObject* parent /*= nullptr*/)
@@ -86,7 +77,6 @@ SceneObject* Scene::CreateSceneObject(std::string name, Mesh* mesh, Material* ma
     SceneObject* obj = new SceneObject(name, mesh, material, *parent);
     return obj;
 }
-
 
 SceneObject::SceneObject(std::string name) :
     m_Parent(*this),
@@ -111,55 +101,4 @@ SceneObject::~SceneObject()
     {
         delete child;
     }
-}
-
-SkyBox::SkyBox(Graphics& graphics, LPCWSTR fileName, float size /*=50*/)
-{
-    std::vector<Vertex> cubeVertices;
-    cubeVertices.reserve(24);
-
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f,  0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f,  0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f,  0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f,  0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f,  0.0f,  1.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f,  0.0f,  1.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f,  0.0f,  1.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f,  0.0f,  1.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(-1.0f,  0.0f,  0.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f,  0.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(-1.0f,  0.0f,  0.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(-1.0f,  0.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f,  0.0f,  0.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT3(1.0f,  0.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT3(1.0f,  0.0f,  0.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT3(1.0f,  0.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f,  0.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f, -1.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f, -1.0f,  0.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(0.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 0.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(1.0f, 1.0f) });
-    cubeVertices.push_back({ XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f,  1.0f,  0.0f), XMFLOAT2(0.0f, 1.0f) });
-
-    std::vector<WORD> skyboxIndices =
-    {
-        0,  2,  1,  0,  3,  2,
-        4,  6,  5,  4,  7,  6,
-        8,  10, 9,  8, 11, 10,
-       12, 14, 13, 12, 15, 14,
-       16, 18, 17, 16, 19, 18,
-       20, 22, 21, 20, 23, 22
-    };
-
-    m_Mesh = std::make_unique<Mesh>(std::move(cubeVertices), std::move(skyboxIndices), graphics);
-    m_Texture = std::make_unique<Texture>(fileName, graphics);
-    m_Shader = std::make_unique<Shader>(L"Skybox.vs.cso", L"Skybox.ps.cso", graphics);
-    m_Model = XMMatrixScaling(50, 50, 50);
 }

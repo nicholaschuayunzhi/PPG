@@ -3,17 +3,19 @@
 #include <math.h>
 
 #include "Demo.h"
-#include "../Camera.h"
-#include "../Graphics.h"
-#include "../Mesh.h"
-#include "../Texture.h"
-#include "../Shader.h"
-#include "../Sampler.h"
-#include "../Light.h"
-#include "../Material.h"
-#include "../Model.h"
-#include "../Transform.h"
-#include "../Scene.h"
+#include "Camera.h"
+#include "Graphics.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
+#include "Sampler.h"
+#include "Light.h"
+#include "Material.h"
+#include "Model.h"
+#include "Transform.h"
+#include "Scene.h"
+#include "Passes/ForwardPass.h"
+#include "Passes/SkyboxPass.h"
 
 class NormalMapDemo : public Demo
 {
@@ -73,10 +75,12 @@ public:
 
         lightCubeMesh = new Mesh(std::move(vertices), std::move(indices), graphics);
         planeMesh = new Mesh(std::move(planeVertices), std::move(planeIndices), graphics);
-        shader = new Shader(L"VertexShader.cso", L"PixelShader.cso", graphics);
         brickTexture = new Texture(L"..\\..\\Data\\Brick_Wall_014_COLOR.jpg", graphics);
         brickNormalMap = new Texture(L"..\\..\\Data\\Brick_Wall_014_NORM.jpg", graphics);
         sampler = new Sampler(graphics);
+
+        forwardPass = std::make_unique<ForwardPass>(graphics);
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, L"..\\..\\Data\\skybox.dds");
 
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
@@ -121,7 +125,6 @@ public:
             .RotateEulerAngles(0.3, 0, 0)
             .UniformScale(1);
 
-        scene.LoadSkyBox(graphics, L"..\\..\\Data\\skybox.dds");
         scene.Start(graphics);
     }
 
@@ -139,16 +142,15 @@ public:
         scene.Update(graphics, input, deltaTime);
 
         auto deviceContext = graphics.m_DeviceContext;
-        shader->Use(deviceContext);
         sampler->Use(deviceContext, 0);
-        scene.Render(graphics);
+        forwardPass->Render(graphics, scene);
+        skyboxPass->Render(graphics, scene);
     }
 
     void End()
     {
         if (planeMesh) delete planeMesh;
         if (lightCubeMesh) delete lightCubeMesh;
-        if (shader) delete shader;
         if (brickTexture) delete brickTexture;
         if (brickNormalMap) delete brickNormalMap;
         if (sampler) delete sampler;
@@ -159,7 +161,6 @@ private:
     Scene scene;
     XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
 
-    Shader* shader;
     Texture* brickTexture;
     Texture* brickNormalMap;
     Sampler* sampler;
@@ -174,4 +175,7 @@ private:
 
     SceneObject* plane;
     SceneObject* lightCube;
+
+    std::unique_ptr<ForwardPass> forwardPass;
+    std::unique_ptr<SkyboxPass> skyboxPass;
 };
