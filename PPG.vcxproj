@@ -171,6 +171,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Passes\ForwardPass.cpp" />
+    <ClCompile Include="Source\Passes\ShadowMapPass.cpp" />
     <ClCompile Include="Source\Passes\SkyboxPass.cpp" />
     <ClCompile Include="Source\Sampler.cpp" />
     <ClCompile Include="Source\Scene.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="Source\Graphics.h" />
     <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\Passes\ForwardPass.h" />
+    <ClInclude Include="Source\Passes\ShadowMapPass.h" />
     <ClInclude Include="Source\Passes\SkyboxPass.h" />
     <ClInclude Include="Source\Sampler.h" />
     <ClInclude Include="Source\Scene.h" />
@@ -217,10 +219,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableOptimizations>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableOptimizations>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0_level_9_3</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0_level_9_3</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0_level_9_3</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0_level_9_3</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Data\ShadowMap.ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

@@ -5,6 +5,8 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Material.h"
+#include "Light.h"
+#include "Texture.h"
 
 ForwardPass::ForwardPass(Graphics& graphics)
 {
@@ -16,13 +18,19 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     auto deviceContext = graphics.m_DeviceContext;
     scene.camera.Use(deviceContext);
     scene.lightManager.Use(deviceContext, 1); // should be linked to material + shader
+
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
+    auto& lightManager = scene.lightManager;
+    deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
+    lightManager.m_OneShadowMapTexture->Use(deviceContext, 3);
 
     _Graphics = &graphics;
     _Scene = &scene;
     for (auto sceneObj : scene.rootNode->m_Children) // root node is empty
         DrawSceneRecursive(*sceneObj, XMMatrixIdentity());
+
+    Texture::SetNullSrv(deviceContext, 3);
 }
 
 void ForwardPass::DrawSceneRecursive(SceneObject& obj, XMMATRIX model)

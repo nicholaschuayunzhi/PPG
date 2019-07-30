@@ -90,18 +90,19 @@ public:
             .UseNormalMap(brickNormalMap)
             .Update(graphics);
 
-        lightMaterial
-            .SetEmissive(lightColour.x, lightColour.y, lightColour.z)
-            .Update(graphics);
-
+        auto lightColour = XMFLOAT4(Colors::Orange);
         Light pointLight;
-        pointLight.m_Color = lightColour;
+        pointLight.m_Color = XMFLOAT4(DirectX::Colors::MediumPurple);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
+        lightMaterial
+            .SetEmissive(pointLight.m_Color.x, pointLight.m_Color.y, pointLight.m_Color.z)
+            .Update(graphics);
+
         Light dirLight;
         dirLight.m_Color = lightColour;
-        dirLight.m_Direction = XMFLOAT4(-1, 0, 1, 0);
+        dirLight.m_Direction = XMFLOAT4(1, -1, -1, 0);
         dirLight.m_LightType = LightType::DirectionalLight;
 
         scene.lightManager
@@ -118,12 +119,23 @@ public:
 
         plane->m_Transform
             .SetPosition(0, -1, 0)
-            .UniformScale(3);
+            .UniformScale(5);
 
         stormtrooper->m_Root->m_Transform
             .SetPosition(0, -1, 0)
             .RotateEulerAngles(0.3, 0, 0)
             .UniformScale(1);
+
+        RECT& clientRect = graphics.m_ClientRect;
+        ShadowMapRenderDesc desc;
+        desc.position = XMLoadFloat4(&(scene.lightManager.GetLight(1).m_Direction));
+        desc.position *= -5;
+        desc.focus = XMVectorSet(0, 0, 0, 1);
+        desc.projection = XMMatrixOrthographicLH(16, 12, 1.0f, 20.0f);
+        desc.view = desc.CalculateView();
+        desc.textureWidth = clientRect.right - clientRect.left;
+        desc.textureHeight = clientRect.bottom - clientRect.top;
+        scene.lightManager.SetLightWithShadows(graphics, 1, desc);
 
         scene.Start(graphics);
     }
@@ -139,10 +151,11 @@ public:
         XMStoreFloat4(&(pointLight.m_Position), lightCube->m_Transform.position);
         scene.lightManager.Update(graphics);
 
-        scene.Update(graphics, input, deltaTime);
-
         auto deviceContext = graphics.m_DeviceContext;
         sampler->Use(deviceContext, 0);
+
+        scene.lightManager.RenderAnyShadowMap(graphics, scene);
+        scene.Update(graphics, input, deltaTime);
         forwardPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
     }
@@ -159,10 +172,10 @@ public:
 
 private:
     Scene scene;
-    XMFLOAT4 lightColour = XMFLOAT4(Colors::GhostWhite);
 
     Texture* brickTexture;
     Texture* brickNormalMap;
+
     Sampler* sampler;
 
     Material planeMaterial;

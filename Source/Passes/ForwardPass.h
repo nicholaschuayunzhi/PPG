@@ -1,9 +1,11 @@
 #pragma once
 #include "stdafx.h"
-#include "Scene.h"
 
+using namespace DirectX;
 class Shader;
 class Graphics;
+class Scene;
+class SceneObject;
 
 class ForwardPass
 {

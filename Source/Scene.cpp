@@ -31,6 +31,7 @@ void Scene::Update(Graphics& graphics, Input input, float deltaTime)
 {
     camera.HandleMovement(input, deltaTime);
     camera.UpdateView(graphics, camera.CalculateView());
+    camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
     lightManager.SetEyePosition(camera.m_EyePosition);
 }
 

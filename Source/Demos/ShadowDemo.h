@@ -88,7 +88,7 @@ public:
         lp.m_Lights[0].m_Color = XMFLOAT4(Colors::White);
         lp.m_Lights[0].m_Direction = XMFLOAT4(-1, -1, 0, 0);
         lp.m_Lights[0].m_LightType = LightType::DirectionalLight;
-        lp.m_Lights[0].m_Enabled = 1;
+        lp.m_Lights[0].m_Status = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
 
         XMMATRIX projection = camera.CalculateProjection(graphics.m_ClientRect);

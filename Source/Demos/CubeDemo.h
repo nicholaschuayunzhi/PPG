@@ -90,19 +90,19 @@ public:
         lp.m_Lights[0].m_Color = XMFLOAT4(Colors::CornflowerBlue);
         lp.m_Lights[0].m_Direction = XMFLOAT4(1, -1, 1, 0);
         lp.m_Lights[0].m_LightType = LightType::DirectionalLight;
-        lp.m_Lights[0].m_Enabled = 1;
+        lp.m_Lights[0].m_Status = 1;
 
         lp.m_Lights[1].m_Color = XMFLOAT4(Colors::Red);
         lp.m_Lights[1].m_Position = XMFLOAT4(0, 5, 5, 1);
         lp.m_Lights[1].m_LightType = LightType::PointLight;
-        lp.m_Lights[1].m_Enabled = 1;
+        lp.m_Lights[1].m_Status = 1;
 
         lp.m_Lights[2].m_Color = XMFLOAT4(Colors::White);
         XMStoreFloat4(&(lp.m_Lights[2].m_Position), camera.m_EyePosition);
         XMStoreFloat4(&(lp.m_Lights[2].m_Direction), camera.m_Forward);
         lp.m_Lights[2].m_LightType = LightType::SpotLight;
         lp.m_Lights[2].m_SpotAngle = XMConvertToRadians(10.0f);
-        lp.m_Lights[2].m_Enabled = 1;
+        lp.m_Lights[2].m_Status = 1;
         lightsBuffer = graphics.CreateBuffer(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER, &lp);
     }
 

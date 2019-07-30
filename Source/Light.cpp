@@ -1,10 +1,14 @@
 #include "stdafx.h"
 #include "Light.h"
 #include "Graphics.h"
+#include "Texture.h"
+#include "Passes/ShadowMapPass.h"
+#include "Shader.h"
 
 LightManager::~LightManager()
 {
     SafeRelease(m_Buffer);
+    SafeRelease(m_OneShadowMapCBuffer);
 }
 
 void LightManager::Update(Graphics& graphics)
@@ -23,7 +27,7 @@ LightManager& LightManager::AddLight(Light& light)
 {
     if (m_NumLights < MAX_LIGHTS)
     {
-        light.m_Enabled = 1;
+        light.m_Status = LightStatus::Enabled;
         m_LightProps.m_Lights[m_NumLights] = light;
         m_NumLights++;
         return *this;
@@ -69,3 +73,38 @@ void LightManager::Use(ID3D11DeviceContext* deviceContext, UINT slot /* = 0*/)
     deviceContext->PSSetConstantBuffers(slot, 1, &m_Buffer);
 }
 
+void LightManager::SetLightWithShadows(Graphics& graphics, unsigned int index, ShadowMapRenderDesc& desc)
+{
+    Light& light = GetLight(index);
+    if (light.m_LightType != LightType::DirectionalLight)
+    {
+        throw std::exception("LightManager:: Only support static directional light");
+    }
+
+    if (hasLightWithShadows)
+    {
+        throw std::exception("LightManager:: Only support one shadow map");
+    }
+
+    light.m_Status = LightStatus::Static_Shadows;
+
+    RECT& clientRect = graphics.m_ClientRect;
+    ShadowMapConstant shadowMapConstant = {
+         desc.textureWidth,
+         desc.textureHeight,
+         XMMatrixMultiply(desc.view, desc.projection)
+    };
+    m_OneShadowMapDesc = desc;
+    m_OneShadowMapCBuffer = graphics.CreateBuffer(sizeof(ShadowMapConstant), D3D11_BIND_CONSTANT_BUFFER, &shadowMapConstant);
+    m_ShadowMapPass = std::make_unique<ShadowMapPass>(graphics);
+    m_OneShadowMapTexture = std::make_unique<Texture>(desc.textureWidth, desc.textureHeight, graphics);
+    hasLightWithShadows = true;
+}
+
+void LightManager::RenderAnyShadowMap(Graphics& graphics, Scene& scene)
+{
+    if (hasLightWithShadows)
+    {
+        m_ShadowMapPass->Render(graphics, scene, *m_OneShadowMapTexture, m_OneShadowMapDesc);
+    }
+}

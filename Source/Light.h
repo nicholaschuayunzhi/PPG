@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Passes/ShadowMapPass.h"
 #define MAX_LIGHTS 3
 
 enum LightType
@@ -7,6 +8,13 @@ enum LightType
     DirectionalLight = 0,
     PointLight = 1,
     SpotLight = 2
+};
+
+enum LightStatus
+{
+    Disabled = 0,
+    Enabled = 1,
+    Static_Shadows = 2
 };
 
 using namespace DirectX;
@@ -23,7 +31,7 @@ _declspec(align(16)) struct Light
     float m_SpotAngle;
 
     int m_LightType;
-    int m_Enabled;
+    int m_Status = LightStatus::Disabled;
 };
 
 _declspec(align(16)) struct LightProperties
@@ -34,6 +42,9 @@ _declspec(align(16)) struct LightProperties
 };
 
 class Graphics;
+class Texture;
+class Scene;
+class ForwardPass;
 
 class LightManager
 {
@@ -47,8 +58,17 @@ public:
     LightManager& AddLight(Light& light);
     LightManager& SetGlobalAmbient(XMFLOAT4 colour);
     LightManager& SetEyePosition(XMVECTOR eyePositionVec);
+    void SetLightWithShadows(Graphics& graphics, unsigned int index, ShadowMapRenderDesc& desc);
     unsigned int m_NumLights = 0;
+    void RenderAnyShadowMap(Graphics& Graphics, Scene& scene);
 private:
     ID3D11Buffer* m_Buffer;
     LightProperties m_LightProps;
+
+    friend class ForwardPass;
+    bool hasLightWithShadows = false;
+    ID3D11Buffer* m_OneShadowMapCBuffer;
+    ShadowMapRenderDesc m_OneShadowMapDesc;
+    std::unique_ptr<Texture> m_OneShadowMapTexture;
+    std::unique_ptr<ShadowMapPass> m_ShadowMapPass;
 };

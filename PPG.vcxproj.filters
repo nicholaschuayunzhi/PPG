@@ -74,6 +74,9 @@
     <ClCompile Include="Source\Passes\SkyboxPass.cpp">
       <Filter>Passes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Passes\ShadowMapPass.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -140,6 +143,9 @@
       <Filter>Passes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Passes\SkyboxPass.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Passes\ShadowMapPass.h">
       <Filter>Passes</Filter>
     </ClInclude>
   </ItemGroup>
