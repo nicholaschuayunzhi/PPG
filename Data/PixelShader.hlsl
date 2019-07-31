@@ -89,11 +89,12 @@ float ShadowFactor(float4 worldPosition) // assumes only one shadow map cbuffer
     float2 texelSize = float2(1, 1) / float2(mapWidth, mapHeight);
 
     float shadow = 0;
+    float epsilon = 0.01f;
     for (int x = -1; x < 2; ++x)
         for (int y = -1; y < 2; ++y)
         {
             float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy + float2(x, y) * texelSize).r;
-            shadow += (closestDepth < currentDepth - 0.001f);
+            shadow += (closestDepth < currentDepth - epsilon);
         }
     shadow /= 9;
     return shadow;
