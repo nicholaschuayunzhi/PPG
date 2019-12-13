@@ -6,8 +6,8 @@ ID3D11ShaderResourceView* Texture::nullSRV[] = { nullptr };
 
 Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
 {
-    std::experimental::filesystem::path filePath(texturePath);
-    if (!std::experimental::filesystem::exists(filePath))
+    std::filesystem::path filePath(texturePath);
+    if (!std::filesystem::exists(filePath))
     {
         throw std::exception("Texture::File not found");
     }
