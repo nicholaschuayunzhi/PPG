@@ -155,45 +155,45 @@
     <ClInclude Include="Source\Passes\ForwardPass.h" />
     <ClInclude Include="Source\Passes\ShadowMapPass.h" />
     <ClInclude Include="Source\Passes\SkyboxPass.h" />
-    <ClInclude Include="Source\Application.h" />
-    <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\LowLevel\Application.h" />
+    <ClInclude Include="Source\Scene\Camera.h" />
     <ClInclude Include="Source\Demo.h" />
-    <ClInclude Include="Source\Graphics.h" />
-    <ClInclude Include="Source\Input.h" />
-    <ClInclude Include="Source\Light.h" />
-    <ClInclude Include="Source\Material.h" />
-    <ClInclude Include="Source\Mesh.h" />
-    <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\LowLevel\Graphics.h" />
+    <ClInclude Include="Source\LowLevel\Input.h" />
+    <ClInclude Include="Source\Scene\Light.h" />
+    <ClInclude Include="Source\Scene\Material.h" />
+    <ClInclude Include="Source\Resources\Mesh.h" />
+    <ClInclude Include="Source\Scene\Model.h" />
     <ClInclude Include="Source\PPG.h" />
-    <ClInclude Include="Source\Sampler.h" />
-    <ClInclude Include="Source\Scene.h" />
-    <ClInclude Include="Source\Shader.h" />
+    <ClInclude Include="Source\Resources\Sampler.h" />
+    <ClInclude Include="Source\Scene\Scene.h" />
+    <ClInclude Include="Source\Resources\Shader.h" />
     <ClInclude Include="Source\stdafx.h" />
-    <ClInclude Include="Source\Texture.h" />
-    <ClInclude Include="Source\Transform.h" />
-    <ClInclude Include="Source\Window.h" />
+    <ClInclude Include="Source\Resources\Texture.h" />
+    <ClInclude Include="Source\Scene\Transform.h" />
+    <ClInclude Include="Source\LowLevel\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Passes\ForwardPass.cpp" />
     <ClCompile Include="Source\Passes\ShadowMapPass.cpp" />
     <ClCompile Include="Source\Passes\SkyboxPass.cpp" />
-    <ClCompile Include="Source\Application.cpp" />
-    <ClCompile Include="Source\Camera.cpp" />
-    <ClCompile Include="Source\Graphics.cpp" />
-    <ClCompile Include="Source\Light.cpp" />
-    <ClCompile Include="Source\Material.cpp" />
-    <ClCompile Include="Source\Mesh.cpp" />
-    <ClCompile Include="Source\Model.cpp" />
-    <ClCompile Include="Source\Sampler.cpp" />
-    <ClCompile Include="Source\Scene.cpp" />
-    <ClCompile Include="Source\Shader.cpp" />
+    <ClCompile Include="Source\LowLevel\Application.cpp" />
+    <ClCompile Include="Source\Scene\Camera.cpp" />
+    <ClCompile Include="Source\LowLevel\Graphics.cpp" />
+    <ClCompile Include="Source\Scene\Light.cpp" />
+    <ClCompile Include="Source\Scene\Material.cpp" />
+    <ClCompile Include="Source\Resources\Mesh.cpp" />
+    <ClCompile Include="Source\Scene\Model.cpp" />
+    <ClCompile Include="Source\Resources\Sampler.cpp" />
+    <ClCompile Include="Source\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Resources\Shader.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Source\Texture.cpp" />
-    <ClCompile Include="Source\Transform.cpp" />
-    <ClCompile Include="Source\Window.cpp" />
+    <ClCompile Include="Source\Resources\Texture.cpp" />
+    <ClCompile Include="Source\Scene\Transform.cpp" />
+    <ClCompile Include="Source\LowLevel\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\External\DirectXTex\DirectXTex\DirectXTex_Desktop_2019.vcxproj">
@@ -208,35 +208,35 @@
     <Image Include="Data\skybox.dds" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Data\PixelShader.hlsl">
+    <FxCompile Include="Shader\PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Data\Shadow.ps.hlsl">
+    <FxCompile Include="Shader\Shadow.ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Data\Shadow.vs.hlsl">
+    <FxCompile Include="Shader\Shadow.vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="Data\ShadowMap.ps.hlsl">
+    <FxCompile Include="Shader\ShadowMap.ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Data\Skybox.ps.hlsl">
+    <FxCompile Include="Shader\Skybox.ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Data\Skybox.vs.hlsl">
+    <FxCompile Include="Shader\Skybox.vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="Data\VertexShader.hlsl">
+    <FxCompile Include="Shader\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>

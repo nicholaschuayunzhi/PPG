@@ -1,11 +1,11 @@
 #pragma once
 #include "stdafx.h"
-#include "Scene.h"
 
 class Texture;
 class Mesh;
 class Shader;
 class Graphics;
+class Scene;
 
 class SkyboxPass
 {

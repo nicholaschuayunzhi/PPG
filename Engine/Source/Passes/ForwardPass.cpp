@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "ForwardPass.h"
-#include "Graphics.h"
-#include "Scene.h"
-#include "Mesh.h"
-#include "Shader.h"
-#include "Material.h"
-#include "Light.h"
-#include "Texture.h"
+#include "LowLevel/Graphics.h"
+#include "Scene/Scene.h"
+#include "Scene/Material.h"
+#include "Scene/Light.h"
+#include "Resources/Mesh.h"
+#include "Resources/Shader.h"
+#include "Resources/Texture.h"
 
 ForwardPass::ForwardPass(Graphics& graphics)
 {

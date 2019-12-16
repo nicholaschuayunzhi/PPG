@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Light.h"
-#include "Graphics.h"
-#include "Texture.h"
+#include "LowLevel/Graphics.h"
+#include "Resources/Texture.h"
 #include "Passes/ShadowMapPass.h"
-#include "Shader.h"
+#include "Resources/Shader.h"
 
 LightManager::~LightManager()
 {

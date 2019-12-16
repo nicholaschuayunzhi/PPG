@@ -1,8 +1,8 @@
 #pragma once
 #include "stdafx.h"
 
-#include "Mesh.h"
-#include "Texture.h"
+#include "Resources/Mesh.h"
+#include "Resources/Texture.h"
 
 class Graphics;
 class SceneObject;

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Texture.h"
-#include "Graphics.h"
+#include "LowLevel/Graphics.h"
 #include "DirectXTex.h"
 
 ID3D11ShaderResourceView* Texture::nullSRV[] = { nullptr };

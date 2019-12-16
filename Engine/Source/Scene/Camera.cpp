@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
-#include "Graphics.h"
+#include "LowLevel/Graphics.h"
 
 Camera::~Camera()
 {

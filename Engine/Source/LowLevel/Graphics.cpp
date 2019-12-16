@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "Window.h"
-#include "Graphics.h"
-#include "Shader.h"
-#include "Texture.h"
-#include "Mesh.h"
+#include "LowLevel/Graphics.h"
 
 using namespace DirectX;
 

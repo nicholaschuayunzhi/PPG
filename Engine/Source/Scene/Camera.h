@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "Input.h"
+#include "LowLevel/Input.h"
 
 using namespace DirectX;
 

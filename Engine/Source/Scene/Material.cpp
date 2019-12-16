@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Material.h"
-#include "Graphics.h"
-#include "Texture.h"
+#include "LowLevel/Graphics.h"
+#include "Resources/Texture.h"
 
 Material::~Material()
 {

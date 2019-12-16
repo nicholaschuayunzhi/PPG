@@ -5,11 +5,11 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "Graphics.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Material.h"
-#include "Scene.h"
+#include "LowLevel/Graphics.h"
+#include "Resources/Mesh.h"
+#include "Resources/Texture.h"
+#include "Scene/Material.h"
+#include "Scene/Scene.h"
 
 class ModelLoader
 {

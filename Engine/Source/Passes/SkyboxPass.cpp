@@ -1,9 +1,10 @@
 #include "stdafx.h"
-#include "Graphics.h"
+#include "LowLevel/Graphics.h"
+#include "Scene/Scene.h"
 #include "SkyboxPass.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Shader.h"
+#include "Resources/Mesh.h"
+#include "Resources/Texture.h"
+#include "Resources/Shader.h"
 
 SkyboxPass::SkyboxPass(Graphics& graphics, LPCWSTR fileName, float size /*=50*/)
 {

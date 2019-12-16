@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Shader.h"
-#include "Graphics.h"
+#include "LowLevel/Graphics.h"
 
 Shader::Shader(LPCWSTR vertexPath, LPCWSTR pixelPath, Graphics& graphics)
 {

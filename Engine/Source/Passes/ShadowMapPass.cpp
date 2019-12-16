@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "ShadowMapPass.h"
-#include "Graphics.h"
-#include "Scene.h"
-#include "Mesh.h"
-#include "Shader.h"
-#include "Material.h"
-#include "Texture.h"
+#include "LowLevel/Graphics.h"
+#include "Scene/Scene.h"
+#include "Scene/Material.h"
+#include "Resources/Mesh.h"
+#include "Resources/Shader.h"
+#include "Resources/Texture.h"
 
 ShadowMapPass::ShadowMapPass(Graphics& graphics)
 {

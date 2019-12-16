@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "Scene.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "Graphics.h"
-#include "Model.h"
-#include "Shader.h"
+#include "Scene/Scene.h"
+#include "Scene/Model.h"
+#include "Scene/Material.h"
+#include "Resources/Mesh.h"
+#include "Resources/Shader.h"
+#include "LowLevel/Graphics.h"
 
 Scene::Scene()
 {

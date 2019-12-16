@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Sampler.h"
-#include "Graphics.h"
+#include "LowLevel/Graphics.h"
 
 Sampler::Sampler(Graphics& graphics)
 {
