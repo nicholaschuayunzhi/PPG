@@ -21,6 +21,8 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment( lib, "dxguid.lib")
+
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "assimp-vc142-mtd.lib")
 
@@ -47,4 +49,10 @@ inline DirectX::XMFLOAT2 XMFLOAT2Subtract(DirectX::XMFLOAT2 a, DirectX::XMFLOAT2
 {
     return { a.x - b.x,
              a.y - b.y };
+}
+
+inline void SetDebugName(ID3D11DeviceChild* child, const std::string& name)
+{
+    if (child != nullptr)
+        child->SetPrivateData(WKPDID_D3DDebugObjectName, name.size(), name.c_str());
 }

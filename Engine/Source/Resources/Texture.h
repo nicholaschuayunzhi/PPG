@@ -7,7 +7,7 @@ class Texture
 {
 public:
     Texture(LPCWSTR texturePath, Graphics& graphics);
-    Texture(int width, int height, Graphics& graphics);
+    Texture(int width, int height, Graphics& graphics, const std::string& name);
     Texture(Texture&& texture);
     ~Texture();
     void Use(ID3D11DeviceContext* deviceContext, UINT startSlot);

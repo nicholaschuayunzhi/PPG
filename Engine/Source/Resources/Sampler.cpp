@@ -21,6 +21,7 @@ Sampler::Sampler(Graphics& graphics)
     samplerDesc.MaxLOD = FLT_MAX;
 
     graphics.m_Device->CreateSamplerState(&samplerDesc, &m_Sampler);
+    SetDebugName(m_Sampler, "Sampler");
 }
 
 void Sampler::Use(ID3D11DeviceContext* deviceContext, UINT startSlot)

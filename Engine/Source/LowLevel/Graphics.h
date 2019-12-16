@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
-
+#include <atlbase.h>
+#include <combaseapi.h>
 using namespace DirectX;
 
 class Window;
@@ -18,6 +19,7 @@ public:
     void UpdateBuffer(ID3D11Buffer* buffer, const void* resource);
 
     ID3D11Device* m_Device = nullptr;
+    CComPtr<ID3D11Debug> m_Debug = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
     IDXGISwapChain* m_SwapChain = nullptr;
     // Render target view for the back buffer of the swap chain.

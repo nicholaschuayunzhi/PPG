@@ -55,6 +55,7 @@ Shader::Shader(LPCWSTR vertexPath, LPCWSTR pixelPath, Graphics& graphics)
 
 Shader::~Shader()
 {
+    SafeRelease(m_InputLayout);
     SafeRelease(m_VertexShader);
     SafeRelease(m_PixelShader);
 }

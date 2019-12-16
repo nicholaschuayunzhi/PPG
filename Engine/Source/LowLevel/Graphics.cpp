@@ -65,6 +65,12 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
         throw std::exception("Graphics::Failed to Create Device and Swap Chain");
     }
 
+    hr = m_Device->QueryInterface(IID_PPV_ARGS(&m_Debug));
+    if (FAILED(hr))
+    {
+        throw std::exception("Graphics::Failed to Create Debug");
+    }
+
     // Next initialize the back buffer of the swap chain and associate it to a
     // render target view.
     ID3D11Texture2D* backBuffer;
@@ -312,4 +318,8 @@ Graphics::~Graphics()
     SafeRelease(m_SwapChain);
     SafeRelease(m_DeviceContext);
     SafeRelease(m_Device);
+
+    if (m_Debug != nullptr)
+        m_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    m_Debug = nullptr;
 }

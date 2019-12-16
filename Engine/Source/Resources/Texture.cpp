@@ -42,14 +42,10 @@ Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
     {
         throw std::exception("Texture::Failed to create texture");
     }
-
-    // not required
-    m_Texture = nullptr;
-    m_TextureRTV = nullptr;
 }
 
 // Creates empty texture that can be used as a render target and shader resource
-Texture::Texture(int width, int height, Graphics& graphics)
+Texture::Texture(int width, int height, Graphics& graphics, const std::string& name)
 {
     D3D11_TEXTURE2D_DESC textureDesc;
     HRESULT result;
@@ -98,6 +94,9 @@ Texture::Texture(int width, int height, Graphics& graphics)
     {
         throw std::exception("Texture::Failed to create shader resource view");
     }
+    SetDebugName(m_Texture, name);
+    SetDebugName(m_TextureSRV, name + " SRV");
+    SetDebugName(m_TextureRTV, name + " RTV");
 }
 
 Texture::Texture(Texture&& texture)
