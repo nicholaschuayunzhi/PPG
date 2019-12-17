@@ -14,8 +14,8 @@
 class ModelLoader
 {
 private:
-    ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, SceneObject* parent);
-    void ProcessNode(aiNode* node, SceneObject* parent);
+    ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, Scene::ObjectIndex parentIndex);
+    void ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex);
     Texture* loadTexture(aiTextureType type, aiMaterial* mat);
     std::map<std::string, Texture*> m_TextureMap;
     Model* LoadModel();
@@ -24,32 +24,32 @@ private:
     Scene& m_Scene;
     Graphics& m_Graphics;
     std::string m_Directory;
+
     Model* m_Model;
-    SceneObject* m_RootParent = nullptr;
-    SceneObject* m_Root = nullptr;
+    Scene::ObjectIndex m_RootParentIndex;
+    Scene::ObjectIndex m_RootIndex;
 
     friend class Model;
 };
 
-ModelLoader::ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, SceneObject* parent) :
+ModelLoader::ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, Scene::ObjectIndex parentIndex) :
     m_AiScene(assimpScene),
     m_Scene(scene),
     m_Graphics(graphics),
     m_Directory(directory),
-    m_RootParent(parent)
+    m_RootParentIndex(parentIndex)
 {
     m_Model = new Model();
 }
 
-
 Model* ModelLoader::LoadModel()
 {
-    ProcessNode(m_AiScene->mRootNode, m_RootParent);
-    m_Model->m_Root = m_Root;
+    ProcessNode(m_AiScene->mRootNode, m_RootParentIndex);
+    m_Model->m_RootIndex = m_RootIndex;
     return m_Model;
 }
 
-void ModelLoader::ProcessNode(aiNode* node, SceneObject* parent)
+void ModelLoader::ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex)
 {
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
@@ -112,14 +112,14 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject* parent)
         }
         materialPtr->Update(m_Graphics);
         m_Model->m_Materials.push_back(materialPtr);
-        parent = m_Scene.CreateSceneObject("", meshPtr, materialPtr, parent);
-        if (m_Root == nullptr)
-            m_Root = parent;
+        parentIndex = m_Scene.CreateSceneObject("", meshPtr, materialPtr, parentIndex);
+        if (m_RootIndex == 0)
+            m_RootIndex = parentIndex;
     }
 
     for (UINT i = 0; i < node->mNumChildren; i++)
     {
-        ProcessNode(node->mChildren[i], parent);
+        ProcessNode(node->mChildren[i], parentIndex);
     }
 }
 
@@ -150,7 +150,7 @@ Texture* ModelLoader::loadTexture(aiTextureType type, aiMaterial* mat)
     return texture;
 }
 
-Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& graphics, SceneObject* parent /*= nullptr*/)
+Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& graphics, Scene::ObjectIndex parentIndex /*= 0*/)
 {
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(fileName,
@@ -163,7 +163,7 @@ Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& gra
     if (assimpScene == NULL)
         throw std::exception("ModelLoader::Model file not found");
     std::string directory = fileName.substr(0, fileName.find_last_of('\\') + 1);
-    ModelLoader ml = ModelLoader(assimpScene, scene, graphics, directory, parent);
+    ModelLoader ml = ModelLoader(assimpScene, scene, graphics, directory, parentIndex);
     Model* model = ml.LoadModel();
     return ml.m_Model;
 }

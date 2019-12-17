@@ -4,9 +4,10 @@
 
 Transform::Transform() :
     model(XMMatrixIdentity()),
+    localModel(XMMatrixIdentity()),
     position(XMVectorZero()),
     rotation(XMVectorZero()),
-    scale(0)
+    scale(1)
 {
     dirty = true;
 }
@@ -47,12 +48,23 @@ void Transform::Update(Graphics& graphics, ID3D11Buffer* buffer)
 
 XMMATRIX Transform::GetModel()
 {
+    return model;
+}
+
+XMMATRIX Transform::GetLocalModel()
+{
     if (dirty)
     {
-        model = XMMatrixMultiply(XMMatrixScaling(scale, scale, scale),
+        localModel = XMMatrixMultiply(XMMatrixScaling(scale, scale, scale),
             XMMatrixMultiply(XMMatrixRotationRollPitchYawFromVector(rotation),
                 XMMatrixTranslationFromVector(position)));
         dirty = false;
     }
-    return model;
+    return localModel;
 }
+
+void Transform::SetModel(XMMATRIX model)
+{
+    this->model = model;
+}
+

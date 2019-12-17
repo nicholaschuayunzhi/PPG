@@ -3,18 +3,18 @@
 
 #include "Resources/Mesh.h"
 #include "Resources/Texture.h"
+#include "Scene/Scene.h"
 
 class Graphics;
 class SceneObject;
-class Scene;
 class ModelLoader;
 
 class Model
 {
 public:
-    SceneObject* m_Root;
+    Scene::ObjectIndex m_RootIndex;
     ~Model();
-    static Model* LoadModelToScene(std::string fileName, Scene& Scene, Graphics& graphics, SceneObject* parent = nullptr);
+    static Model* LoadModelToScene(std::string fileName, Scene& Scene, Graphics& graphics, Scene::ObjectIndex parentIndex = 0);
 private:
     friend class ModelLoader;
     Model() = default;

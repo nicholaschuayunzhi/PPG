@@ -16,35 +16,39 @@ class Scene
 public:
     Scene();
     ~Scene();
+
+    using ObjectIndex = int;
     Camera camera;
     LightManager lightManager;
-    SceneObject* CreateSceneObject(std::string name, Mesh* mesh, Material* material, SceneObject* parent = nullptr);
+    ObjectIndex CreateSceneObject(const std::string& name, Mesh* mesh, Material* material, ObjectIndex parentIndex = 0);
+    SceneObject& GetSceneObjectByIndex(ObjectIndex index);
 
-    SceneObject* rootNode;
+    std::vector<SceneObject> m_Objects;
     void Start(Graphics& graphics);
     void Update(Graphics& graphics, Input input, float deltaTime);
     void UseModel(Graphics& graphics);
-    void UpdateModel(Graphics& graphics, XMMATRIX& model);
+    void UpdateModel(Graphics& graphics, const XMMATRIX& model);
 private:
-    ID3D11Buffer* modelBuffer;
+    void UpdateModelRecursive(SceneObject& obj, XMMATRIX model);
+    ID3D11Buffer* m_ModelBuffer;
 };
 
 class SceneObject
 {
 public:
-    ~SceneObject();
     SceneObject(SceneObject& copy) = delete;
     SceneObject(SceneObject&& obj) = default;
-    const SceneObject& m_Parent;
+    SceneObject& operator= (const SceneObject&) = delete;
+
+    std::string m_Name;
+    Transform m_Transform;
+    const Scene::ObjectIndex m_Index;
+    const Scene::ObjectIndex m_ParentIndex;
+    std::vector<Scene::ObjectIndex> m_ChildrenIndices;
 
     Mesh* m_Mesh = nullptr;
     Material* m_Material = nullptr;
-    Transform m_Transform;
-
-    std::vector<SceneObject*> m_Children;
-    std::string m_Name;
 private:
     friend class Scene;
-    SceneObject(std::string name, Mesh* mesh, Material* material, SceneObject& parent);
-    SceneObject(std::string name);
+    SceneObject(const std::string& name, Mesh* mesh, Material* material, Scene::ObjectIndex index,  Scene::ObjectIndex parentIndex);
 };

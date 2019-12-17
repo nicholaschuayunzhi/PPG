@@ -24,25 +24,15 @@ void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapT
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
     deviceContext->OMSetRenderTargets(1, &(shadowMapTexture.m_TextureRTV), graphics.m_DepthStencilView);
-    _Graphics = &graphics;
-    _Scene = &scene;
-    for (auto sceneObj : scene.rootNode->m_Children) // root node is empty
-        DrawSceneRecursive(*sceneObj, XMMatrixIdentity());
+
+    for (auto& sceneObj : scene.m_Objects)
+    {
+        if (sceneObj.m_Mesh == nullptr) continue;
+        scene.UpdateModel(graphics, sceneObj.m_Transform.GetModel());
+        sceneObj.m_Mesh->Draw(deviceContext);
+    }
+
     ID3D11RenderTargetView* pNullRTV = NULL;
     deviceContext->OMSetRenderTargets(1, &(graphics.m_RenderTargetView), graphics.m_DepthStencilView);
     graphics.Clear(DirectX::Colors::Transparent, 1.0f, 0);
-}
-
-void ShadowMapPass::DrawSceneRecursive(SceneObject& obj, XMMATRIX model)
-{
-    model = XMMatrixMultiply(obj.m_Transform.GetModel(), model);
-    _Scene->UpdateModel(*_Graphics, model);
-
-    auto devCon = _Graphics->m_DeviceContext;
-    obj.m_Mesh->Draw(devCon);
-
-    for (auto child : obj.m_Children)
-    {
-        DrawSceneRecursive(*child, model);
-    }
 }

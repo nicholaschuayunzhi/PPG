@@ -25,25 +25,13 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
     lightManager.m_OneShadowMapTexture->Use(deviceContext, 3);
 
-    _Graphics = &graphics;
-    _Scene = &scene;
-    for (auto sceneObj : scene.rootNode->m_Children) // root node is empty
-        DrawSceneRecursive(*sceneObj, XMMatrixIdentity());
+    for (auto& sceneObj : scene.m_Objects)
+    {
+        if (sceneObj.m_Mesh == nullptr) continue;
+        scene.UpdateModel(graphics, sceneObj.m_Transform.GetModel());
+        sceneObj.m_Material->Use(deviceContext);
+        sceneObj.m_Mesh->Draw(deviceContext);
+    }
 
     Texture::SetNullSrv(deviceContext, 3);
-}
-
-void ForwardPass::DrawSceneRecursive(SceneObject& obj, XMMATRIX model)
-{
-    model = XMMatrixMultiply(obj.m_Transform.GetModel(), model);
-    _Scene->UpdateModel(*_Graphics, model);
-
-    auto devCon = _Graphics->m_DeviceContext;
-    obj.m_Material->Use(devCon);
-    obj.m_Mesh->Draw(devCon);
-
-    for (auto child : obj.m_Children)
-    {
-        DrawSceneRecursive(*child, model);
-    }
 }

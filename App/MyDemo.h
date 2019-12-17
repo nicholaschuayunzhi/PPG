@@ -44,21 +44,24 @@ public:
             .AddLight(dirLight)
             .SetGlobalAmbient(XMFLOAT4(0, 0, 0, 0));
 
+        // Create scene objects before referencing..
         lightCube = scene.CreateSceneObject("LightCube", lightCubeMesh, &lightMaterial);
         plane = scene.CreateSceneObject("Plane", planeMesh, &planeMaterial);
         stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
 
-        lightCube->m_Transform
+        SceneObject& stormTrooperObj = scene.GetSceneObjectByIndex(stormtrooper->m_RootIndex);
+        SceneObject& lightCubeObj = scene.GetSceneObjectByIndex(lightCube);
+        SceneObject& planeObj = scene.GetSceneObjectByIndex(plane);
+        lightCubeObj.m_Transform
             .UniformScale(0.5);
 
-        plane->m_Transform
+        planeObj.m_Transform
             .SetPosition(0, -1, 0)
             .UniformScale(5);
 
-        stormtrooper->m_Root->m_Transform
+        stormTrooperObj.m_Transform
             .SetPosition(0, -1, 0)
-            .RotateEulerAngles(0.3, 0, 0)
-            .UniformScale(1);
+            .RotateEulerAngles(0.3, 0, 0);
 
         RECT& clientRect = graphics.m_ClientRect;
         ShadowMapRenderDesc desc;
@@ -79,16 +82,15 @@ public:
         static float phase = 0;
         phase += 90 * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
-        lightCube->m_Transform.SetPosition(2, 3, zDisplacement);
+        auto& lightCubeObj = scene.GetSceneObjectByIndex(lightCube);
+        lightCubeObj.m_Transform.SetPosition(-2, 3, zDisplacement);
 
         Light& pointLight = scene.lightManager.GetLight(0);
-        XMStoreFloat4(&(pointLight.m_Position), lightCube->m_Transform.position);
-        scene.lightManager.Update(graphics);
+        XMStoreFloat4(&(pointLight.m_Position), lightCubeObj.m_Transform.position);
 
         auto deviceContext = graphics.m_DeviceContext;
         sampler->Use(deviceContext, 0);
 
-        scene.lightManager.RenderAnyShadowMap(graphics, scene);
         scene.Update(graphics, input, deltaTime);
         forwardPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
@@ -120,8 +122,8 @@ private:
 
     Model* stormtrooper;
 
-    SceneObject* plane;
-    SceneObject* lightCube;
+    Scene::ObjectIndex plane;
+    Scene::ObjectIndex lightCube;
 
     std::unique_ptr<ForwardPass> forwardPass;
     std::unique_ptr<SkyboxPass> skyboxPass;

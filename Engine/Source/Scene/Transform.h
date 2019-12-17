@@ -20,7 +20,11 @@ public:
     Transform& UniformScale(float s);
     void Update(Graphics& graphics, ID3D11Buffer* buffer);
     XMMATRIX GetModel();
+    XMMATRIX GetLocalModel();
 private:
+    friend class Scene;
+    void SetModel(XMMATRIX model);
     float dirty;
     XMMATRIX model;
+    XMMATRIX localModel;
 };
