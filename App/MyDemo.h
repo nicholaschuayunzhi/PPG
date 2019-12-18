@@ -14,7 +14,7 @@ public:
         sampler = new Sampler(graphics);
 
         forwardPass = std::make_unique<ForwardPass>(graphics);
-        skyboxPass = std::make_unique<SkyboxPass>(graphics, L"Data\\skybox.dds");
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, L"Data\\sky.dds");
 
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
@@ -24,7 +24,7 @@ public:
             .UseNormalMap(brickNormalMap)
             .Update(graphics);
 
-        auto lightColour = XMFLOAT4(Colors::Orange);
+        auto lightColour = XMFLOAT4(Colors::White);
         Light pointLight;
         pointLight.m_Color = XMFLOAT4(DirectX::Colors::MediumPurple);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
@@ -36,7 +36,7 @@ public:
 
         Light dirLight;
         dirLight.m_Color = lightColour;
-        dirLight.m_Direction = XMFLOAT4(1, -1, -1, 0);
+        dirLight.m_Direction = XMFLOAT4(-1, -1, 1, 0);
         dirLight.m_LightType = LightType::DirectionalLight;
 
         scene.lightManager
