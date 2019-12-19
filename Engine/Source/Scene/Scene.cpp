@@ -12,16 +12,24 @@ Scene::Scene()
 Scene::~Scene()
 {
     SafeRelease(m_ModelBuffer);
+    SafeRelease(m_ViewBuffer);
+    SafeRelease(m_ProjBuffer);
 }
 
 void Scene::Start(Graphics& graphics)
 {
-    camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
     lightManager
-        .SetEyePosition(camera.m_EyePosition)
+        .SetEyePosition(m_MainCamera.m_EyePosition)
         .Update(graphics);
 
+    auto clientRect = graphics.m_ClientRect;
+    float clientWidth = static_cast<float>(clientRect.right - clientRect.left);
+    float clientHeight = static_cast<float>(clientRect.bottom - clientRect.top);
+    m_MainCamera.m_AspectRatio = clientWidth / clientHeight;
+
     m_ModelBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
+    m_ViewBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
+    m_ProjBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &XMMatrixIdentity());
 }
 
 void Scene::UpdateModelRecursive(SceneObject::Index idx, XMMATRIX model)
@@ -38,10 +46,8 @@ void Scene::Update(Graphics& graphics, Input input, float deltaTime)
     lightManager.Update(graphics);
     lightManager.RenderAnyShadowMap(graphics, *this);
 
-    camera.HandleMovement(input, deltaTime);
-    camera.UpdateView(graphics, camera.CalculateView());
-    camera.UpdateProjection(graphics, camera.CalculateProjection(graphics.m_ClientRect));
-    lightManager.SetEyePosition(camera.m_EyePosition);
+    m_MainCamera.HandleMovement(input, deltaTime);
+    lightManager.SetEyePosition(m_MainCamera.m_EyePosition);
 
     for (auto objIndex : m_Objects[0]->m_ChildrenIndices)
         UpdateModelRecursive(objIndex, XMMatrixIdentity());
@@ -56,6 +62,15 @@ void Scene::UseModel(Graphics& graphics)
 void Scene::UpdateModel(Graphics& graphics, const XMMATRIX& model)
 {
     graphics.UpdateBuffer(m_ModelBuffer, &model);
+}
+
+void Scene::UseCamera(Graphics& graphics, Camera& camera)
+{
+    graphics.UpdateBuffer(m_ViewBuffer, &(camera.CalculateView()));
+    graphics.UpdateBuffer(m_ProjBuffer, &(camera.CalculateProjection()));
+    auto deviceContext = graphics.m_DeviceContext;
+    deviceContext->VSSetConstantBuffers(1, 1, &m_ViewBuffer);
+    deviceContext->VSSetConstantBuffers(2, 1, &m_ProjBuffer);
 }
 
 std::shared_ptr<SceneObject> Scene::CreateSceneObject(const std::string& name, SceneObject::Index parentIndex /*= 0*/)

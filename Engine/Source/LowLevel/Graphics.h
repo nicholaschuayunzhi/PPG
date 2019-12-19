@@ -5,6 +5,7 @@
 using namespace DirectX;
 
 class Window;
+class Texture;
 
 class Graphics
 {
@@ -17,13 +18,15 @@ public:
 
     ID3D11Buffer* CreateBuffer(UINT byteWidth, UINT bindFlags, const void* data);
     void UpdateBuffer(ID3D11Buffer* buffer, const void* resource);
+    void SetRenderTarget(Texture& texture);
 
     ID3D11Device* m_Device = nullptr;
     CComPtr<ID3D11Debug> m_Debug = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
     IDXGISwapChain* m_SwapChain = nullptr;
-    // Render target view for the back buffer of the swap chain.
-    ID3D11RenderTargetView* m_RenderTargetView = nullptr;
+
+    std::unique_ptr<Texture> m_BackBuffer;
+
     // Depth/stencil view for use as a depth buffer.
     ID3D11DepthStencilView* m_DepthStencilView = nullptr;
     // A texture to associate to the depth stencil view.

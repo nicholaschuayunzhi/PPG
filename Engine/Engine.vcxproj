@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Passes\BlitPass.h" />
     <ClInclude Include="Source\Passes\ForwardPass.h" />
     <ClInclude Include="Source\Passes\ShadowMapPass.h" />
     <ClInclude Include="Source\Passes\SkyboxPass.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Source\LowLevel\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Passes\BlitPass.cpp" />
     <ClCompile Include="Source\Passes\ForwardPass.cpp" />
     <ClCompile Include="Source\Passes\ShadowMapPass.cpp" />
     <ClCompile Include="Source\Passes\SkyboxPass.cpp" />
@@ -212,6 +214,12 @@
     <Image Include="Data\skybox.dds" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shader\Blit.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="Shader\PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>

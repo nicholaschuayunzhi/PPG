@@ -13,16 +13,19 @@ ShadowMapPass::ShadowMapPass(Graphics& graphics)
 
 void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapTexture, ShadowMapRenderDesc& desc)
 {
-    XMMATRIX view = XMMatrixLookAtLH(desc.position, desc.focus, desc.up);
-    auto& camera = scene.camera;
-    camera.UpdateProjection(graphics, desc.projection);
-    camera.UpdateView(graphics, view);
+    OrthographicCamera shadowMapCamera;
+    shadowMapCamera.m_EyePosition = desc.m_EyePosition;
+    shadowMapCamera.m_LookAt = desc.m_LookAt;
+    shadowMapCamera.m_NearZ = desc.m_NearZ;
+    shadowMapCamera.m_FarZ = desc.m_FarZ;
+    shadowMapCamera.m_ViewHeight = desc.m_ViewHeight;
+    shadowMapCamera.m_ViewWidth = desc.m_ViewWidth;
 
     auto deviceContext = graphics.m_DeviceContext;
-    scene.camera.Use(deviceContext);
+    scene.UseCamera(graphics, shadowMapCamera);
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
-    deviceContext->OMSetRenderTargets(1, &(shadowMapTexture.m_TextureRTV), graphics.m_DepthStencilView);
+    graphics.SetRenderTarget(shadowMapTexture);
 
     for (auto sceneObj : scene.m_Objects)
     {
@@ -32,6 +35,6 @@ void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapT
     }
 
     ID3D11RenderTargetView* pNullRTV = NULL;
-    deviceContext->OMSetRenderTargets(1, &(graphics.m_RenderTargetView), graphics.m_DepthStencilView);
+    graphics.SetRenderTarget(*(graphics.m_BackBuffer.get()));
     graphics.Clear(DirectX::Colors::Transparent, 1.0f, 0);
 }

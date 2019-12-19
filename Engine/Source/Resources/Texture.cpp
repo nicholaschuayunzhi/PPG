@@ -58,7 +58,7 @@ Texture::Texture(int width, int height, Graphics& graphics, const std::string& n
     textureDesc.Height = height;
     textureDesc.MipLevels = 1;
     textureDesc.ArraySize = 1;
-    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     textureDesc.SampleDesc.Count = 1;
     textureDesc.Usage = D3D11_USAGE_DEFAULT;
     textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -96,6 +96,18 @@ Texture::Texture(int width, int height, Graphics& graphics, const std::string& n
     }
     SetDebugName(m_Texture, name);
     SetDebugName(m_TextureSRV, name + " SRV");
+    SetDebugName(m_TextureRTV, name + " RTV");
+}
+
+Texture::Texture(ID3D11Texture2D* texture, Graphics& graphics, const std::string& name) :
+    m_Texture(texture)
+{
+    HRESULT result = graphics.m_Device->CreateRenderTargetView(m_Texture, nullptr, &m_TextureRTV);
+    if (FAILED(result))
+    {
+        throw std::exception("Texture::Failed to create render target view");
+    }
+    SetDebugName(m_Texture, name);
     SetDebugName(m_TextureRTV, name + " RTV");
 }
 

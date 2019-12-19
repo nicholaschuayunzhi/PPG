@@ -2,23 +2,10 @@
 #include "Camera.h"
 #include "LowLevel/Graphics.h"
 
-Camera::~Camera()
-{
-    SafeRelease(m_ViewBuffer);
-    SafeRelease(m_ProjBuffer);
-}
-
-XMMATRIX Camera::CalculateProjection(RECT clientRect)
-{
-    float clientWidth = static_cast<float>(clientRect.right - clientRect.left);
-    float clientHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-
-    return XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), clientWidth / clientHeight, 0.1f, 200.0f);
-}
 
 XMMATRIX Camera::CalculateView()
 {
-    return XMMatrixLookAtLH(m_EyePosition, m_LookAt, UP);
+    return XMMatrixLookAtLH(m_EyePosition, m_LookAt, m_Up);
 }
 
 void Camera::HandleMovement(Input input, float deltaTime)
@@ -47,32 +34,13 @@ void Camera::HandleMovement(Input input, float deltaTime)
     m_LookAt = m_EyePosition + m_Forward;
 }
 
-void Camera::UpdateView(Graphics& graphics, XMMATRIX view)
+
+XMMATRIX PerspectiveCamera::CalculateProjection()
 {
-    if (m_ViewBuffer == nullptr)
-    {
-        m_ViewBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &view);
-    }
-    else
-    {
-        graphics.UpdateBuffer(m_ViewBuffer, &view);
-    }
+    return XMMatrixPerspectiveFovLH(XMConvertToRadians(m_FovY), m_AspectRatio, 0.1f, 200.0f);
 }
 
-void Camera::UpdateProjection(Graphics& graphics, XMMATRIX proj)
+XMMATRIX OrthographicCamera::CalculateProjection()
 {
-    if (m_ProjBuffer == nullptr)
-    {
-        m_ProjBuffer = graphics.CreateBuffer(sizeof(XMMATRIX), D3D11_BIND_CONSTANT_BUFFER, &proj);
-    }
-    else
-    {
-        graphics.UpdateBuffer(m_ProjBuffer, &proj);
-    }
-}
-
-void Camera::Use(ID3D11DeviceContext* deviceContext)
-{
-    deviceContext->VSSetConstantBuffers(1, 1, &m_ViewBuffer);
-    deviceContext->VSSetConstantBuffers(2, 1, &m_ProjBuffer);
+    return XMMatrixOrthographicLH(m_ViewWidth, m_ViewHeight, m_NearZ, m_FarZ);
 }

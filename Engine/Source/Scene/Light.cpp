@@ -4,6 +4,7 @@
 #include "Resources/Texture.h"
 #include "Passes/ShadowMapPass.h"
 #include "Resources/Shader.h"
+#include "Scene/Camera.h"
 
 LightManager::~LightManager()
 {
@@ -88,16 +89,24 @@ void LightManager::SetLightWithShadows(Graphics& graphics, unsigned int index, S
 
     light.m_Status = LightStatus::Static_Shadows;
 
+    OrthographicCamera shadowMapCamera;
+    shadowMapCamera.m_EyePosition = desc.m_EyePosition;
+    shadowMapCamera.m_LookAt = desc.m_LookAt;
+    shadowMapCamera.m_NearZ = desc.m_NearZ;
+    shadowMapCamera.m_FarZ = desc.m_FarZ;
+    shadowMapCamera.m_ViewHeight = desc.m_ViewHeight;
+    shadowMapCamera.m_ViewWidth = desc.m_ViewWidth;
+
     RECT& clientRect = graphics.m_ClientRect;
-    ShadowMapConstant shadowMapConstant = {
-         desc.textureWidth,
-         desc.textureHeight,
-         XMMatrixMultiply(desc.view, desc.projection)
+       ShadowMapConstant shadowMapConstant = {
+         desc.m_TextureWidth,
+         desc.m_TextureHeight,
+         XMMatrixMultiply(shadowMapCamera.CalculateView(), shadowMapCamera.CalculateProjection())
     };
     m_OneShadowMapDesc = desc;
     m_OneShadowMapCBuffer = graphics.CreateBuffer(sizeof(ShadowMapConstant), D3D11_BIND_CONSTANT_BUFFER, &shadowMapConstant);
     m_ShadowMapPass = std::make_unique<ShadowMapPass>(graphics);
-    m_OneShadowMapTexture = std::make_unique<Texture>(desc.textureWidth, desc.textureHeight, graphics, "Shadow Map");
+    m_OneShadowMapTexture = std::make_unique<Texture>(desc.m_TextureWidth, desc.m_TextureHeight, graphics, "Shadow Map");
     hasLightWithShadows = true;
 }
 

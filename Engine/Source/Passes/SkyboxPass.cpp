@@ -6,7 +6,8 @@
 #include "Resources/Texture.h"
 #include "Resources/Shader.h"
 
-SkyboxPass::SkyboxPass(Graphics& graphics, LPCWSTR fileName, float size /*=50*/)
+SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, LPCWSTR fileName, float size /*=50*/) :
+    m_RenderTarget(renderTarget)
 {
     std::vector<WORD> skyboxIndices =
     {
@@ -26,11 +27,12 @@ SkyboxPass::SkyboxPass(Graphics& graphics, LPCWSTR fileName, float size /*=50*/)
 
 void SkyboxPass::Render(Graphics& graphics, Scene& scene)
 {
+    graphics.SetRenderTarget(m_RenderTarget);
     auto deviceContext = graphics.m_DeviceContext;
-    scene.camera.Use(deviceContext);
+    scene.UseCamera(graphics, scene.m_MainCamera);
     scene.UseModel(graphics);
 
-    auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.camera.m_EyePosition));
+    auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.m_MainCamera.m_EyePosition));
     shader->Use(deviceContext);
     scene.UpdateModel(graphics, model);
     skyboxTexture->Use(deviceContext, 0);

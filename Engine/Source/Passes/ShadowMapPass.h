@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Resources/Shader.h"
+#include "Scene/Camera.h"
 
 using namespace DirectX;
 
@@ -17,17 +18,14 @@ _declspec(align(16)) struct ShadowMapConstant
 
 struct ShadowMapRenderDesc
 {
-    XMVECTOR position;
-    XMVECTOR focus;
-    XMVECTOR up = XMVectorSet(0, 1, 0, 1);
-    XMMATRIX projection;
-    XMMATRIX view;
-    float textureWidth;
-    float textureHeight;
-    inline XMMATRIX CalculateView()
-    {
-        return XMMatrixLookAtLH(position, focus, up);
-    }
+    XMVECTOR m_EyePosition;
+    XMVECTOR m_LookAt;
+    float m_NearZ = 0.1;
+    float m_FarZ = 200;
+    float m_ViewWidth = 1;
+    float m_ViewHeight = 1;
+    float m_TextureWidth;
+    float m_TextureHeight;
 };
 
 class ShadowMapPass

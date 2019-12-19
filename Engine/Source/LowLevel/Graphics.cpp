@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "LowLevel/Graphics.h"
+#include "Resources/Texture.h"
 
 using namespace DirectX;
 
@@ -80,13 +81,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
         throw std::exception("Graphics::Failed to Get Back Buffer");
     }
 
-    hr = m_Device->CreateRenderTargetView(backBuffer, nullptr, &m_RenderTargetView);
-    if (FAILED(hr))
-    {
-        throw std::exception("Graphics::Failed to Create Back Buffer RTV");
-    }
-
-    SafeRelease(backBuffer);
+    m_BackBuffer = std::make_unique<Texture>(backBuffer, *this, "Back Buffer");
 
     // Create the depth buffer for use with the depth/stencil view.
     D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
@@ -191,11 +186,16 @@ void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
     m_DeviceContext->UpdateSubresource(buffer, 0, nullptr, resource, 0, 0);
 }
 
+void Graphics::SetRenderTarget(Texture& texture)
+{
+    m_DeviceContext->OMSetRenderTargets(1, &(texture.m_TextureRTV), m_DepthStencilView);
+}
+
 void Graphics::SetUp()
 {
     m_DeviceContext->RSSetState(m_RasterizerState);
     m_DeviceContext->RSSetViewports(1, &m_Viewport);
-    m_DeviceContext->OMSetRenderTargets(1, &m_RenderTargetView, m_DepthStencilView);
+    SetRenderTarget(*(m_BackBuffer.get()));
     m_DeviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
 }
 
@@ -213,7 +213,7 @@ void Graphics::Present()
 
 void Graphics::Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearStencil)
 {
-    m_DeviceContext->ClearRenderTargetView(m_RenderTargetView, clearColor);
+    m_DeviceContext->ClearRenderTargetView(m_BackBuffer->m_TextureRTV, clearColor);
     m_DeviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
 }
 
@@ -311,7 +311,6 @@ DXGI_RATIONAL Graphics::QueryRefreshRate(UINT screenWidth, UINT screenHeight, BO
 Graphics::~Graphics()
 {
     SafeRelease(m_DepthStencilView);
-    SafeRelease(m_RenderTargetView);
     SafeRelease(m_DepthStencilBuffer);
     SafeRelease(m_DepthStencilState);
     SafeRelease(m_RasterizerState);

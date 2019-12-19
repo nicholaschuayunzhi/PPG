@@ -8,9 +8,15 @@ public:
     void Start(Graphics& graphics) override
     {
         // Rendering Stuff
+        auto& clientRect = graphics.m_ClientRect;
+        unsigned int clientWidth = clientRect .right - clientRect.left;
+        unsigned int clientHeight = clientRect.bottom - clientRect.top;
+        colour = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Colour");
         sampler = new Sampler(graphics);
-        forwardPass = std::make_unique<ForwardPass>(graphics);
-        skyboxPass = std::make_unique<SkyboxPass>(graphics, L"Data\\sky.dds");
+        auto& colourTexture = *(colour.get());
+        forwardPass = std::make_unique<ForwardPass>(graphics, colourTexture);
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
+        blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
 
         // Lighting
         auto lightColour = XMFLOAT4(Colors::White);
@@ -29,15 +35,15 @@ public:
             .AddLight(dirLight)
             .SetGlobalAmbient(XMFLOAT4(0, 0, 0, 0));
 
-        RECT& clientRect = graphics.m_ClientRect;
         ShadowMapRenderDesc desc;
-        desc.position = XMLoadFloat4(&(scene.lightManager.GetLight(1).m_Direction));
-        desc.position *= -5;
-        desc.focus = XMVectorSet(0, 0, 0, 1);
-        desc.projection = XMMatrixOrthographicLH(16, 12, 1.0f, 20.0f);
-        desc.view = desc.CalculateView();
-        desc.textureWidth = clientRect.right - clientRect.left;
-        desc.textureHeight = clientRect.bottom - clientRect.top;
+        desc.m_EyePosition = XMLoadFloat4(&(scene.lightManager.GetLight(1).m_Direction)) * -5;
+        desc.m_LookAt = XMVectorSet(0, 0, 0, 1);
+        desc.m_ViewWidth = 16;
+        desc.m_ViewHeight = 12;
+        desc.m_NearZ = 1;
+        desc.m_FarZ = 20;
+        desc.m_TextureWidth = clientRect.right - clientRect.left;
+        desc.m_TextureHeight = clientRect.bottom - clientRect.top;
         scene.lightManager.SetLightWithShadows(graphics, 1, desc);
 
         // Objects
@@ -76,6 +82,7 @@ public:
             .SetPosition(0, -1, 0)
             .RotateEulerAngles(0.3, 0, 0);
 
+
         scene.Start(graphics);
     }
 
@@ -95,6 +102,7 @@ public:
         scene.Update(graphics, input, deltaTime);
         forwardPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
+        blitPass->Render(graphics, scene);
     }
 
     void End()
@@ -128,4 +136,6 @@ private:
 
     std::unique_ptr<ForwardPass> forwardPass;
     std::unique_ptr<SkyboxPass> skyboxPass;
+    std::unique_ptr<BlitPass> blitPass;
+    std::unique_ptr<Texture> colour;
 };

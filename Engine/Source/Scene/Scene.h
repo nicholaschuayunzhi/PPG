@@ -14,7 +14,7 @@ class Scene
 public:
     Scene();
     ~Scene();
-    Camera camera;
+    PerspectiveCamera m_MainCamera;
     LightManager lightManager;
     std::shared_ptr<SceneObject> CreateSceneObject(const std::string& name, SceneObject::Index parentIndex = 0);
     std::shared_ptr<SceneObject> GetSceneObjectByIndex(SceneObject::Index index);
@@ -23,9 +23,12 @@ public:
     void Update(Graphics& graphics, Input input, float deltaTime);
     void UseModel(Graphics& graphics);
     void UpdateModel(Graphics& graphics, const XMMATRIX& model);
+    void UseCamera(Graphics& graphics, Camera& camera);
 private:
     void UpdateModelRecursive(SceneObject::Index objIdx, XMMATRIX model);
     ID3D11Buffer* m_ModelBuffer;
+    ID3D11Buffer* m_ViewBuffer;
+    ID3D11Buffer* m_ProjBuffer;
 };
 
 

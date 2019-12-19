@@ -8,7 +8,8 @@
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
 
-ForwardPass::ForwardPass(Graphics& graphics)
+ForwardPass::ForwardPass(Graphics& graphics, Texture& renderTarget) :
+    m_RenderTarget(renderTarget)
 {
     shader = std::make_unique<Shader>(L"VertexShader.cso", L"PixelShader.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(MaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
@@ -21,10 +22,10 @@ ForwardPass::~ForwardPass()
 
 void ForwardPass::Render(Graphics& graphics, Scene& scene)
 {
+    graphics.SetRenderTarget(m_RenderTarget);
     auto deviceContext = graphics.m_DeviceContext;
-    scene.camera.Use(deviceContext);
+    scene.UseCamera(graphics, scene.m_MainCamera);
     scene.lightManager.Use(deviceContext, 1); // should be linked to material + shader
-
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
     auto& lightManager = scene.lightManager;

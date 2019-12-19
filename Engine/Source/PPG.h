@@ -14,6 +14,6 @@
 #include "Resources/Sampler.h"
 #include "Resources/Shader.h"
 
-
 #include "Passes/ForwardPass.h"
 #include "Passes/SkyboxPass.h"
+#include "Passes/BlitPass.h"
