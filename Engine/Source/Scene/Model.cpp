@@ -8,14 +8,14 @@
 #include "LowLevel/Graphics.h"
 #include "Resources/Mesh.h"
 #include "Resources/Texture.h"
-#include "Scene/Material.h"
+#include "Scene/Material/Material.h"
 #include "Scene/Scene.h"
 
 class ModelLoader
 {
 private:
-    ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, Scene::ObjectIndex parentIndex);
-    void ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex);
+    ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, SceneObject::Index parentIndex);
+    void ProcessNode(aiNode* node, SceneObject::Index parentIndex);
     Texture* loadTexture(aiTextureType type, aiMaterial* mat);
     std::map<std::string, Texture*> m_TextureMap;
     Model* LoadModel();
@@ -26,13 +26,13 @@ private:
     std::string m_Directory;
 
     Model* m_Model;
-    Scene::ObjectIndex m_RootParentIndex;
-    Scene::ObjectIndex m_RootIndex;
+    SceneObject::Index m_RootParentIndex;
+    SceneObject::Index m_RootIndex;
 
     friend class Model;
 };
 
-ModelLoader::ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, Scene::ObjectIndex parentIndex) :
+ModelLoader::ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& graphics, std::string& directory, SceneObject::Index parentIndex) :
     m_AiScene(assimpScene),
     m_Scene(scene),
     m_Graphics(graphics),
@@ -49,7 +49,7 @@ Model* ModelLoader::LoadModel()
     return m_Model;
 }
 
-void ModelLoader::ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex)
+void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
 {
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
@@ -92,7 +92,7 @@ void ModelLoader::ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex)
         Mesh* meshPtr = new Mesh(vertices, indices, m_Graphics, false);
         m_Model->m_Meshes.push_back(meshPtr);
 
-        Material* materialPtr = new Material();
+        PhongMaterial* materialPtr = new PhongMaterial();
         if (mesh->mMaterialIndex >= 0)
         {
             aiMaterial* mat = m_AiScene->mMaterials[mesh->mMaterialIndex];
@@ -110,9 +110,13 @@ void ModelLoader::ProcessNode(aiNode* node, Scene::ObjectIndex parentIndex)
                 .SetDiffuse(1, 0, 1)
                 .SetSpecular(1, 0, 1);
         }
-        materialPtr->Update(m_Graphics);
         m_Model->m_Materials.push_back(materialPtr);
-        parentIndex = m_Scene.CreateSceneObject("", meshPtr, materialPtr, parentIndex);
+        auto object = m_Scene.CreateSceneObject("", parentIndex);
+        parentIndex = object->m_Index;
+        auto& meshRenderer = object->m_MeshRenderer;
+        meshRenderer.m_Material = materialPtr;
+        meshRenderer.m_Mesh = meshPtr;
+        meshRenderer.m_IsEnabled = true;
         if (m_RootIndex == 0)
             m_RootIndex = parentIndex;
     }
@@ -150,7 +154,7 @@ Texture* ModelLoader::loadTexture(aiTextureType type, aiMaterial* mat)
     return texture;
 }
 
-Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& graphics, Scene::ObjectIndex parentIndex /*= 0*/)
+Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& graphics, SceneObject::Index parentIndex /*= 0*/)
 {
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(fileName,
@@ -173,7 +177,7 @@ Model::~Model()
     for (Mesh* mesh : m_Meshes)
         delete mesh;
 
-    for (Material* mat : m_Materials)
+    for (PhongMaterial* mat : m_Materials)
         delete mat;
 
     for (Texture* tex : m_Textures)

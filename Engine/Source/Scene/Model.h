@@ -12,13 +12,13 @@ class ModelLoader;
 class Model
 {
 public:
-    Scene::ObjectIndex m_RootIndex;
+    SceneObject::Index m_RootIndex;
     ~Model();
-    static Model* LoadModelToScene(std::string fileName, Scene& Scene, Graphics& graphics, Scene::ObjectIndex parentIndex = 0);
+    static Model* LoadModelToScene(std::string fileName, Scene& Scene, Graphics& graphics, SceneObject::Index parentIndex = 0);
 private:
     friend class ModelLoader;
     Model() = default;
     std::vector<Mesh*> m_Meshes;
-    std::vector<Material*> m_Materials;
+    std::vector<PhongMaterial*> m_Materials;
     std::vector<Texture*> m_Textures;
 };

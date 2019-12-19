@@ -28,7 +28,7 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
 {
     auto deviceContext = graphics.m_DeviceContext;
     scene.camera.Use(deviceContext);
-    scene.UseModel(graphics); // not so good...
+    scene.UseModel(graphics);
 
     auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.camera.m_EyePosition));
     shader->Use(deviceContext);

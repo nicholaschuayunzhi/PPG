@@ -3,12 +3,10 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Transform.h"
+#include "SceneObject.h"
 
 class Mesh;
-class Shader;
-class Texture;
-class Material;
-class SceneObject;
+class PhongMaterial;
 class Graphics;
 
 class Scene
@@ -16,39 +14,18 @@ class Scene
 public:
     Scene();
     ~Scene();
-
-    using ObjectIndex = int;
     Camera camera;
     LightManager lightManager;
-    ObjectIndex CreateSceneObject(const std::string& name, Mesh* mesh, Material* material, ObjectIndex parentIndex = 0);
-    SceneObject& GetSceneObjectByIndex(ObjectIndex index);
-
-    std::vector<SceneObject> m_Objects;
+    std::shared_ptr<SceneObject> CreateSceneObject(const std::string& name, SceneObject::Index parentIndex = 0);
+    std::shared_ptr<SceneObject> GetSceneObjectByIndex(SceneObject::Index index);
+    std::vector<std::shared_ptr<SceneObject>> m_Objects;
     void Start(Graphics& graphics);
     void Update(Graphics& graphics, Input input, float deltaTime);
     void UseModel(Graphics& graphics);
     void UpdateModel(Graphics& graphics, const XMMATRIX& model);
 private:
-    void UpdateModelRecursive(SceneObject& obj, XMMATRIX model);
+    void UpdateModelRecursive(SceneObject::Index objIdx, XMMATRIX model);
     ID3D11Buffer* m_ModelBuffer;
 };
 
-class SceneObject
-{
-public:
-    SceneObject(SceneObject& copy) = delete;
-    SceneObject(SceneObject&& obj) = default;
-    SceneObject& operator= (const SceneObject&) = delete;
 
-    std::string m_Name;
-    Transform m_Transform;
-    const Scene::ObjectIndex m_Index;
-    const Scene::ObjectIndex m_ParentIndex;
-    std::vector<Scene::ObjectIndex> m_ChildrenIndices;
-
-    Mesh* m_Mesh = nullptr;
-    Material* m_Material = nullptr;
-private:
-    friend class Scene;
-    SceneObject(const std::string& name, Mesh* mesh, Material* material, Scene::ObjectIndex index,  Scene::ObjectIndex parentIndex);
-};

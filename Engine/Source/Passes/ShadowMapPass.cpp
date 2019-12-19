@@ -2,7 +2,6 @@
 #include "ShadowMapPass.h"
 #include "LowLevel/Graphics.h"
 #include "Scene/Scene.h"
-#include "Scene/Material.h"
 #include "Resources/Mesh.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
@@ -25,11 +24,11 @@ void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapT
     shader->Use(deviceContext);
     deviceContext->OMSetRenderTargets(1, &(shadowMapTexture.m_TextureRTV), graphics.m_DepthStencilView);
 
-    for (auto& sceneObj : scene.m_Objects)
+    for (auto sceneObj : scene.m_Objects)
     {
-        if (sceneObj.m_Mesh == nullptr) continue;
-        scene.UpdateModel(graphics, sceneObj.m_Transform.GetModel());
-        sceneObj.m_Mesh->Draw(deviceContext);
+        if (!sceneObj->m_MeshRenderer.m_IsEnabled) continue;
+        scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
+        sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }
 
     ID3D11RenderTargetView* pNullRTV = NULL;

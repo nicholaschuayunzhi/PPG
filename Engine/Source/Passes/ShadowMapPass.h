@@ -1,13 +1,12 @@
 #pragma once
 #include "stdafx.h"
+#include "Resources/Shader.h"
 
 using namespace DirectX;
 
-class Shader;
 class Graphics;
 class Texture;
 class Scene;
-class SceneObject;
 
 _declspec(align(16)) struct ShadowMapConstant
 {

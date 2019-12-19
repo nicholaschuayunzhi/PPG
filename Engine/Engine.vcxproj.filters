@@ -42,9 +42,6 @@
     <ClInclude Include="Source\Scene\Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Scene\Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LowLevel\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,6 +72,18 @@
     <ClInclude Include="Source\Demo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Scene\Material\PhongMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Material\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\SceneObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Component\Rendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\stdafx.cpp">
@@ -101,9 +110,6 @@
     <ClCompile Include="Source\Scene\Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Scene\Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LowLevel\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -126,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Scene\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\Material\PhongMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\SceneObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -160,14 +160,17 @@
     <ClInclude Include="Source\Demo.h" />
     <ClInclude Include="Source\LowLevel\Graphics.h" />
     <ClInclude Include="Source\LowLevel\Input.h" />
+    <ClInclude Include="Source\Scene\Component\Rendering.h" />
     <ClInclude Include="Source\Scene\Light.h" />
-    <ClInclude Include="Source\Scene\Material.h" />
     <ClInclude Include="Source\Resources\Mesh.h" />
+    <ClInclude Include="Source\Scene\Material\Material.h" />
+    <ClInclude Include="Source\Scene\Material\PhongMaterial.h" />
     <ClInclude Include="Source\Scene\Model.h" />
     <ClInclude Include="Source\PPG.h" />
     <ClInclude Include="Source\Resources\Sampler.h" />
     <ClInclude Include="Source\Scene\Scene.h" />
     <ClInclude Include="Source\Resources\Shader.h" />
+    <ClInclude Include="Source\Scene\SceneObject.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\Resources\Texture.h" />
     <ClInclude Include="Source\Scene\Transform.h" />
@@ -181,12 +184,13 @@
     <ClCompile Include="Source\Scene\Camera.cpp" />
     <ClCompile Include="Source\LowLevel\Graphics.cpp" />
     <ClCompile Include="Source\Scene\Light.cpp" />
-    <ClCompile Include="Source\Scene\Material.cpp" />
     <ClCompile Include="Source\Resources\Mesh.cpp" />
+    <ClCompile Include="Source\Scene\Material\PhongMaterial.cpp" />
     <ClCompile Include="Source\Scene\Model.cpp" />
     <ClCompile Include="Source\Resources\Sampler.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
     <ClCompile Include="Source\Resources\Shader.cpp" />
+    <ClCompile Include="Source\Scene\SceneObject.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
