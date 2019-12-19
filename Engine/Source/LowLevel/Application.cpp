@@ -50,7 +50,7 @@ int Application::Run(Demo& demo)
                 input.deltaMouseY = (cursorPos.y - prevMouseY) / 500.0f;
             }
 
-            m_Graphics.Clear(Colors::CornflowerBlue, 1.0f, 0);
+            m_Graphics.Clear(Colors::Transparent, 1.0f, 0);
             demo.Update(m_Graphics, input, deltaTime);
             m_Graphics.Present();
 

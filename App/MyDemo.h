@@ -16,6 +16,7 @@ public:
         auto& colourTexture = *(colour.get());
         forwardPass = std::make_unique<ForwardPass>(graphics, colourTexture);
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
+        spritePass = std::make_unique<SpritePass>(graphics, colourTexture);
         blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
 
         // Lighting
@@ -47,24 +48,46 @@ public:
         scene.lightManager.SetLightWithShadows(graphics, 1, desc);
 
         // Objects
-        lightCube = scene.CreateSceneObject("LightCube");
-        lightCube->m_Transform
+        lightBulb = scene.CreateSceneObject("Light Bulb");
+        lightBulbTex = std::make_unique<Texture>(L"Data\\bulb.png", graphics);
+        lightBulb->m_Transform
+            .RotateEulerAngles(-0.5 * 3.142, 0, 0)
             .UniformScale(0.5);
-        lightCubeMesh = new Mesh(CubeVertices(), CubeIndices(), graphics);
-        lightMaterial
-            .SetEmissive(pointLight.m_Color.x, pointLight.m_Color.y, pointLight.m_Color.z);
-        auto& lightCubeMeshRenderer = lightCube->m_MeshRenderer;
-        lightCubeMeshRenderer.m_Mesh = lightCubeMesh;
-        lightCubeMeshRenderer.m_Material = &lightMaterial;
-        lightCubeMeshRenderer.m_IsEnabled = true;
+        auto& spriteRenderer = lightBulb->m_SpriteRenderer;
+        spriteRenderer.m_Sprite = lightBulbTex.get();
+        spriteRenderer.m_IsEnabled = true;
 
-        plane = scene.CreateSceneObject("Plane");
+        auto cube = scene.CreateSceneObject("Cube");
+        cubeMesh = new Mesh(CubeVertices(), CubeIndices(), graphics);
+        cubeMaterial
+            .SetEmissive(0.0, 0.5, 0.8);
+        auto& cubeMeshRenderer = cube->m_MeshRenderer;
+        cubeMeshRenderer.m_Mesh = cubeMesh;
+        cubeMeshRenderer.m_Material = &cubeMaterial;
+        cubeMeshRenderer.m_IsEnabled = true;
+        cube->m_Transform
+            .UniformScale(0.5)
+            .RotateEulerAngles(0, 0.2, 0)
+            .SetPosition(2, -0.5, -2);
+
+        auto arrow = scene.CreateSceneObject("Arrow", cube->m_Index);
+        arrowTex = std::make_unique<Texture>(L"Data\\down-arrow.png", graphics);
+        auto& arrowSpriteRenderer = arrow->m_SpriteRenderer;
+        arrowSpriteRenderer.m_Sprite = arrowTex.get();
+        arrowSpriteRenderer.m_IsEnabled = true;
+        arrow->m_Transform
+            .RotateEulerAngles(-0.5 * 3.142, 0, 0)
+            .UniformScale(0.5)
+            .SetPosition(0, 2, 0);
+
+        auto plane = scene.CreateSceneObject("Plane");
         plane->m_Transform
             .SetPosition(0, -1, 0)
             .UniformScale(5);
         planeMesh = new Mesh(QuadVertices(), QuadIndices(), graphics);
         brickTexture = new Texture(L"Data\\Brick_Wall_014_COLOR.jpg", graphics);
         brickNormalMap = new Texture(L"Data\\Brick_Wall_014_NORM.jpg", graphics);
+
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
             .SetSpecular(0.5, 0.5, 0.5)
@@ -79,9 +102,7 @@ public:
         stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
         auto stormTrooperObj = scene.GetSceneObjectByIndex(stormtrooper->m_RootIndex);
         stormTrooperObj->m_Transform
-            .SetPosition(0, -1, 0)
-            .RotateEulerAngles(0.3, 0, 0);
-
+            .SetPosition(0, -1, 0);
 
         scene.Start(graphics);
     }
@@ -91,24 +112,26 @@ public:
         static float phase = 0;
         phase += 90 * deltaTime;
         float zDisplacement = 3 * sin(XMConvertToRadians(phase));
-        lightCube->m_Transform.SetPosition(-2, 3, zDisplacement);
+        lightBulb->m_Transform.SetPosition(-2, 3, zDisplacement);
 
         Light& pointLight = scene.lightManager.GetLight(0);
-        XMStoreFloat4(&(pointLight.m_Position), lightCube->m_Transform.position);
+        XMStoreFloat4(&(pointLight.m_Position), lightBulb->m_Transform.position);
 
         auto deviceContext = graphics.m_DeviceContext;
+
         sampler->Use(deviceContext, 0);
 
         scene.Update(graphics, input, deltaTime);
         forwardPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
+        spritePass->Render(graphics, scene);
         blitPass->Render(graphics, scene);
     }
 
     void End()
     {
         if (planeMesh) delete planeMesh;
-        if (lightCubeMesh) delete lightCubeMesh;
+        if (cubeMesh) delete cubeMesh;
         if (brickTexture) delete brickTexture;
         if (brickNormalMap) delete brickNormalMap;
         if (sampler) delete sampler;
@@ -120,22 +143,24 @@ private:
 
     Texture* brickTexture;
     Texture* brickNormalMap;
+    std::unique_ptr<Texture> lightBulbTex;
+    std::unique_ptr<Texture> arrowTex;
 
     Sampler* sampler;
 
     PhongMaterial planeMaterial;
     Mesh* planeMesh;
 
-    Mesh* lightCubeMesh;
-    PhongMaterial lightMaterial;
+    Mesh* cubeMesh;
+    PhongMaterial cubeMaterial;
 
     Model* stormtrooper;
 
-    std::shared_ptr<SceneObject> plane;
-    std::shared_ptr<SceneObject> lightCube;
+    std::shared_ptr<SceneObject> lightBulb;
 
     std::unique_ptr<ForwardPass> forwardPass;
     std::unique_ptr<SkyboxPass> skyboxPass;
     std::unique_ptr<BlitPass> blitPass;
+    std::unique_ptr<SpritePass> spritePass;
     std::unique_ptr<Texture> colour;
 };

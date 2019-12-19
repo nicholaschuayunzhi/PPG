@@ -2,6 +2,7 @@
 
 class Mesh;
 class PhongMaterial;
+class Texture;
 
 struct Component
 {
@@ -12,4 +13,9 @@ struct MeshRenderer : public Component
 {
     PhongMaterial* m_Material;
     Mesh* m_Mesh;
+};
+
+struct SpriteRenderer : public Component
+{
+    Texture* m_Sprite;
 };

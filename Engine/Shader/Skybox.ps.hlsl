@@ -9,5 +9,5 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
-    return SkyboxTexture.Sample(Sampler, IN.texCoord);
+    return float4(SkyboxTexture.Sample(Sampler, IN.texCoord).rgb, 1);
 }

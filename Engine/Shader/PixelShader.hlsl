@@ -173,8 +173,9 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
       float4 finalDiffuse = useDiffuse ? Diffuse.Sample(Sampler, IN.texCoord) : matDiffuse;
       float4 finalSpecular = useSpecular ? Specular.Sample(Sampler, IN.texCoord) : matSpecular;
-      return matEmissive +
+      float4 final = matEmissive +
           matAmbient * saturate(globalAmbient) +
           finalDiffuse * saturate(diffuse) +
           finalSpecular * saturate(specular);
+    return float4(final.rgb, 1);
 }

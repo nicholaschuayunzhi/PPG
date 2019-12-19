@@ -22,6 +22,7 @@ ForwardPass::~ForwardPass()
 
 void ForwardPass::Render(Graphics& graphics, Scene& scene)
 {
+    graphics.ClearRTV(m_RenderTarget.m_TextureRTV, Colors::Transparent);
     graphics.SetRenderTarget(m_RenderTarget);
     auto deviceContext = graphics.m_DeviceContext;
     scene.UseCamera(graphics, scene.m_MainCamera);

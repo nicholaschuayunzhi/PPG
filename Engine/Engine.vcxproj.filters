@@ -87,6 +87,9 @@
     <ClInclude Include="Source\Passes\BlitPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Passes\SpritePass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\stdafx.cpp">
@@ -146,6 +149,9 @@
     <ClCompile Include="Source\Passes\BlitPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Passes\SpritePass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Data\Brick_Wall_014_COLOR.jpg">
@@ -171,5 +177,6 @@
     <FxCompile Include="Shader\Skybox.vs.hlsl" />
     <FxCompile Include="Shader\VertexShader.hlsl" />
     <FxCompile Include="Shader\Blit.ps.hlsl" />
+    <FxCompile Include="Shader\Sprite.ps.hlsl" />
   </ItemGroup>
 </Project>

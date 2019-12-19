@@ -23,6 +23,8 @@ public:
     std::vector<Index> m_ChildrenIndices;
 
     MeshRenderer m_MeshRenderer;
+    SpriteRenderer m_SpriteRenderer;
+
 private:
     friend class Scene;
 };

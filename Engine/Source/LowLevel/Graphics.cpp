@@ -149,6 +149,18 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     m_Viewport.TopLeftY = 0.0f;
     m_Viewport.MinDepth = 0.0f;
     m_Viewport.MaxDepth = 1.0f;
+
+    D3D11_BLEND_DESC BlendState;
+    ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
+    BlendState.RenderTarget[0].BlendEnable = TRUE;
+    BlendState.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    BlendState.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    BlendState.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    BlendState.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    BlendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+    BlendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    BlendState.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+    m_Device->CreateBlendState(&BlendState, &m_BlendState);
 }
 
 ID3D11Buffer* Graphics::CreateBuffer(UINT byteWidth, UINT bindFlags, const void* data)
@@ -180,7 +192,6 @@ ID3D11Buffer* Graphics::CreateBuffer(UINT byteWidth, UINT bindFlags, const void*
     return constantBuffer;
 }
 
-
 void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
 {
     m_DeviceContext->UpdateSubresource(buffer, 0, nullptr, resource, 0, 0);
@@ -197,6 +208,7 @@ void Graphics::SetUp()
     m_DeviceContext->RSSetViewports(1, &m_Viewport);
     SetRenderTarget(*(m_BackBuffer.get()));
     m_DeviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
+    m_DeviceContext->OMSetBlendState(m_BlendState, NULL, 0xffffffff);
 }
 
 void Graphics::Present()
@@ -217,6 +229,10 @@ void Graphics::Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearSte
     m_DeviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
 }
 
+void Graphics::ClearRTV(ID3D11RenderTargetView* rtv, const FLOAT clearColor[4])
+{
+    m_DeviceContext->ClearRenderTargetView(rtv, clearColor);
+}
 
 // This function was inspired by:
 // http://www.rastertek.com/dx11tut03.html
@@ -316,6 +332,7 @@ Graphics::~Graphics()
     SafeRelease(m_RasterizerState);
     SafeRelease(m_SwapChain);
     SafeRelease(m_DeviceContext);
+    SafeRelease(m_BlendState);
     SafeRelease(m_Device);
 
     if (m_Debug != nullptr)

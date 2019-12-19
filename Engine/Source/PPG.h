@@ -17,3 +17,4 @@
 #include "Passes/ForwardPass.h"
 #include "Passes/SkyboxPass.h"
 #include "Passes/BlitPass.h"
+#include "Passes/SpritePass.h"
