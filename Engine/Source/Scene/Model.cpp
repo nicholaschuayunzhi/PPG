@@ -44,8 +44,9 @@ ModelLoader::ModelLoader(const aiScene* assimpScene, Scene& scene, Graphics& gra
 
 Model* ModelLoader::LoadModel()
 {
-    ProcessNode(m_AiScene->mRootNode, m_RootParentIndex);
-    m_Model->m_RootIndex = m_RootIndex;
+    auto object = m_Scene.CreateSceneObject(m_AiScene->mRootNode->mName.C_Str(), m_RootParentIndex);
+    ProcessNode(m_AiScene->mRootNode, object->m_Index);
+    m_Model->m_RootIndex = object->m_Index;
     return m_Model;
 }
 
@@ -96,12 +97,43 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
         if (mesh->mMaterialIndex >= 0)
         {
             aiMaterial* mat = m_AiScene->mMaterials[mesh->mMaterialIndex];
+            Texture* ambient = loadTexture(aiTextureType_DIFFUSE, mat);
             Texture* diffuse = loadTexture(aiTextureType_DIFFUSE, mat);
-            Texture* normal = loadTexture(aiTextureType_HEIGHT, mat);
+            Texture* normal = loadTexture(aiTextureType_NORMALS, mat);
+            Texture* bump = loadTexture(aiTextureType_HEIGHT, mat);
             Texture* specular = loadTexture(aiTextureType_SPECULAR, mat);
+
+            if (ambient) materialPtr->UseAmbientMap(ambient);
+
             if (diffuse) materialPtr->UseDiffuseMap(diffuse);
+
             if (normal) materialPtr->UseNormalMap(normal);
+            else if (bump) materialPtr->UseBumpMap(bump);
+
             if (specular) materialPtr->UseSpecularMap(specular);
+
+            aiColor3D colour;
+
+            aiReturn res = mat->Get(AI_MATKEY_COLOR_AMBIENT, colour);
+            if (res == aiReturn_SUCCESS)
+                materialPtr->SetAmbient(colour[0], colour[1], colour[2]);
+
+            res = mat->Get(AI_MATKEY_COLOR_DIFFUSE, colour);
+            if (res == aiReturn_SUCCESS)
+                materialPtr->SetDiffuse(colour[0], colour[1], colour[2]);
+
+            res = mat->Get(AI_MATKEY_COLOR_EMISSIVE, colour);
+            if (res == aiReturn_SUCCESS)
+                materialPtr->SetEmissive(colour[0], colour[1], colour[2]);
+
+            res = mat->Get(AI_MATKEY_COLOR_SPECULAR, colour);
+            if (res == aiReturn_SUCCESS)
+                materialPtr->SetSpecular(colour[0], colour[1], colour[2]);
+
+            float shininess;
+            res = mat->Get(AI_MATKEY_SHININESS, shininess);
+            if (res == aiReturn_SUCCESS)
+                materialPtr->SetShininess(shininess);
         }
         else
         {
@@ -111,14 +143,12 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
                 .SetSpecular(1, 0, 1);
         }
         m_Model->m_Materials.push_back(materialPtr);
-        auto object = m_Scene.CreateSceneObject("", parentIndex);
+        auto object = m_Scene.CreateSceneObject(node->mName.C_Str(), parentIndex);
         parentIndex = object->m_Index;
         auto& meshRenderer = object->m_MeshRenderer;
         meshRenderer.m_Material = materialPtr;
         meshRenderer.m_Mesh = meshPtr;
         meshRenderer.m_IsEnabled = true;
-        if (m_RootIndex == 0)
-            m_RootIndex = parentIndex;
     }
 
     for (UINT i = 0; i < node->mNumChildren; i++)
@@ -159,7 +189,7 @@ Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& gra
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(fileName,
         aiProcess_Triangulate |
-        aiProcess_GenSmoothNormals |
+        aiProcess_GenNormals |
         aiProcess_CalcTangentSpace |
         aiProcess_MakeLeftHanded |
         aiProcess_FlipUVs

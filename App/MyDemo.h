@@ -20,9 +20,9 @@ public:
         blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
 
         // Lighting
-        auto lightColour = XMFLOAT4(Colors::White);
+        auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
         Light pointLight;
-        pointLight.m_Color = XMFLOAT4(DirectX::Colors::MediumPurple);
+        pointLight.m_Color = XMFLOAT4(DirectX::Colors::LightYellow);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
@@ -34,8 +34,9 @@ public:
         scene.lightManager
             .AddLight(pointLight)
             .AddLight(dirLight)
-            .SetGlobalAmbient(XMFLOAT4(0, 0, 0, 0));
+            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0));
 
+        // This shadow map is not tuned for sponza
         ShadowMapRenderDesc desc;
         desc.m_EyePosition = XMLoadFloat4(&(scene.lightManager.GetLight(1).m_Direction)) * -5;
         desc.m_LookAt = XMVectorSet(0, 0, 0, 1);
@@ -60,7 +61,7 @@ public:
         auto cube = scene.CreateSceneObject("Cube");
         cubeMesh = new Mesh(CubeVertices(), CubeIndices(), graphics);
         cubeMaterial
-            .SetEmissive(0.0, 0.5, 0.8);
+            .SetDiffuse(0.0, 0.5, 0.8);
         auto& cubeMeshRenderer = cube->m_MeshRenderer;
         cubeMeshRenderer.m_Mesh = cubeMesh;
         cubeMeshRenderer.m_Material = &cubeMaterial;
@@ -68,7 +69,7 @@ public:
         cube->m_Transform
             .UniformScale(0.5)
             .RotateEulerAngles(0, 0.2, 0)
-            .SetPosition(2, -0.5, -2);
+            .SetPosition(2, 0.5, -2);
 
         auto arrow = scene.CreateSceneObject("Arrow", cube->m_Index);
         arrowTex = std::make_unique<Texture>(L"Data\\down-arrow.png", graphics);
@@ -82,7 +83,6 @@ public:
 
         auto plane = scene.CreateSceneObject("Plane");
         plane->m_Transform
-            .SetPosition(0, -1, 0)
             .UniformScale(5);
         planeMesh = new Mesh(QuadVertices(), QuadIndices(), graphics);
         brickTexture = new Texture(L"Data\\Brick_Wall_014_COLOR.jpg", graphics);
@@ -90,6 +90,7 @@ public:
 
         planeMaterial
             .SetAmbient(0.1, 0.1, 0.1)
+            .SetDiffuse(1, 1, 1)
             .SetSpecular(0.5, 0.5, 0.5)
             .SetShininess(32)
             .UseDiffuseMap(brickTexture)
@@ -99,10 +100,14 @@ public:
         planeMeshRenderer.m_Material = &planeMaterial;
         planeMeshRenderer.m_IsEnabled = true;
 
+        //sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
+        //auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
+        //sponzaObj->m_Transform
+        //    .UniformScale(0.01);
+
         stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
-        auto stormTrooperObj = scene.GetSceneObjectByIndex(stormtrooper->m_RootIndex);
-        stormTrooperObj->m_Transform
-            .SetPosition(0, -1, 0);
+
+        scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
 
         scene.Start(graphics);
     }
@@ -136,6 +141,7 @@ public:
         if (brickNormalMap) delete brickNormalMap;
         if (sampler) delete sampler;
         if (stormtrooper) delete stormtrooper;
+        if (sponza) delete sponza;
     }
 
 private:
@@ -155,6 +161,7 @@ private:
     PhongMaterial cubeMaterial;
 
     Model* stormtrooper;
+    Model* sponza;
 
     std::shared_ptr<SceneObject> lightBulb;
 

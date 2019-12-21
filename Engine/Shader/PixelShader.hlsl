@@ -7,10 +7,14 @@
 #define LIGHT_ENABLED 1
 #define LIGHT_ENABLED_W_SHADOWMAP 2
 
-Texture2D Diffuse : register(t0);
-Texture2D NormalMap : register(t1);
-Texture2D Specular : register(t2);
-Texture2D ShadowMap : register(t3); // support 1 for now, future use array
+#define NORMAL_MAP 1
+#define BUMP_MAP 2
+
+Texture2D Ambient : register(t0);
+Texture2D Diffuse : register(t1);
+Texture2D NormalMap : register(t2);
+Texture2D Specular : register(t3);
+Texture2D ShadowMap : register(t4); // support 1 for now, future use array
 
 sampler Sampler: register(s0);
 
@@ -23,7 +27,7 @@ cbuffer Material : register(b0)
 
     float matShininess;
     int useDiffuse;
-    int useNormal;
+    int normalState;
     int useSpecular;
 }
 
@@ -110,6 +114,37 @@ LightingResult CalculatePhongLighting(float3 L, float3 N, float3 V, float4 light
     return result;
 }
 
+float3 CalculateNormal(float3 normal, float3 tangent, float3 binormal, float2 texCoord)
+{
+    float3 N = normal;
+    switch (normalState)
+    {
+        case NORMAL_MAP:
+            float3 normalMapVal = NormalMap.Sample(Sampler, texCoord).xyz;
+            normalMapVal = normalize((normalMapVal * 2) - 1.0);
+            N = (normalMapVal.x * normalize(tangent)) + (normalMapVal.y * normalize(binormal)) + (normalMapVal.z * normal);
+            N = normalize(N);
+            return N;
+            break;
+        case BUMP_MAP:
+            float2 bumpTextureSize;
+            NormalMap.GetDimensions(bumpTextureSize[0], bumpTextureSize[1]);
+            float2 pixelSize = 1.0 / bumpTextureSize;
+
+            float mid = NormalMap.Sample(Sampler, texCoord) * 2.0 - 1.0;
+            float left = NormalMap.Sample(Sampler, texCoord + float2(-pixelSize.x, 0)) * 2.0 - 1.0;
+            float right = NormalMap.Sample(Sampler, texCoord + float2(pixelSize.x, 0)) * 2.0 - 1.0;
+            float top = NormalMap.Sample(Sampler, texCoord + float2(0, -pixelSize.y)) * 2.0 - 1.0;
+            float bottom = NormalMap.Sample(Sampler, texCoord + float2(0, pixelSize.y)) * 2.0 - 1.0;
+            float3 p1 = ((bottom - mid) - (top - mid)) * normalize(binormal);
+            float3 p2 = ((left - mid) - (right - mid)) * normalize(tangent);
+            N = normalize(N - (p1 + p1));
+            return N;
+            break;
+    }
+    return normal;
+}
+
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float4 diffuse = float4(0, 0, 0, 0);
@@ -121,13 +156,9 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     LightingResult result;
     float attenuation;
 
-    if (useNormal)
+    if (normalState != 0)
     {
-        float3 calcN = cross(IN.binormal, IN.tangent);
-        float3 bumpNormal = NormalMap.Sample(Sampler, IN.texCoord).xyz;
-        bumpNormal = normalize((bumpNormal * 2) - 1.0);
-        N = bumpNormal.x * IN.tangent + bumpNormal.y * IN.binormal + bumpNormal.z * IN.normal;
-        N = normalize(N);
+        N = CalculateNormal(IN.normal, IN.tangent, IN.binormal, IN.texCoord);
     }
 
     for (int i = 0; i < MAX_LIGHTS; ++i)
@@ -171,11 +202,18 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         }
     }
 
-      float4 finalDiffuse = useDiffuse ? Diffuse.Sample(Sampler, IN.texCoord) : matDiffuse;
-      float4 finalSpecular = useSpecular ? Specular.Sample(Sampler, IN.texCoord) : matSpecular;
-      float4 final = matEmissive +
-          matAmbient * saturate(globalAmbient) +
-          finalDiffuse * saturate(diffuse) +
-          finalSpecular * saturate(specular);
+    float4 finalDiffuse = matDiffuse;
+    if (useDiffuse)
+        finalDiffuse *= Diffuse.Sample(Sampler, IN.texCoord);
+    float4 finalSpecular = matSpecular;
+    if (useSpecular)
+        finalSpecular *= Specular.Sample(Sampler, IN.texCoord).rrrr;
+    float4 finalAmbient = matAmbient;
+        finalAmbient *= Ambient.Sample(Sampler, IN.texCoord);
+    float4 final = 
+        matEmissive *
+        finalAmbient * saturate(globalAmbient) +
+        finalDiffuse * saturate(diffuse) +
+        finalSpecular * saturate(specular);
     return float4(final.rgb, 1);
 }

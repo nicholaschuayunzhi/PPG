@@ -43,11 +43,10 @@ void Scene::UpdateModelRecursive(SceneObject::Index idx, XMMATRIX model)
 
 void Scene::Update(Graphics& graphics, Input input, float deltaTime)
 {
-    lightManager.Update(graphics);
-    lightManager.RenderAnyShadowMap(graphics, *this);
-
     m_MainCamera.HandleMovement(input, deltaTime);
     lightManager.SetEyePosition(m_MainCamera.m_EyePosition);
+    lightManager.Update(graphics);
+    lightManager.RenderAnyShadowMap(graphics, *this);
 
     for (auto objIndex : m_Objects[0]->m_ChildrenIndices)
         UpdateModelRecursive(objIndex, XMMatrixIdentity());

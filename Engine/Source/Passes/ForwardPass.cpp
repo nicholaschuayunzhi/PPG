@@ -30,8 +30,11 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
     auto& lightManager = scene.lightManager;
-    deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
-    lightManager.m_OneShadowMapTexture->Use(deviceContext, 3);
+    if (lightManager.hasLightWithShadows)
+    {
+        deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
+        lightManager.m_OneShadowMapTexture->Use(deviceContext, 4);
+    }
 
     for (auto sceneObj : scene.m_Objects)
     {
@@ -40,12 +43,14 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
         PhongMaterial* phongMat = sceneObj->m_MeshRenderer.m_Material;
         graphics.UpdateBuffer(m_Buffer, &(phongMat->m_MaterialInfo));
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
+        if (phongMat->m_Ambient)
+            phongMat->m_Ambient->Use(deviceContext, 0);
         if (phongMat->m_Diffuse)
-            phongMat->m_Diffuse->Use(deviceContext, 0);
+            phongMat->m_Diffuse->Use(deviceContext, 1);
         if (phongMat->m_Normal) 
-            phongMat->m_Normal->Use(deviceContext, 1);
+            phongMat->m_Normal->Use(deviceContext, 2);
         if (phongMat->m_Specular)
-            phongMat->m_Specular->Use(deviceContext, 2);
+            phongMat->m_Specular->Use(deviceContext, 3);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
         sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }

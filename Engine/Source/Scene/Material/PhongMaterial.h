@@ -13,7 +13,8 @@ _declspec(align(16)) struct MaterialInfo
 
     float m_Shininess = 0;
     int m_UseDiffuse = 0;
-    int m_UseNormal = 0;
+    int m_NormalState = 0;
+    int m_UseAmbient = 0;
     int m_UseSpecular = 0;
 };
 
@@ -29,10 +30,13 @@ public:
     PhongMaterial& SetDiffuse(float r, float g, float b);
     PhongMaterial& SetSpecular(float r, float g, float b);
     PhongMaterial& SetShininess(float n);
+    PhongMaterial& UseAmbientMap(Texture* ambient);
     PhongMaterial& UseDiffuseMap(Texture* diffuse);
     PhongMaterial& UseNormalMap(Texture* normal);
+    PhongMaterial& UseBumpMap(Texture* bump);
     PhongMaterial& UseSpecularMap(Texture* specular);
 
+    Texture* m_Ambient = nullptr;
     Texture* m_Diffuse = nullptr;
     Texture* m_Normal = nullptr;
     Texture* m_Specular = nullptr;

@@ -50,7 +50,12 @@ PhongMaterial& PhongMaterial::SetShininess(float n)
     m_MaterialInfo.m_Shininess = n;
     return *this;
 }
-
+PhongMaterial& PhongMaterial::UseAmbientMap(Texture* ambient)
+{
+    m_Ambient = ambient;
+    m_MaterialInfo.m_UseAmbient = 1;
+    return *this;
+}
 PhongMaterial& PhongMaterial::UseDiffuseMap(Texture* diffuse)
 {
     m_Diffuse = diffuse;
@@ -61,7 +66,14 @@ PhongMaterial& PhongMaterial::UseDiffuseMap(Texture* diffuse)
 PhongMaterial& PhongMaterial::UseNormalMap(Texture* normal)
 {
     m_Normal = normal;
-    m_MaterialInfo.m_UseNormal = 1;
+    m_MaterialInfo.m_NormalState = 1;
+    return *this;
+}
+
+PhongMaterial& PhongMaterial::UseBumpMap(Texture* bump)
+{
+    m_Normal = bump;
+    m_MaterialInfo.m_NormalState = 2;
     return *this;
 }
 
