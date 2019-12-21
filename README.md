@@ -7,7 +7,9 @@ This is a Dx11 rendering engine for self learning.
 Implemented:
 * Forward Rendering
 * Phong Shading
+* Models
 * Directional, Spot, Point light source
-* Normal Mapping
+* Texture, Specular, Normal & Bump Mapping
 * Skybox
 * Directional Shadow Map
+* Sprites (currently unsorted)

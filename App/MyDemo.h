@@ -22,7 +22,7 @@ public:
         // Lighting
         auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
         Light pointLight;
-        pointLight.m_Color = XMFLOAT4(DirectX::Colors::LightYellow);
+        pointLight.m_Color = XMFLOAT4(DirectX::Colors::Yellow);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
