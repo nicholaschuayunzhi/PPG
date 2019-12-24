@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
 #include "Resources/Shader.h"
-#include "Resources/Mesh.h"
 #include "Scene/Camera.h"
 
 using namespace DirectX;
@@ -20,7 +19,6 @@ private:
     Texture& m_SrcTexture;
     Texture& m_DestTexture;
     std::unique_ptr<Shader> m_Shader;
-    std::unique_ptr<Mesh> m_Mesh;
     std::unique_ptr<Sampler> m_Sampler;
     OrthographicCamera m_Camera;
 };

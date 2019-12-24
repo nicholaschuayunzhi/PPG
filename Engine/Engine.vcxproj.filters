@@ -178,5 +178,6 @@
     <FxCompile Include="Shader\VertexShader.hlsl" />
     <FxCompile Include="Shader\Blit.ps.hlsl" />
     <FxCompile Include="Shader\Sprite.ps.hlsl" />
+    <FxCompile Include="Shader\Fullscreen.vs.hlsl" />
   </ItemGroup>
 </Project>

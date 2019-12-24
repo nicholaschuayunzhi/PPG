@@ -1,11 +1,6 @@
-struct PixelShaderInput
+struct PixelShaderInput // see Fullscreen.vs.hlsl
 {
     float4 position : SV_POSITION;
-    float4 pos : POSITION0;
-    float4 wPosition : POSITION1;
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-    float3 binormal : BINORMAL;
     float2 texCoord : TEXCOORD0;
 };
 
