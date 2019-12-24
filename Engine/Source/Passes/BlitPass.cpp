@@ -12,12 +12,6 @@ BlitPass::BlitPass(Graphics& graphics, Texture& src, Texture& dest) :
 {
     m_Shader = std::make_unique<Shader>(L"Fullscreen.vs.cso", L"Blit.ps.cso", graphics);
     m_Sampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
-    m_Camera.m_EyePosition = XMVectorSet(0, 1, 0, 1);
-    m_Camera.m_Up = XMVectorSet(0, 0, 1, 1);
-    m_Camera.m_Right = XMVectorSet(1, 0, 0, 1);
-    m_Camera.m_LookAt = XMVectorSet(0, 0, 0, 1);
-    m_Camera.m_ViewWidth = 2;
-    m_Camera.m_ViewHeight = 2;
 }
 
 BlitPass::~BlitPass()
