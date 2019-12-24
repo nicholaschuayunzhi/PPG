@@ -12,4 +12,4 @@ Implemented:
 * Texture, Specular, Normal & Bump Mapping
 * Skybox
 * Directional Shadow Map
-* Sprites (currently unsorted)
+* Sprites

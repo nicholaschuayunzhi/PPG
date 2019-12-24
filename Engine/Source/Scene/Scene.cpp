@@ -36,7 +36,7 @@ void Scene::UpdateModelRecursive(SceneObject::Index idx, XMMATRIX model)
 {
     auto obj = GetSceneObjectByIndex(idx);
     model = XMMatrixMultiply(obj->m_Transform.GetLocalModel(), model);
-    obj->m_Transform.SetModel(model);
+    obj->m_Transform.SetAndDecomposeModel(model);
     for (auto objIndex : obj->m_ChildrenIndices)
         UpdateModelRecursive(objIndex, model);
 }

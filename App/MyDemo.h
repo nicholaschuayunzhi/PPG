@@ -14,6 +14,7 @@ public:
         colour = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Colour");
         sampler = new Sampler(graphics);
         auto& colourTexture = *(colour.get());
+        //auto& colourTexture = *(graphics.m_BackBuffer.get());
         forwardPass = std::make_unique<ForwardPass>(graphics, colourTexture);
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, colourTexture);
@@ -34,7 +35,7 @@ public:
         scene.lightManager
             .AddLight(pointLight)
             .AddLight(dirLight)
-            .SetGlobalAmbient(XMFLOAT4(0.2, 0.2, 0.2, 0));
+            .SetGlobalAmbient(XMFLOAT4(0.01, 0.01, 0.01, 0));
 
         // This shadow map is not tuned for sponza
         ShadowMapRenderDesc desc;
@@ -53,7 +54,7 @@ public:
         lightBulbTex = std::make_unique<Texture>(L"Data\\bulb.png", graphics);
         lightBulb->m_Transform
             .RotateEulerAngles(-0.5 * 3.142, 0, 0)
-            .UniformScale(0.5);
+            .UniformScale(0.8);
         auto& spriteRenderer = lightBulb->m_SpriteRenderer;
         spriteRenderer.m_Sprite = lightBulbTex.get();
         spriteRenderer.m_IsEnabled = true;
@@ -115,8 +116,8 @@ public:
     void Update(Graphics& graphics, Input input, float deltaTime) override
     {
         static float phase = 0;
-        phase += 90 * deltaTime;
-        float zDisplacement = 3 * sin(XMConvertToRadians(phase));
+        phase += 45 * deltaTime;
+        float zDisplacement = 6 * sin(XMConvertToRadians(phase));
         lightBulb->m_Transform.SetPosition(-2, 3, zDisplacement);
 
         Light& pointLight = scene.lightManager.GetLight(0);

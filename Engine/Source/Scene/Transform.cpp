@@ -51,7 +51,7 @@ XMMATRIX Transform::GetModel()
     return model;
 }
 
-XMMATRIX Transform::GetLocalModel()
+const XMMATRIX& Transform::GetLocalModel()
 {
     if (dirty)
     {
@@ -63,8 +63,13 @@ XMMATRIX Transform::GetLocalModel()
     return localModel;
 }
 
-void Transform::SetModel(XMMATRIX model)
+void Transform::SetAndDecomposeModel(const XMMATRIX& model)
 {
     this->model = model;
+    XMMatrixDecompose(&worldScale,&worldQuat, &worldPos, this->model);
 }
 
+const XMVECTOR& Transform::GetWorldPosition()
+{
+    return worldPos;
+}

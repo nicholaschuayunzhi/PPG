@@ -20,11 +20,15 @@ public:
     Transform& UniformScale(float s);
     void Update(Graphics& graphics, ID3D11Buffer* buffer);
     XMMATRIX GetModel();
-    XMMATRIX GetLocalModel();
+    const XMMATRIX& GetLocalModel();
+    const XMVECTOR& GetWorldPosition();
 private:
     friend class Scene;
-    void SetModel(XMMATRIX model);
+    void SetAndDecomposeModel(const XMMATRIX& model);
     float dirty;
     XMMATRIX model;
     XMMATRIX localModel;
+    XMVECTOR worldPos;
+    XMVECTOR worldScale;
+    XMVECTOR worldQuat;
 };

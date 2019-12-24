@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <algorithm>
 #include "SpritePass.h"
 #include "LowLevel/Graphics.h"
 #include "Scene/Scene.h"
@@ -44,13 +45,33 @@ void SpritePass::Render(Graphics& graphics, Scene& scene)
     m_Sampler->Use(deviceContext, 0);
 
     deviceContext->OMSetDepthStencilState(m_NoWriteDepthStencil, 1);
-    
-    for (auto sceneObj : scene.m_Objects)
+
+    // Sort Sprites
+    std::vector<std::shared_ptr<SceneObject>> sprites;
+    std::copy_if(scene.m_Objects.begin(), scene.m_Objects.end(), std::back_inserter(sprites),
+        [](auto& obj) { return obj->m_SpriteRenderer.m_IsEnabled; });
+
+    std::vector<std::tuple<Transform*, SpriteRenderer*, float>> spriteInfos;
+    auto& eyePos = scene.m_MainCamera.m_EyePosition;
+    std::transform(sprites.begin(), sprites.end(), std::back_inserter(spriteInfos),
+        [&eyePos](auto& obj)
+        {
+            Transform* pTransform = &(obj->m_Transform);
+            float squaredLength;
+            XMVectorGetByIndexPtr(&squaredLength, XMVector3LengthSq(eyePos - pTransform->GetWorldPosition()), 0);
+            return std::make_tuple(pTransform, &(obj->m_SpriteRenderer), squaredLength);
+        });
+
+    std::sort(spriteInfos.begin(), spriteInfos.end(),
+        [](auto& a, auto& b) { return std::get<float>(a) > std::get<float>(b); });
+
+
+    for (auto& spriteInfo : spriteInfos)
     {
-        if (!sceneObj->m_SpriteRenderer.m_IsEnabled) continue;
-        SpriteRenderer& spriteRenderer = sceneObj->m_SpriteRenderer;
-        scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        spriteRenderer.m_Sprite->Use(deviceContext, 0);
+        Transform* pTransform = std::get<Transform*>(spriteInfo);
+        SpriteRenderer* pSpriteRenderer = std::get<SpriteRenderer*>(spriteInfo);
+        scene.UpdateModel(graphics, pTransform->GetModel());
+        pSpriteRenderer->m_Sprite->Use(deviceContext, 0);
         m_QuadMesh->Draw(deviceContext);
     }
 
