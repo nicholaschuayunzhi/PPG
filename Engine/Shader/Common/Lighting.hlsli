@@ -20,7 +20,6 @@ sampler Sampler : register(s0);
 
 cbuffer Material : register(b0)
 {
-    float4 matEmissive;
     float4 matDiffuse;
     float4 matSpecular;
 

@@ -12,14 +12,6 @@ PhongMaterial::PhongMaterial(PhongMaterial&& PhongMaterial)
     m_MaterialInfo = PhongMaterial.m_MaterialInfo;
 }
 
-PhongMaterial& PhongMaterial::SetEmissive(float r, float g, float b)
-{
-    m_MaterialInfo.m_Emissive.x = r;
-    m_MaterialInfo.m_Emissive.y = g;
-    m_MaterialInfo.m_Emissive.z = b;
-    return *this;
-}
-
 PhongMaterial& PhongMaterial::SetDiffuse(float r, float g, float b)
 {
     m_MaterialInfo.m_Diffuse.x = r;

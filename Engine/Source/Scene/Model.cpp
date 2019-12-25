@@ -115,10 +115,6 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
             if (res == aiReturn_SUCCESS)
                 materialPtr->SetDiffuse(colour[0], colour[1], colour[2]);
 
-            res = mat->Get(AI_MATKEY_COLOR_EMISSIVE, colour);
-            if (res == aiReturn_SUCCESS)
-                materialPtr->SetEmissive(colour[0], colour[1], colour[2]);
-
             res = mat->Get(AI_MATKEY_COLOR_SPECULAR, colour);
             if (res == aiReturn_SUCCESS)
                 materialPtr->SetSpecular(colour[0], colour[1], colour[2]);

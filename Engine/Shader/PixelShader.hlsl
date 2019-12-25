@@ -54,9 +54,6 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float4 finalSpecular = matSpecular;
     if (useSpecular)
         finalSpecular *= Specular.Sample(Sampler, IN.texCoord).rrrr;
-    float4 final =
-        matEmissive +
-        finalDiffuse * saturate(diffuse) +
-        finalSpecular * saturate(specular);
+    float4 final = finalDiffuse * saturate(diffuse) + finalSpecular * saturate(specular);
     return float4(final.rgb, 1);
 }
