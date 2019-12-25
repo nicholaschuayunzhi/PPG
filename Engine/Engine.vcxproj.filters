@@ -170,8 +170,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\PixelShader.hlsl" />
-    <FxCompile Include="Shader\Shadow.ps.hlsl" />
-    <FxCompile Include="Shader\Shadow.vs.hlsl" />
     <FxCompile Include="Shader\ShadowMap.ps.hlsl" />
     <FxCompile Include="Shader\Skybox.ps.hlsl" />
     <FxCompile Include="Shader\Skybox.vs.hlsl" />
@@ -179,5 +177,8 @@
     <FxCompile Include="Shader\Blit.ps.hlsl" />
     <FxCompile Include="Shader\Sprite.ps.hlsl" />
     <FxCompile Include="Shader\Fullscreen.vs.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\Common\Lighting.hlsli" />
   </ItemGroup>
 </Project>
