@@ -20,15 +20,6 @@ PhongMaterial& PhongMaterial::SetEmissive(float r, float g, float b)
     return *this;
 }
 
-
-PhongMaterial& PhongMaterial::SetAmbient(float r, float g, float b)
-{
-    m_MaterialInfo.m_Ambient.x = r;
-    m_MaterialInfo.m_Ambient.y = g;
-    m_MaterialInfo.m_Ambient.z = b;
-    return *this;
-}
-
 PhongMaterial& PhongMaterial::SetDiffuse(float r, float g, float b)
 {
     m_MaterialInfo.m_Diffuse.x = r;
@@ -50,12 +41,7 @@ PhongMaterial& PhongMaterial::SetShininess(float n)
     m_MaterialInfo.m_Shininess = n;
     return *this;
 }
-PhongMaterial& PhongMaterial::UseAmbientMap(Texture* ambient)
-{
-    m_Ambient = ambient;
-    m_MaterialInfo.m_UseAmbient = 1;
-    return *this;
-}
+
 PhongMaterial& PhongMaterial::UseDiffuseMap(Texture* diffuse)
 {
     m_Diffuse = diffuse;

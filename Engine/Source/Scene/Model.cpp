@@ -97,13 +97,10 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
         if (mesh->mMaterialIndex >= 0)
         {
             aiMaterial* mat = m_AiScene->mMaterials[mesh->mMaterialIndex];
-            Texture* ambient = loadTexture(aiTextureType_DIFFUSE, mat);
             Texture* diffuse = loadTexture(aiTextureType_DIFFUSE, mat);
             Texture* normal = loadTexture(aiTextureType_NORMALS, mat);
             Texture* bump = loadTexture(aiTextureType_HEIGHT, mat);
             Texture* specular = loadTexture(aiTextureType_SPECULAR, mat);
-
-            if (ambient) materialPtr->UseAmbientMap(ambient);
 
             if (diffuse) materialPtr->UseDiffuseMap(diffuse);
 
@@ -114,11 +111,7 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
 
             aiColor3D colour;
 
-            aiReturn res = mat->Get(AI_MATKEY_COLOR_AMBIENT, colour);
-            if (res == aiReturn_SUCCESS)
-                materialPtr->SetAmbient(colour[0], colour[1], colour[2]);
-
-            res = mat->Get(AI_MATKEY_COLOR_DIFFUSE, colour);
+            aiReturn res = mat->Get(AI_MATKEY_COLOR_DIFFUSE, colour);
             if (res == aiReturn_SUCCESS)
                 materialPtr->SetDiffuse(colour[0], colour[1], colour[2]);
 
@@ -138,8 +131,7 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
         else
         {
             materialPtr
-                ->SetAmbient(1, 0, 1)
-                .SetDiffuse(1, 0, 1)
+                ->SetDiffuse(1, 0, 1)
                 .SetSpecular(1, 0, 1);
         }
         m_Model->m_Materials.push_back(materialPtr);

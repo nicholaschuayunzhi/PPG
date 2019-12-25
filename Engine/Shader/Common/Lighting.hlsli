@@ -7,13 +7,13 @@
 #define LIGHT_ENABLED 1
 #define LIGHT_ENABLED_W_SHADOWMAP 2
 
+#define VERTEX_NORMALS 0
 #define NORMAL_MAP 1
 #define BUMP_MAP 2
 
-Texture2D Ambient : register(t0);
-Texture2D Diffuse : register(t1);
-Texture2D NormalMap : register(t2);
-Texture2D Specular : register(t3);
+Texture2D Diffuse : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D Specular : register(t2);
 Texture2D ShadowMap : register(t4); // support 1 for now, future use array
 
 sampler Sampler : register(s0);
@@ -21,7 +21,6 @@ sampler Sampler : register(s0);
 cbuffer Material : register(b0)
 {
     float4 matEmissive;
-    float4 matAmbient;
     float4 matDiffuse;
     float4 matSpecular;
 

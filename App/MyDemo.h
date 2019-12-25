@@ -90,7 +90,6 @@ public:
         brickNormalMap = new Texture(L"Data\\Brick_Wall_014_NORM.jpg", graphics);
 
         planeMaterial
-            .SetAmbient(0.1, 0.1, 0.1)
             .SetDiffuse(1, 1, 1)
             .SetSpecular(0.5, 0.5, 0.5)
             .SetShininess(32)
@@ -101,10 +100,10 @@ public:
         planeMeshRenderer.m_Material = &planeMaterial;
         planeMeshRenderer.m_IsEnabled = true;
 
-        //sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
-        //auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
-        //sponzaObj->m_Transform
-        //    .UniformScale(0.01);
+      /*  sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
+        auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
+        sponzaObj->m_Transform
+            .UniformScale(0.01);*/
 
         stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
 

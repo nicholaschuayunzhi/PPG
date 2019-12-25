@@ -17,7 +17,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float4 specular = float4(0, 0, 0, 0);
 
     float3 N = normalize(IN.normal);
-    if (normalState != 0)
+    if (normalState != VERTEX_NORMALS)
     {
         N = CalculateNormal(IN.normal, IN.tangent, IN.binormal, IN.texCoord);
     }
@@ -54,11 +54,8 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float4 finalSpecular = matSpecular;
     if (useSpecular)
         finalSpecular *= Specular.Sample(Sampler, IN.texCoord).rrrr;
-    float4 finalAmbient = matAmbient;
-        finalAmbient *= Ambient.Sample(Sampler, IN.texCoord);
     float4 final =
-        matEmissive *
-        finalAmbient * saturate(globalAmbient) +
+        matEmissive +
         finalDiffuse * saturate(diffuse) +
         finalSpecular * saturate(specular);
     return float4(final.rgb, 1);
