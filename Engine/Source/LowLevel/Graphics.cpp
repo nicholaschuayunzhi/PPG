@@ -5,6 +5,9 @@
 
 using namespace DirectX;
 
+ID3D11ShaderResourceView* nullSRV[] = { nullptr };
+ID3D11RenderTargetView* nullRTV[] = { nullptr };
+
 Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
 {
     m_ClientRect = window.GetWindowRect();
@@ -21,7 +24,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     swapChainDesc.BufferDesc.Height = clientHeight;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapChainDesc.BufferDesc.RefreshRate = QueryRefreshRate(clientWidth, clientHeight, vSync);
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
     swapChainDesc.OutputWindow = window.m_WindowHandle;
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
@@ -85,25 +88,42 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
 
     // Create the depth buffer for use with the depth/stencil view.
     D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-    ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+    ZeroMemory(&depthStencilBufferDesc, sizeof(depthStencilBufferDesc));
     depthStencilBufferDesc.ArraySize = 1;
-    depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
     depthStencilBufferDesc.CPUAccessFlags = 0; // No CPU access required.
-    depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthStencilBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
     depthStencilBufferDesc.Width = clientWidth;
     depthStencilBufferDesc.Height = clientHeight;
     depthStencilBufferDesc.MipLevels = 1;
     depthStencilBufferDesc.SampleDesc.Count = 1;
-    depthStencilBufferDesc.SampleDesc.Quality = 0;
     depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthStencilBufferDesc.MiscFlags = 0;
 
-    hr = m_Device->CreateTexture2D(&depthStencilBufferDesc, nullptr, &m_DepthStencilBuffer);
+    hr = m_Device->CreateTexture2D(&depthStencilBufferDesc, NULL, &m_DepthStencilBuffer);
     if (FAILED(hr))
     {
         throw std::exception("Graphics::Failed to create Depth Stencil Buffer");
     }
+    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+    // Setup the description of the shader resource view.
+    shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+    shaderResourceViewDesc.Texture2D.MipLevels = 1;
+    hr = m_Device->CreateShaderResourceView(m_DepthStencilBuffer, &shaderResourceViewDesc, &m_DepthSRV);
+    if (FAILED(hr))
+    {
+        throw std::exception("Graphics::Failed to create Depth SRV");
+    }
+    D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+    // Setup the description of the shader resource view.
+    depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.Flags = 0;
+    depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-    hr = m_Device->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
+    hr = m_Device->CreateDepthStencilView(m_DepthStencilBuffer, &depthStencilViewDesc, &m_DepthStencilView);
     if (FAILED(hr))
     {
         throw std::exception("Graphics::Failed to create Depth Stencil Buffer View");
@@ -160,7 +180,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     BlendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
     BlendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     BlendState.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-    m_Device->CreateBlendState(&BlendState, &m_BlendState);
+    m_Device->CreateBlendState(&BlendState, &m_AlphaBlendState);
 }
 
 ID3D11Buffer* Graphics::CreateBuffer(UINT byteWidth, UINT bindFlags, const void* data)
@@ -197,9 +217,20 @@ void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
     m_DeviceContext->UpdateSubresource(buffer, 0, nullptr, resource, 0, 0);
 }
 
-void Graphics::SetRenderTarget(Texture& texture)
+void Graphics::SetRenderTarget(Texture& texture, bool enableDepthTest /*= true*/)
 {
-    m_DeviceContext->OMSetRenderTargets(1, &(texture.m_TextureRTV), m_DepthStencilView);
+    ID3D11DepthStencilView* dsv = enableDepthTest ? m_DepthStencilView : NULL;
+    m_DeviceContext->OMSetRenderTargets(1, &(texture.m_TextureRTV), dsv);
+}
+
+void Graphics::UnbindShaderResourceView(UINT startSlot)
+{
+    m_DeviceContext->PSSetShaderResources(startSlot, 1, nullSRV);
+}
+
+void Graphics::UnbindRenderTargetView()
+{
+    m_DeviceContext->OMSetRenderTargets(_countof(nullRTV), nullRTV, nullptr);
 }
 
 void Graphics::SetUp()
@@ -208,7 +239,7 @@ void Graphics::SetUp()
     m_DeviceContext->RSSetViewports(1, &m_Viewport);
     SetRenderTarget(*(m_BackBuffer.get()));
     m_DeviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
-    m_DeviceContext->OMSetBlendState(m_BlendState, NULL, 0xffffffff);
+    m_DeviceContext->OMSetBlendState(NULL, NULL, 0xffffffff);
 }
 
 void Graphics::Present()
@@ -229,7 +260,7 @@ void Graphics::Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearSte
     m_DeviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
 }
 
-void Graphics::ClearRTV(ID3D11RenderTargetView* rtv, const FLOAT clearColor[4])
+void Graphics::ClearRenderTargetView(ID3D11RenderTargetView* rtv, const FLOAT clearColor[4])
 {
     m_DeviceContext->ClearRenderTargetView(rtv, clearColor);
 }
@@ -332,7 +363,8 @@ Graphics::~Graphics()
     SafeRelease(m_RasterizerState);
     SafeRelease(m_SwapChain);
     SafeRelease(m_DeviceContext);
-    SafeRelease(m_BlendState);
+    SafeRelease(m_AlphaBlendState);
+    SafeRelease(m_DepthSRV);
     SafeRelease(m_Device);
 
     if (m_Debug != nullptr)

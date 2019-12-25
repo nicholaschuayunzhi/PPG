@@ -6,7 +6,6 @@
 #include "Resources/Mesh.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
-#include "Resources/Sampler.h"
 
 
 SpritePass::SpritePass(Graphics& graphics, Texture& renderTarget) :
@@ -14,7 +13,6 @@ SpritePass::SpritePass(Graphics& graphics, Texture& renderTarget) :
 {
     m_Shader = std::make_unique<Shader>(L"VertexShader.cso", L"Sprite.ps.cso", graphics);
     m_QuadMesh = std::make_unique<Mesh>(QuadVertices(), QuadIndices(), graphics);
-    m_Sampler = std::make_unique<Sampler>(graphics);
 
     D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
     ZeroMemory(&depthStencilStateDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
@@ -38,13 +36,14 @@ SpritePass::~SpritePass()
 void SpritePass::Render(Graphics& graphics, Scene& scene)
 {
     graphics.SetRenderTarget(m_RenderTarget);
+
     auto deviceContext = graphics.m_DeviceContext;
     scene.UseCamera(graphics, scene.m_MainCamera);
     scene.UseModel(graphics);
     m_Shader->Use(deviceContext);
-    m_Sampler->Use(deviceContext, 0);
 
     deviceContext->OMSetDepthStencilState(m_NoWriteDepthStencil, 1);
+    deviceContext->OMSetBlendState(graphics.m_AlphaBlendState, NULL, 0xffffffff);
 
     // Sort Sprites
     std::vector<std::shared_ptr<SceneObject>> sprites;
@@ -74,6 +73,9 @@ void SpritePass::Render(Graphics& graphics, Scene& scene)
         pSpriteRenderer->m_Sprite->Use(deviceContext, 0);
         m_QuadMesh->Draw(deviceContext);
     }
-
     deviceContext->OMSetDepthStencilState(graphics.m_DepthStencilState, 1);
+    deviceContext->OMSetBlendState(NULL, NULL, 0xffffffff);
+
+    graphics.UnbindShaderResourceView(0);
+    graphics.UnbindRenderTargetView();
 }

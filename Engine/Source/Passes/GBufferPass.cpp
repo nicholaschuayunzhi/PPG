@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ForwardPass.h"
+#include "GBufferPass.h"
 #include "LowLevel/Graphics.h"
 #include "Scene/Scene.h"
 #include "Scene/Material/PhongMaterial.h"
@@ -8,34 +8,37 @@
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
 
-ForwardPass::ForwardPass(Graphics& graphics, Texture& renderTarget) :
-    m_RenderTarget(renderTarget)
+GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& specular, Texture& normals) :
+    m_Diffuse(diffuse),
+    m_Specular(specular),
+    m_Normals(normals)
 {
-    shader = std::make_unique<Shader>(L"VertexShader.cso", L"PixelShader.cso", graphics);
+    shader = std::make_unique<Shader>(L"VertexShader.cso", L"GBuffer.ps.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(MaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
+
+    m_RenderTargets[0] = m_Diffuse.m_TextureRTV;
+    m_RenderTargets[1] = m_Specular.m_TextureRTV;
+    m_RenderTargets[2] = m_Normals.m_TextureRTV;
 }
 
-ForwardPass::~ForwardPass()
+GBufferPass::~GBufferPass()
 {
     SafeRelease(m_Buffer);
 }
 
-void ForwardPass::Render(Graphics& graphics, Scene& scene)
+void GBufferPass::Render(Graphics& graphics, Scene& scene)
 {
-    graphics.ClearRenderTargetView(m_RenderTarget.m_TextureRTV, Colors::Transparent);
-    graphics.SetRenderTarget(m_RenderTarget);
-
     auto deviceContext = graphics.m_DeviceContext;
+    graphics.ClearRenderTargetView(m_Diffuse.m_TextureRTV, Colors::Transparent);
+    graphics.ClearRenderTargetView(m_Specular.m_TextureRTV, Colors::Transparent);
+    graphics.ClearRenderTargetView(m_Normals.m_TextureRTV, Colors::Transparent);
+
+    deviceContext->OMSetRenderTargets(3, &(m_RenderTargets[0]), graphics.m_DepthStencilView);
+
     scene.UseCamera(graphics, scene.m_MainCamera);
-    scene.lightManager.Use(deviceContext, 1); // should be linked to material + shader
-    scene.UseModel(graphics); // not so good...
+    scene.lightManager.Use(deviceContext, 1);
+    scene.UseModel(graphics);
     shader->Use(deviceContext);
-    auto& lightManager = scene.lightManager;
-    if (lightManager.hasLightWithShadows)
-    {
-        deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
-        lightManager.m_OneShadowMapTexture->Use(deviceContext, 4);
-    }
 
     for (auto sceneObj : scene.m_Objects)
     {
@@ -57,6 +60,5 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindShaderResourceView(1);
     graphics.UnbindShaderResourceView(2);
-    graphics.UnbindShaderResourceView(4);
     graphics.UnbindRenderTargetView();
 }

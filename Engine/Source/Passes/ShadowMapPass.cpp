@@ -34,7 +34,6 @@ void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapT
         sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }
 
-    ID3D11RenderTargetView* pNullRTV = NULL;
-    graphics.SetRenderTarget(*(graphics.m_BackBuffer.get()));
     graphics.Clear(DirectX::Colors::Transparent, 1.0f, 0);
+    graphics.UnbindRenderTargetView();
 }

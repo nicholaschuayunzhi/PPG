@@ -1,3 +1,5 @@
+#include "Common/Sampler.hlsli"
+
 struct PixelShaderInput // see Fullscreen.vs.hlsl
 {
     float4 position : SV_POSITION;
@@ -5,10 +7,9 @@ struct PixelShaderInput // see Fullscreen.vs.hlsl
 };
 
 Texture2D src : register(t0);
-sampler Sampler : register(s0);
 
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float2 texC = IN.texCoord;
-    return src.Sample(Sampler, texC);
+    return src.Sample(PointSampler, texC);
 }

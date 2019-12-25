@@ -18,3 +18,5 @@
 #include "Passes/SkyboxPass.h"
 #include "Passes/BlitPass.h"
 #include "Passes/SpritePass.h"
+#include "Passes/GBufferPass.h"
+#include "Passes/DeferredPass.h"

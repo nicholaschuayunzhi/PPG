@@ -1,3 +1,8 @@
+#ifndef LIGHTING_COMMON
+#define LIGHTING_COMMON
+
+#include "Sampler.hlsli"
+
 #define MAX_LIGHTS 3
 #define DIRECTIONAL_LIGHT 0
 #define POINT_LIGHT 1
@@ -7,27 +12,8 @@
 #define LIGHT_ENABLED 1
 #define LIGHT_ENABLED_W_SHADOWMAP 2
 
-#define VERTEX_NORMALS 0
-#define NORMAL_MAP 1
-#define BUMP_MAP 2
-
-Texture2D Diffuse : register(t0);
-Texture2D NormalMap : register(t1);
-Texture2D Specular : register(t2);
 Texture2D ShadowMap : register(t4); // support 1 for now, future use array
 
-sampler Sampler : register(s0);
-
-cbuffer Material : register(b0)
-{
-    float4 matDiffuse;
-    float4 matSpecular;
-
-    float matShininess;
-    int useDiffuse;
-    int normalState;
-    int useSpecular;
-}
 
 struct Light
 {
@@ -84,7 +70,7 @@ float ShadowFactor(float4 worldPosition) // assumes only one shadow map cbuffer
     for (int x = -1; x < 2; ++x)
         for (int y = -1; y < 2; ++y)
         {
-            float closestDepth = ShadowMap.Sample(Sampler, projCoords.xy + float2(x, y) * texelSize).r;
+            float closestDepth = ShadowMap.Sample(LinearSampler, projCoords.xy + float2(x, y) * texelSize).r;
             shadow += (closestDepth < currentDepth - epsilon);
         }
     shadow /= 9;
@@ -101,42 +87,12 @@ LightingResult CalculatePhongLighting(float3 L, float3 N, float3 V, float4 light
     return result;
 }
 
-float3 CalculateNormal(float3 normal, float3 tangent, float3 binormal, float2 texCoord)
-{
-    float3 N = normal;
-    switch (normalState)
-    {
-        case NORMAL_MAP:
-            float3 normalMapVal = NormalMap.Sample(Sampler, texCoord).xyz;
-            normalMapVal = normalize((normalMapVal * 2) - 1.0);
-            N = (normalMapVal.x * normalize(tangent)) + (normalMapVal.y * normalize(binormal)) + (normalMapVal.z * normal);
-            N = normalize(N);
-            return N;
-            break;
-        case BUMP_MAP:
-            float2 bumpTextureSize;
-            NormalMap.GetDimensions(bumpTextureSize[0], bumpTextureSize[1]);
-            float2 pixelSize = 1.0 / bumpTextureSize;
-
-            float mid = NormalMap.Sample(Sampler, texCoord) * 2.0 - 1.0;
-            float left = NormalMap.Sample(Sampler, texCoord + float2(-pixelSize.x, 0)) * 2.0 - 1.0;
-            float right = NormalMap.Sample(Sampler, texCoord + float2(pixelSize.x, 0)) * 2.0 - 1.0;
-            float top = NormalMap.Sample(Sampler, texCoord + float2(0, -pixelSize.y)) * 2.0 - 1.0;
-            float bottom = NormalMap.Sample(Sampler, texCoord + float2(0, pixelSize.y)) * 2.0 - 1.0;
-            float3 p1 = ((bottom - mid) - (top - mid)) * normalize(binormal);
-            float3 p2 = ((left - mid) - (right - mid)) * normalize(tangent);
-            N = normalize(N - (p1 + p1));
-            return N;
-            break;
-    }
-    return normal;
-}
-
 struct ShadingInfo
 {
     float4 posW;
     float3 normal;
     float3 viewDir;
+    float matShininess;
 };
 
 void CalculatePointLight(Light light, ShadingInfo shadingInfo, inout float4 diffuse, inout float4 specular)
@@ -146,7 +102,7 @@ void CalculatePointLight(Light light, ShadingInfo shadingInfo, inout float4 diff
     float3 V = shadingInfo.viewDir;
     float distance = length(L);
     L = normalize(L);
-    LightingResult result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+    LightingResult result = CalculatePhongLighting(L, N, V, light.color, shadingInfo.matShininess);
     float attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
     diffuse += attenuation * result.diffuse;
     specular += attenuation * result.specular;
@@ -159,7 +115,7 @@ void CalculateDirectionalLight(Light light, ShadingInfo shadingInfo, inout float
     float3 V = shadingInfo.viewDir;
 
     float lightFactor = (light.status == LIGHT_ENABLED_W_SHADOWMAP) ? 1 - ShadowFactor(shadingInfo.posW) : 1;
-    LightingResult result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+    LightingResult result = CalculatePhongLighting(L, N, V, light.color, shadingInfo.matShininess);
     diffuse += lightFactor * result.diffuse;
     specular += lightFactor * result.specular;
 }
@@ -172,7 +128,7 @@ void CalculateSpotLight(Light light, ShadingInfo shadingInfo, inout float4 diffu
     float distance = length(L);
     L = normalize(L);
 
-    LightingResult result = CalculatePhongLighting(L, N, V, light.color, matShininess);
+    LightingResult result = CalculatePhongLighting(L, N, V, light.color,shadingInfo.matShininess);
     float attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadAtt * (distance * distance));
     float minCos = cos(light.spotAngle);
     float maxCos = (minCos + 1.0f) / 2.0f; // squash between [0, 1]
@@ -181,3 +137,5 @@ void CalculateSpotLight(Light light, ShadingInfo shadingInfo, inout float4 diffu
     diffuse += intensity * attenuation * result.diffuse;
     specular += intensity * attenuation * result.specular;
 }
+#endif
+

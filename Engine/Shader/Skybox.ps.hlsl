@@ -1,5 +1,6 @@
+#include "Common/Sampler.hlsli"
+
 TextureCube SkyboxTexture : register(t0);
-sampler Sampler: register(s0);
 
 struct PixelShaderInput
 {
@@ -9,5 +10,5 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
-    return float4(SkyboxTexture.Sample(Sampler, IN.texCoord).rgb, 1);
+    return float4(SkyboxTexture.Sample(LinearSampler, IN.texCoord).rgb, 1);
 }

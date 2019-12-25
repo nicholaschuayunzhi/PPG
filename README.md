@@ -13,3 +13,4 @@ Implemented:
 * Skybox
 * Directional Shadow Map
 * Sprites
+* Deferred Rendering

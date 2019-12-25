@@ -28,6 +28,7 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, LPCWSTR fileNa
 void SkyboxPass::Render(Graphics& graphics, Scene& scene)
 {
     graphics.SetRenderTarget(m_RenderTarget);
+
     auto deviceContext = graphics.m_DeviceContext;
     scene.UseCamera(graphics, scene.m_MainCamera);
     scene.UseModel(graphics);
@@ -37,5 +38,9 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
     scene.UpdateModel(graphics, model);
     skyboxTexture->Use(deviceContext, 0);
     skyboxMesh->Draw(deviceContext);
-    Texture::SetNullSrv(deviceContext, 0);
+    ID3D11RenderTargetView* nullViews[] = { nullptr };
+    deviceContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
+
+    graphics.UnbindShaderResourceView(0);
+    graphics.UnbindRenderTargetView();
 }

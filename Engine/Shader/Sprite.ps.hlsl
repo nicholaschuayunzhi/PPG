@@ -1,3 +1,5 @@
+#include "Common/Sampler.hlsli"
+
 struct PixelShaderInput
 {
     float4 position : SV_POSITION;
@@ -15,5 +17,5 @@ sampler Sampler : register(s0);
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float2 texC = IN.texCoord;
-    return Sprite.Sample(Sampler, texC);
+    return Sprite.Sample(LinearSampler, texC);
 }

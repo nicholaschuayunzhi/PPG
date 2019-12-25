@@ -153,7 +153,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\Passes\BlitPass.h" />
+    <ClInclude Include="Source\Passes\DeferredPass.h" />
     <ClInclude Include="Source\Passes\ForwardPass.h" />
+    <ClInclude Include="Source\Passes\GBufferPass.h" />
     <ClInclude Include="Source\Passes\ShadowMapPass.h" />
     <ClInclude Include="Source\Passes\SkyboxPass.h" />
     <ClInclude Include="Source\LowLevel\Application.h" />
@@ -180,7 +182,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Passes\BlitPass.cpp" />
+    <ClCompile Include="Source\Passes\DeferredPass.cpp" />
     <ClCompile Include="Source\Passes\ForwardPass.cpp" />
+    <ClCompile Include="Source\Passes\GBufferPass.cpp" />
     <ClCompile Include="Source\Passes\ShadowMapPass.cpp" />
     <ClCompile Include="Source\Passes\SkyboxPass.cpp" />
     <ClCompile Include="Source\LowLevel\Application.cpp" />
@@ -224,11 +228,23 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shader\Deferred.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shader\Fullscreen.vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\GBuffer.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
@@ -263,6 +279,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Common\Lighting.hlsli" />
+    <None Include="Shader\Common\Material.hlsli" />
+    <None Include="Shader\Common\Sampler.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,8 +3,6 @@
 #include "LowLevel/Graphics.h"
 #include "DirectXTex.h"
 
-ID3D11ShaderResourceView* Texture::nullSRV[] = { nullptr };
-
 Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
 {
     std::filesystem::path filePath(texturePath);
@@ -45,7 +43,7 @@ Texture::Texture(LPCWSTR texturePath, Graphics& graphics)
 }
 
 // Creates empty texture that can be used as a render target and shader resource
-Texture::Texture(int width, int height, Graphics& graphics, const std::string& name)
+Texture::Texture(int width, int height, Graphics& graphics, const std::string& name, DXGI_FORMAT texFormat /*= DXGI_FORMAT_R8G8B8A8_UNORM*/)
 {
     D3D11_TEXTURE2D_DESC textureDesc;
     HRESULT result;
@@ -58,7 +56,7 @@ Texture::Texture(int width, int height, Graphics& graphics, const std::string& n
     textureDesc.Height = height;
     textureDesc.MipLevels = 1;
     textureDesc.ArraySize = 1;
-    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.Format = texFormat;
     textureDesc.SampleDesc.Count = 1;
     textureDesc.Usage = D3D11_USAGE_DEFAULT;
     textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -124,11 +122,6 @@ Texture::Texture(Texture&& texture)
 void Texture::Use(ID3D11DeviceContext* deviceContext, UINT startSlot)
 {
     deviceContext->PSSetShaderResources(startSlot, 1, &m_TextureSRV);
-}
-
-void Texture::SetNullSrv(ID3D11DeviceContext* deviceContext, UINT startSlot)
-{
-    deviceContext->PSSetShaderResources(startSlot, 1, nullSRV);
 }
 
 Texture::~Texture()

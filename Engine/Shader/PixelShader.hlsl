@@ -1,3 +1,5 @@
+#include "Common/Sampler.hlsli"
+#include "Common/Material.hlsli"
 #include "Common/Lighting.hlsli"
 
 struct PixelShaderInput
@@ -26,6 +28,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     shadingInfo.posW = IN.wPosition;
     shadingInfo.normal = N;
     shadingInfo.viewDir = normalize(eyePosition.xyz - IN.wPosition.xyz);
+    shadingInfo.matShininess = matShininess;
 
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
@@ -50,10 +53,10 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
     float4 finalDiffuse = matDiffuse;
     if (useDiffuse)
-        finalDiffuse *= Diffuse.Sample(Sampler, IN.texCoord);
+        finalDiffuse *= Diffuse.Sample(LinearSampler, IN.texCoord);
     float4 finalSpecular = matSpecular;
     if (useSpecular)
-        finalSpecular *= Specular.Sample(Sampler, IN.texCoord).rrrr;
+        finalSpecular *= Specular.Sample(LinearSampler, IN.texCoord).rrrr;
     float4 final = finalDiffuse * saturate(diffuse) + finalSpecular * saturate(specular);
     return float4(final.rgb, 1);
 }

@@ -4,6 +4,40 @@
 
 class MyDemo : public Demo
 {
+private:
+    Scene scene;
+
+    Texture* brickTexture;
+    Texture* brickNormalMap;
+    std::unique_ptr<Texture> lightBulbTex;
+    std::unique_ptr<Texture> arrowTex;
+
+    std::unique_ptr<Sampler> linearSampler;
+    std::unique_ptr<Sampler> pointSampler;
+
+    PhongMaterial planeMaterial;
+    Mesh* planeMesh;
+
+    Mesh* cubeMesh;
+    PhongMaterial cubeMaterial;
+
+    Model* stormtrooper;
+    Model* sponza;
+
+    std::shared_ptr<SceneObject> lightBulb;
+
+    std::unique_ptr<ForwardPass> forwardPass;
+    std::unique_ptr<SkyboxPass> skyboxPass;
+    std::unique_ptr<BlitPass> blitPass;
+    std::unique_ptr<SpritePass> spritePass;
+    std::unique_ptr<GBufferPass> gBufferPass;
+    std::unique_ptr<DeferredPass> deferredPass;
+
+    std::unique_ptr<Texture> colour;
+    std::unique_ptr<Texture> diffuse;
+    std::unique_ptr<Texture> specular;
+    std::unique_ptr<Texture> normals;
+
 public:
     void Start(Graphics& graphics) override
     {
@@ -12,13 +46,21 @@ public:
         unsigned int clientWidth = clientRect .right - clientRect.left;
         unsigned int clientHeight = clientRect.bottom - clientRect.top;
         colour = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Colour");
-        sampler = new Sampler(graphics);
+        diffuse = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Diffuse");
+        normals = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
+        specular = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Specular");
+
+        linearSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+        pointSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+
         auto& colourTexture = *(colour.get());
         //auto& colourTexture = *(graphics.m_BackBuffer.get());
         forwardPass = std::make_unique<ForwardPass>(graphics, colourTexture);
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, colourTexture);
         blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
+        gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *specular.get(), *normals.get());
+        deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *specular.get(), *normals.get());
 
         // Lighting
         auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
@@ -124,10 +166,13 @@ public:
 
         auto deviceContext = graphics.m_DeviceContext;
 
-        sampler->Use(deviceContext, 0);
+        linearSampler->Use(deviceContext, 0);
+        pointSampler->Use(deviceContext, 1);
 
         scene.Update(graphics, input, deltaTime);
-        forwardPass->Render(graphics, scene);
+        //forwardPass->Render(graphics, scene);
+        gBufferPass->Render(graphics, scene);
+        deferredPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
         spritePass->Render(graphics, scene);
         blitPass->Render(graphics, scene);
@@ -139,35 +184,7 @@ public:
         if (cubeMesh) delete cubeMesh;
         if (brickTexture) delete brickTexture;
         if (brickNormalMap) delete brickNormalMap;
-        if (sampler) delete sampler;
         if (stormtrooper) delete stormtrooper;
         if (sponza) delete sponza;
     }
-
-private:
-    Scene scene;
-
-    Texture* brickTexture;
-    Texture* brickNormalMap;
-    std::unique_ptr<Texture> lightBulbTex;
-    std::unique_ptr<Texture> arrowTex;
-
-    Sampler* sampler;
-
-    PhongMaterial planeMaterial;
-    Mesh* planeMesh;
-
-    Mesh* cubeMesh;
-    PhongMaterial cubeMaterial;
-
-    Model* stormtrooper;
-    Model* sponza;
-
-    std::shared_ptr<SceneObject> lightBulb;
-
-    std::unique_ptr<ForwardPass> forwardPass;
-    std::unique_ptr<SkyboxPass> skyboxPass;
-    std::unique_ptr<BlitPass> blitPass;
-    std::unique_ptr<SpritePass> spritePass;
-    std::unique_ptr<Texture> colour;
 };

@@ -18,6 +18,5 @@ private:
     Texture& m_SrcTexture;
     Texture& m_DestTexture;
     std::unique_ptr<Shader> m_Shader;
-    std::unique_ptr<Sampler> m_Sampler;
 };
 
