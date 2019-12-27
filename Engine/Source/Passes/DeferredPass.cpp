@@ -25,6 +25,7 @@ DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& d
 
 DeferredPass::~DeferredPass()
 {
+    SafeRelease(m_Buffer);
 }
 
 void DeferredPass::Render(Graphics& graphics, Scene& scene)
@@ -59,6 +60,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindShaderResourceView(1);
     graphics.UnbindShaderResourceView(2);
+    graphics.UnbindShaderResourceView(3);
     graphics.UnbindShaderResourceView(4);
     graphics.UnbindRenderTargetView();
 }
