@@ -23,18 +23,14 @@ public:
     void UnbindRenderTargetView();
     void UnbindShaderResourceView(UINT startSlot);
 
-
     ID3D11Device* m_Device = nullptr;
     CComPtr<ID3D11Debug> m_Debug = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
     IDXGISwapChain* m_SwapChain = nullptr;
 
     std::unique_ptr<Texture> m_BackBuffer;
+    std::unique_ptr<Texture> m_DepthStencilBuffer;
 
-    ID3D11DepthStencilView* m_DepthStencilView = nullptr;
-    ID3D11ShaderResourceView* m_DepthSRV;
-
-    ID3D11Texture2D* m_DepthStencilBuffer = nullptr;
     ID3D11DepthStencilState* m_DepthStencilState = nullptr;
     ID3D11RasterizerState* m_RasterizerState = nullptr;
     ID3D11BlendState* m_AlphaBlendState = nullptr;

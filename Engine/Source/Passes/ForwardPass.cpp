@@ -34,7 +34,7 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     if (lightManager.hasLightWithShadows)
     {
         deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
-        lightManager.m_OneShadowMapTexture->Use(deviceContext, 4);
+        lightManager.m_OneShadowMapTexture->UseSRV(deviceContext, 4);
     }
 
     for (auto sceneObj : scene.m_Objects)
@@ -45,11 +45,11 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
         graphics.UpdateBuffer(m_Buffer, &(phongMat->m_MaterialInfo));
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
         if (phongMat->m_Diffuse)
-            phongMat->m_Diffuse->Use(deviceContext, 0);
+            phongMat->m_Diffuse->UseSRV(deviceContext, 0);
         if (phongMat->m_Normal)
-            phongMat->m_Normal->Use(deviceContext, 1);
+            phongMat->m_Normal->UseSRV(deviceContext, 1);
         if (phongMat->m_Specular)
-            phongMat->m_Specular->Use(deviceContext, 2);
+            phongMat->m_Specular->UseSRV(deviceContext, 2);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
         sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }

@@ -6,7 +6,7 @@
 #include "Resources/Texture.h"
 #include "Resources/Shader.h"
 
-SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, LPCWSTR fileName, float size /*=50*/) :
+SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR& fileName, float size /*=50*/) :
     m_RenderTarget(renderTarget)
 {
     std::vector<WORD> skyboxIndices =
@@ -20,7 +20,7 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, LPCWSTR fileNa
     };
 
     skyboxMesh = std::make_unique<Mesh>(CubeVertices(), std::move(skyboxIndices), graphics);
-    skyboxTexture = std::make_unique<Texture>(fileName, graphics);
+    skyboxTexture = std::unique_ptr<Texture>(Texture::LoadTextureFromPath(graphics, fileName));
     shader = std::make_unique<Shader>(L"Skybox.vs.cso", L"Skybox.ps.cso", graphics);
     scaleMatrix = XMMatrixScaling(50, 50, 50);
 }
@@ -36,7 +36,7 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
     auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.m_MainCamera.m_EyePosition));
     shader->Use(deviceContext);
     scene.UpdateModel(graphics, model);
-    skyboxTexture->Use(deviceContext, 0);
+    skyboxTexture->UseSRV(deviceContext, 0);
     skyboxMesh->Draw(deviceContext);
     ID3D11RenderTargetView* nullViews[] = { nullptr };
     deviceContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);

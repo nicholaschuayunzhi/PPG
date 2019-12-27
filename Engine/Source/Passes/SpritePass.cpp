@@ -70,7 +70,7 @@ void SpritePass::Render(Graphics& graphics, Scene& scene)
         Transform* pTransform = std::get<Transform*>(spriteInfo);
         SpriteRenderer* pSpriteRenderer = std::get<SpriteRenderer*>(spriteInfo);
         scene.UpdateModel(graphics, pTransform->GetModel());
-        pSpriteRenderer->m_Sprite->Use(deviceContext, 0);
+        pSpriteRenderer->m_Sprite->UseSRV(deviceContext, 0);
         m_QuadMesh->Draw(deviceContext);
     }
     deviceContext->OMSetDepthStencilState(graphics.m_DepthStencilState, 1);

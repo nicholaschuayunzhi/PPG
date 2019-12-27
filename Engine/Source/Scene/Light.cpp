@@ -106,7 +106,11 @@ void LightManager::SetLightWithShadows(Graphics& graphics, unsigned int index, S
     m_OneShadowMapDesc = desc;
     m_OneShadowMapCBuffer = graphics.CreateBuffer(sizeof(ShadowMapConstant), D3D11_BIND_CONSTANT_BUFFER, &shadowMapConstant);
     m_ShadowMapPass = std::make_unique<ShadowMapPass>(graphics);
-    m_OneShadowMapTexture = std::make_unique<Texture>(desc.m_TextureWidth, desc.m_TextureHeight, graphics, "Shadow Map");
+    Texture* shadowMapTexture = Texture::CreateTexture(graphics, desc.m_TextureWidth, desc.m_TextureHeight, "Shadow Map",
+        DXGI_FORMAT_R32_TYPELESS, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+    shadowMapTexture->CreateRTV(graphics, DXGI_FORMAT_R32_FLOAT);
+    shadowMapTexture->CreateSRV(graphics, DXGI_FORMAT_R32_FLOAT);
+    m_OneShadowMapTexture = std::unique_ptr<Texture>(shadowMapTexture);
     hasLightWithShadows = true;
 }
 

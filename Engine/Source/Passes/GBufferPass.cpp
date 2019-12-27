@@ -33,7 +33,7 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
     graphics.ClearRenderTargetView(m_Specular.m_TextureRTV, Colors::Transparent);
     graphics.ClearRenderTargetView(m_Normals.m_TextureRTV, Colors::Transparent);
 
-    deviceContext->OMSetRenderTargets(3, &(m_RenderTargets[0]), graphics.m_DepthStencilView);
+    deviceContext->OMSetRenderTargets(3, &(m_RenderTargets[0]), graphics.m_DepthStencilBuffer->m_TextureDSV);
 
     scene.UseCamera(graphics, scene.m_MainCamera);
     scene.lightManager.Use(deviceContext, 1);
@@ -48,11 +48,11 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
         graphics.UpdateBuffer(m_Buffer, &(phongMat->m_MaterialInfo));
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
         if (phongMat->m_Diffuse)
-            phongMat->m_Diffuse->Use(deviceContext, 0);
+            phongMat->m_Diffuse->UseSRV(deviceContext, 0);
         if (phongMat->m_Normal)
-            phongMat->m_Normal->Use(deviceContext, 1);
+            phongMat->m_Normal->UseSRV(deviceContext, 1);
         if (phongMat->m_Specular)
-            phongMat->m_Specular->Use(deviceContext, 2);
+            phongMat->m_Specular->UseSRV(deviceContext, 2);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
         sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }

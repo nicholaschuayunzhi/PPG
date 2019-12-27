@@ -38,7 +38,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     if (lightManager.hasLightWithShadows)
     {
         deviceContext->PSSetConstantBuffers(2, 1, &(lightManager.m_OneShadowMapCBuffer));
-        lightManager.m_OneShadowMapTexture->Use(deviceContext, 4);
+        lightManager.m_OneShadowMapTexture->UseSRV(deviceContext, 4);
     }
 
     auto& camera = scene.m_MainCamera;
@@ -49,10 +49,10 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     graphics.UpdateBuffer(m_Buffer, &(deferredCBuf));
 
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    deviceContext->PSSetShaderResources(0, 1, &(graphics.m_DepthSRV));
-    m_Diffuse.Use(deviceContext, 1);
-    m_Specular.Use(deviceContext, 2);
-    m_Normals.Use(deviceContext, 3);
+    graphics.m_DepthStencilBuffer->UseSRV(deviceContext, 0);
+    m_Diffuse.UseSRV(deviceContext, 1);
+    m_Specular.UseSRV(deviceContext, 2);
+    m_Normals.UseSRV(deviceContext, 3);
     m_Shader->Use(deviceContext);
     deviceContext->Draw(4, 0);
 

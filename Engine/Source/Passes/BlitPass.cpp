@@ -22,7 +22,7 @@ void BlitPass::Render(Graphics& graphics, Scene& scene)
     graphics.SetRenderTarget(m_DestTexture, false);
 
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    m_SrcTexture.Use(deviceContext, 0);
+    m_SrcTexture.UseSRV(deviceContext, 0);
     m_Shader->Use(deviceContext);
     deviceContext->Draw(4, 0);
 

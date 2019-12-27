@@ -156,7 +156,7 @@ Texture* ModelLoader::loadTexture(aiTextureType type, aiMaterial* mat)
         std::string textureName = str.C_Str();
         textureName = m_Directory + textureName;
         std::wstring stemp = std::wstring(textureName.begin(), textureName.end());
-        LPCWSTR sw = stemp.c_str();
+        LPCWSTR path = stemp.c_str();
         auto it = m_TextureMap.find(textureName);
         if (it != m_TextureMap.end())
         {
@@ -164,7 +164,7 @@ Texture* ModelLoader::loadTexture(aiTextureType type, aiMaterial* mat)
         }
         else
         {
-            texture = new Texture(sw, m_Graphics);
+            texture = Texture::LoadTextureFromPath(m_Graphics, path);
             m_TextureMap.emplace(textureName, texture);
             m_Model->m_Textures.push_back(texture);
         }

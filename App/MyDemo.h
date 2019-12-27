@@ -7,8 +7,8 @@ class MyDemo : public Demo
 private:
     Scene scene;
 
-    Texture* brickTexture;
-    Texture* brickNormalMap;
+    std::unique_ptr<Texture> brickTexture;
+    std::unique_ptr<Texture> brickNormalMap;
     std::unique_ptr<Texture> lightBulbTex;
     std::unique_ptr<Texture> arrowTex;
 
@@ -38,17 +38,31 @@ private:
     std::unique_ptr<Texture> specular;
     std::unique_ptr<Texture> normals;
 
+    std::unique_ptr<Texture> LoadTextureFromPath(Graphics& graphics, const LPCWSTR& path)
+    {
+        Texture* tex = Texture::LoadTextureFromPath(graphics, path);
+        return std::unique_ptr<Texture>(tex);
+    }
+
+    std::unique_ptr<Texture> CreateRenderTexture(Graphics& graphics, int width, int height, const std::string name, DXGI_FORMAT format)
+    {
+        Texture* tex = Texture::CreateTexture(graphics, width, height, name, format, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+        tex->CreateRTV(graphics, format);
+        tex->CreateSRV(graphics, format);
+        return std::unique_ptr<Texture>(tex);
+    }
+
 public:
     void Start(Graphics& graphics) override
     {
         // Rendering Stuff
         auto& clientRect = graphics.m_ClientRect;
-        unsigned int clientWidth = clientRect .right - clientRect.left;
+        unsigned int clientWidth = clientRect.right - clientRect.left;
         unsigned int clientHeight = clientRect.bottom - clientRect.top;
-        colour = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Colour");
-        diffuse = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Diffuse");
-        normals = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
-        specular = std::make_unique<Texture>(clientWidth, clientHeight, graphics, "Specular");
+        colour = CreateRenderTexture(graphics, clientWidth, clientHeight, "Colour", DXGI_FORMAT_R8G8B8A8_UNORM);
+        diffuse = CreateRenderTexture(graphics, clientWidth, clientHeight, "Diffuse", DXGI_FORMAT_R8G8B8A8_UNORM);
+        normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
+        specular = CreateRenderTexture(graphics, clientWidth, clientHeight, "Specular", DXGI_FORMAT_R8G8B8A8_UNORM);
 
         linearSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
         pointSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
@@ -93,7 +107,7 @@ public:
 
         // Objects
         lightBulb = scene.CreateSceneObject("Light Bulb");
-        lightBulbTex = std::make_unique<Texture>(L"Data\\bulb.png", graphics);
+        lightBulbTex = LoadTextureFromPath(graphics, L"Data\\bulb.png");
         lightBulb->m_Transform
             .RotateEulerAngles(-0.5 * 3.142, 0, 0)
             .UniformScale(0.8);
@@ -115,7 +129,7 @@ public:
             .SetPosition(2, 0.5, -2);
 
         auto arrow = scene.CreateSceneObject("Arrow", cube->m_Index);
-        arrowTex = std::make_unique<Texture>(L"Data\\down-arrow.png", graphics);
+        arrowTex = LoadTextureFromPath(graphics, L"Data\\down-arrow.png");
         auto& arrowSpriteRenderer = arrow->m_SpriteRenderer;
         arrowSpriteRenderer.m_Sprite = arrowTex.get();
         arrowSpriteRenderer.m_IsEnabled = true;
@@ -128,15 +142,15 @@ public:
         plane->m_Transform
             .UniformScale(5);
         planeMesh = new Mesh(QuadVertices(), QuadIndices(), graphics);
-        brickTexture = new Texture(L"Data\\Brick_Wall_014_COLOR.jpg", graphics);
-        brickNormalMap = new Texture(L"Data\\Brick_Wall_014_NORM.jpg", graphics);
+        brickTexture = LoadTextureFromPath(graphics, L"Data\\Brick_Wall_014_COLOR.jpg");
+        brickNormalMap = LoadTextureFromPath(graphics, L"Data\\Brick_Wall_014_NORM.jpg");
 
         planeMaterial
             .SetDiffuse(1, 1, 1)
             .SetSpecular(0.5, 0.5, 0.5)
             .SetShininess(32)
-            .UseDiffuseMap(brickTexture)
-            .UseNormalMap(brickNormalMap);
+            .UseDiffuseMap(brickTexture.get())
+            .UseNormalMap(brickNormalMap.get());
         auto& planeMeshRenderer = plane->m_MeshRenderer;
         planeMeshRenderer.m_Mesh = planeMesh;
         planeMeshRenderer.m_Material = &planeMaterial;
@@ -182,8 +196,6 @@ public:
     {
         if (planeMesh) delete planeMesh;
         if (cubeMesh) delete cubeMesh;
-        if (brickTexture) delete brickTexture;
-        if (brickNormalMap) delete brickNormalMap;
         if (stormtrooper) delete stormtrooper;
         if (sponza) delete sponza;
     }
