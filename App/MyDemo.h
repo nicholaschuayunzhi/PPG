@@ -32,11 +32,13 @@ private:
     std::unique_ptr<SpritePass> spritePass;
     std::unique_ptr<GBufferPass> gBufferPass;
     std::unique_ptr<DeferredPass> deferredPass;
+    std::unique_ptr<SSAOPass> ssaoPass;
 
     std::unique_ptr<Texture> colour;
     std::unique_ptr<Texture> diffuse;
     std::unique_ptr<Texture> specular;
     std::unique_ptr<Texture> normals;
+    std::unique_ptr<Texture> ambientOcclusion;
 
     std::unique_ptr<Texture> LoadTextureFromPath(Graphics& graphics, const LPCWSTR& path)
     {
@@ -63,6 +65,11 @@ public:
         diffuse = CreateRenderTexture(graphics, clientWidth, clientHeight, "Diffuse", DXGI_FORMAT_R8G8B8A8_UNORM);
         normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
         specular = CreateRenderTexture(graphics, clientWidth, clientHeight, "Specular", DXGI_FORMAT_R8G8B8A8_UNORM);
+        Texture* ao = Texture::CreateTexture(graphics, clientWidth, clientHeight, "Ambient Occlusion",
+            DXGI_FORMAT_R16_UNORM, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+        ao->CreateRTV(graphics, DXGI_FORMAT_R16_UNORM);
+        ao->CreateSRV(graphics, DXGI_FORMAT_R16_UNORM);
+        ambientOcclusion = std::unique_ptr<Texture>(ao);
 
         linearSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
         pointSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
@@ -75,11 +82,12 @@ public:
         blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
         gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *specular.get(), *normals.get());
         deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *specular.get(), *normals.get());
+        ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
 
         // Lighting
         auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
         Light pointLight;
-        pointLight.m_Color = XMFLOAT4(DirectX::Colors::Yellow);
+        pointLight.m_Color = XMFLOAT4(Colors::Yellow);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
         pointLight.m_LightType = LightType::PointLight;
 
@@ -91,7 +99,7 @@ public:
         scene.lightManager
             .AddLight(pointLight)
             .AddLight(dirLight)
-            .SetGlobalAmbient(XMFLOAT4(0.01, 0.01, 0.01, 0));
+            .SetGlobalAmbient(XMFLOAT4(0.3, 0.3, 0.3, 1));
 
         // This shadow map is not tuned for sponza
         ShadowMapRenderDesc desc;
@@ -156,7 +164,7 @@ public:
         planeMeshRenderer.m_Material = &planeMaterial;
         planeMeshRenderer.m_IsEnabled = true;
 
-      /*  sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
+       /* sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
         auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
         sponzaObj->m_Transform
             .UniformScale(0.01);*/
@@ -180,12 +188,15 @@ public:
 
         auto deviceContext = graphics.m_DeviceContext;
 
+
         linearSampler->Use(deviceContext, 0);
         pointSampler->Use(deviceContext, 1);
 
         scene.Update(graphics, input, deltaTime);
         //forwardPass->Render(graphics, scene);
         gBufferPass->Render(graphics, scene);
+        ssaoPass->Render(graphics, scene);
+        deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
         deferredPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
         spritePass->Render(graphics, scene);

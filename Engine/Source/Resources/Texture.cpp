@@ -3,7 +3,8 @@
 #include "LowLevel/Graphics.h"
 #include "DirectXTex.h"
 
-Texture* Texture::CreateTexture(Graphics& graphics, int width, int height, const std::string& name, DXGI_FORMAT texFormat, UINT bindFlags)
+Texture* Texture::CreateTexture(Graphics& graphics, int width, int height, const std::string& name,
+    DXGI_FORMAT texFormat, UINT bindFlags, D3D11_SUBRESOURCE_DATA* data /*= NULL*/)
 {
     D3D11_TEXTURE2D_DESC textureDesc;
     // Initialize the render target texture description.
@@ -22,7 +23,7 @@ Texture* Texture::CreateTexture(Graphics& graphics, int width, int height, const
     textureDesc.MiscFlags = 0;
 
     ID3D11Texture2D* texturePtr;
-    HRESULT result = graphics.m_Device->CreateTexture2D(&textureDesc, NULL, &texturePtr);
+    HRESULT result = graphics.m_Device->CreateTexture2D(&textureDesc, data, &texturePtr);
     if (FAILED(result))
     {
         return nullptr;

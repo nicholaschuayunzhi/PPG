@@ -11,12 +11,14 @@ cbuffer DeferredCBuffer : register(b3)
 {
     float4x4 inverseProjection;
     float4x4 inverseView;
+    int useAO;
 }
 
 Texture2D DepthTexture : register(t0);
 Texture2D Diffuse : register(t1);
 Texture2D Specular : register(t2);
 Texture2D Normals : register(t3);
+Texture2D AO : register(t5);
 
 float3 CalculateWorldFromDepth(float depth, float2 texCoord)
 {
@@ -81,7 +83,9 @@ float4 main(PixelShaderInput IN) : SV_TARGET
                 return float4(1, 0, 1, 1);
         }
     }
-    float4 finalColour = saturate(diffuse) * matDiffuse + saturate(specular) * matSpecular;
+    float ambientOcclusion = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
+    float4 ambient = globalAmbient * matDiffuse * ambientOcclusion;
+    float4 finalColour = ambient + saturate(diffuse) * matDiffuse + saturate(specular) * matSpecular;
     return float4(finalColour);
 
 }

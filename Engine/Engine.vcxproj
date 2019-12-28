@@ -160,6 +160,7 @@
     <ClInclude Include="Source\Passes\SkyboxPass.h" />
     <ClInclude Include="Source\LowLevel\Application.h" />
     <ClInclude Include="Source\Passes\SpritePass.h" />
+    <ClInclude Include="Source\Passes\SSAOPass.h" />
     <ClInclude Include="Source\Scene\Camera.h" />
     <ClInclude Include="Source\Demo.h" />
     <ClInclude Include="Source\LowLevel\Graphics.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="Source\Passes\SkyboxPass.cpp" />
     <ClCompile Include="Source\LowLevel\Application.cpp" />
     <ClCompile Include="Source\Passes\SpritePass.cpp" />
+    <ClCompile Include="Source\Passes\SSAOPass.cpp" />
     <ClCompile Include="Source\Scene\Camera.cpp" />
     <ClCompile Include="Source\LowLevel\Graphics.cpp" />
     <ClCompile Include="Source\Scene\Light.cpp" />
@@ -271,6 +273,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\SSAO.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shader\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

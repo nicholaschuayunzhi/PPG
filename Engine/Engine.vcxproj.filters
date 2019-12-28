@@ -96,6 +96,9 @@
     <ClInclude Include="Source\Passes\DeferredPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Passes\SSAOPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\stdafx.cpp">
@@ -164,6 +167,9 @@
     <ClCompile Include="Source\Passes\DeferredPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Passes\SSAOPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Data\Brick_Wall_014_COLOR.jpg">
@@ -191,6 +197,7 @@
     <FxCompile Include="Shader\Fullscreen.vs.hlsl" />
     <FxCompile Include="Shader\GBuffer.ps.hlsl" />
     <FxCompile Include="Shader\Deferred.ps.hlsl" />
+    <FxCompile Include="Shader\SSAO.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Common\Lighting.hlsli" />

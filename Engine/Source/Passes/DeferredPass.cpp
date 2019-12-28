@@ -7,10 +7,12 @@
 #include "Resources/Texture.h"
 #include "Resources/Sampler.h"
 
+_declspec(align(16))
 struct DeferredPassCBuffer
 {
     XMMATRIX m_InverseProjection;
     XMMATRIX m_InverseView;
+    int m_UseAO = 0;
 };
 
 DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& specular, Texture& normals) :
@@ -23,9 +25,22 @@ DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& d
     m_Buffer = graphics.CreateBuffer(sizeof(DeferredPassCBuffer), D3D11_BIND_CONSTANT_BUFFER, nullptr);
 }
 
+
 DeferredPass::~DeferredPass()
 {
     SafeRelease(m_Buffer);
+}
+
+void DeferredPass::UseAmbientOcclusion(Texture& aoMap)
+{
+    m_AO = &aoMap;
+    m_UseAO = true;
+}
+
+void DeferredPass::DisableAmbientOcclusion()
+{
+    m_AO = nullptr;
+    m_UseAO = false;
 }
 
 void DeferredPass::Render(Graphics& graphics, Scene& scene)
@@ -46,6 +61,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     DeferredPassCBuffer deferredCBuf;
     deferredCBuf.m_InverseProjection = XMMatrixInverse(NULL, camera.CalculateProjection());
     deferredCBuf.m_InverseView = XMMatrixInverse(NULL, camera.CalculateView());
+    deferredCBuf.m_UseAO = m_UseAO;
     deviceContext->PSSetConstantBuffers(3, 1, &m_Buffer);
     graphics.UpdateBuffer(m_Buffer, &(deferredCBuf));
 
@@ -54,6 +70,10 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     m_Diffuse.UseSRV(deviceContext, 1);
     m_Specular.UseSRV(deviceContext, 2);
     m_Normals.UseSRV(deviceContext, 3);
+    if (m_UseAO)
+    {
+        m_AO->UseSRV(deviceContext, 5);
+    }
     m_Shader->Use(deviceContext);
     deviceContext->Draw(4, 0);
 
@@ -62,5 +82,6 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(2);
     graphics.UnbindShaderResourceView(3);
     graphics.UnbindShaderResourceView(4);
+    graphics.UnbindShaderResourceView(5);
     graphics.UnbindRenderTargetView();
 }

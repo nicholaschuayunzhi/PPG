@@ -10,7 +10,7 @@ public:
     Texture(Texture&& texture);
     ~Texture();
 
-    static Texture* CreateTexture(Graphics& graphics, int width, int height, const std::string& name, DXGI_FORMAT texFormat, UINT bindFlags);
+    static Texture* CreateTexture(Graphics& graphics, int width, int height, const std::string& name, DXGI_FORMAT texFormat, UINT bindFlags, D3D11_SUBRESOURCE_DATA* data = NULL);
     static Texture* LoadTextureFromPath(Graphics& graphics, const LPCWSTR& texturePath);
     bool CreateSRV(Graphics& graphics, DXGI_FORMAT texFormat);
     bool CreateRTV(Graphics& graphics, DXGI_FORMAT texFormat);
