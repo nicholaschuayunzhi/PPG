@@ -1,6 +1,26 @@
 #include "Common/Sampler.hlsli"
-#include "Common/Material.hlsli"
+<<<<<<< HEAD
 #include "Common/Lighting.hlsli"
+#include "Common/Shading.hlsli"
+
+#define VERTEX_NORMALS 0
+#define NORMAL_MAP 1
+#define BUMP_MAP 2
+
+Texture2D Diffuse : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D Specular : register(t2);
+
+cbuffer Material : register(b0)
+{
+    float4 matDiffuse;
+    float4 matSpecular;
+
+    float matShininess;
+    int useDiffuse;
+    int normalState;
+    int useSpecular;
+}
 
 struct PixelShaderInput
 {
@@ -18,37 +38,30 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float4 diffuse = float4(0, 0, 0, 0);
     float4 specular = float4(0, 0, 0, 0);
 
-    float3 N = normalize(IN.normal);
-    if (normalState != VERTEX_NORMALS)
-    {
-        N = CalculateNormal(IN.normal, IN.tangent, IN.binormal, IN.texCoord);
-    }
+    SurfaceInfo surf;
+    surf.posW = IN.wPosition;
+    surf.N = normalize(IN.normal);
+    surf.T = normalize(IN.tangent);
+    surf.B = normalize(IN.binormal);
+    surf.V = normalize(eyePosition.xyz - surf.posW.xyz);
 
-    ShadingInfo shadingInfo;
-    shadingInfo.posW = IN.wPosition;
-    shadingInfo.normal = N;
-    shadingInfo.viewDir = normalize(eyePosition.xyz - IN.wPosition.xyz);
-    shadingInfo.matShininess = matShininess;
+    if (normalState == NORMAL_MAP)
+    {
+        surf.N = CalcNormalFromNormMap(NormalMap, IN.texCoord, surf);
+    }
+    else if (normalState == BUMP_MAP)
+    {
+        surf.N = CalcNormalFromBumpMap(NormalMap, IN.texCoord, surf);
+    }
 
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light light = Lights[i];
         if (light.status == LIGHT_DISABLED)
             continue;
-        switch (abs(light.lightType))
-        {
-            case DIRECTIONAL_LIGHT:
-                CalculateDirectionalLight(light, shadingInfo, diffuse, specular);
-                break;
-            case POINT_LIGHT:
-                CalculatePointLight(light, shadingInfo, diffuse, specular);
-                break;
-            case SPOT_LIGHT:
-                CalculateSpotLight(light, shadingInfo, diffuse, specular);
-                break;
-            default:
-                return float4(1, 0, 1, 1);
-        }
+        LightingInfo li = EvalLightingInfo(surf, light);
+        diffuse.rgb += PhongDiffuse(max(0.0, li.NdotL), light.color.rgb) * li.attenuation * li.shadowFactor;
+        specular.rgb += PhongSpecular(li.L, surf.N, surf.V, light.color.rgb, matShininess) * li.attenuation * li.shadowFactor;
     }
 
     float4 finalDiffuse = matDiffuse;

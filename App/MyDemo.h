@@ -15,11 +15,11 @@ private:
     std::unique_ptr<Sampler> linearSampler;
     std::unique_ptr<Sampler> pointSampler;
 
-    PhongMaterial planeMaterial;
+    PBRMaterial planeMaterial;
     Mesh* planeMesh;
 
     Mesh* cubeMesh;
-    PhongMaterial cubeMaterial;
+    PBRMaterial cubeMaterial;
 
     Model* stormtrooper;
     Model* sponza;
@@ -36,7 +36,7 @@ private:
 
     std::unique_ptr<Texture> colour;
     std::unique_ptr<Texture> diffuse;
-    std::unique_ptr<Texture> specular;
+    std::unique_ptr<Texture> metalRough;
     std::unique_ptr<Texture> normals;
     std::unique_ptr<Texture> ambientOcclusion;
 
@@ -64,7 +64,7 @@ public:
         colour = CreateRenderTexture(graphics, clientWidth, clientHeight, "Colour", DXGI_FORMAT_R8G8B8A8_UNORM);
         diffuse = CreateRenderTexture(graphics, clientWidth, clientHeight, "Diffuse", DXGI_FORMAT_R8G8B8A8_UNORM);
         normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
-        specular = CreateRenderTexture(graphics, clientWidth, clientHeight, "Specular", DXGI_FORMAT_R8G8B8A8_UNORM);
+        metalRough = CreateRenderTexture(graphics, clientWidth, clientHeight, "MetalRough", DXGI_FORMAT_R8G8B8A8_UNORM);
         Texture* ao = Texture::CreateTexture(graphics, clientWidth, clientHeight, "Ambient Occlusion",
             DXGI_FORMAT_R16_UNORM, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
         ao->CreateRTV(graphics, DXGI_FORMAT_R16_UNORM);
@@ -80,12 +80,13 @@ public:
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, colourTexture);
         blitPass = std::make_unique<BlitPass>(graphics, colourTexture, *(graphics.m_BackBuffer.get()));
-        gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *specular.get(), *normals.get());
-        deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *specular.get(), *normals.get());
+        gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *metalRough.get(), *normals.get());
+        deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get());
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
 
         // Lighting
-        auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
+        auto lightColour = XMFLOAT4(Colors::LightBlue);
+
         Light pointLight;
         pointLight.m_Color = XMFLOAT4(Colors::Yellow);
         pointLight.m_Position = XMFLOAT4(4, 3, 0, 0);
@@ -96,10 +97,18 @@ public:
         dirLight.m_Direction = XMFLOAT4(-1, -1, 1, 0);
         dirLight.m_LightType = LightType::DirectionalLight;
 
+        Light spotLight;
+        spotLight.m_Color = XMFLOAT4(Colors::Magenta);
+        spotLight.m_Direction = XMFLOAT4(0, -1, 0, 0);
+        spotLight.m_Position = XMFLOAT4(3, 2, 0, 0);
+        spotLight.m_LightType = LightType::SpotLight;
+        spotLight.m_SpotAngle = 3.142 / 4.0;
+
         scene.lightManager
             .AddLight(pointLight)
             .AddLight(dirLight)
-            .SetGlobalAmbient(XMFLOAT4(0.3, 0.3, 0.3, 1));
+            .AddLight(spotLight)
+            .SetGlobalAmbient(XMFLOAT4(0.03, 0.03, 0.03, 1));
 
         // This shadow map is not tuned for sponza
         ShadowMapRenderDesc desc;
@@ -126,7 +135,10 @@ public:
         auto cube = scene.CreateSceneObject("Cube");
         cubeMesh = new Mesh(CubeVertices(), CubeIndices(), graphics);
         cubeMaterial
-            .SetDiffuse(0.0, 0.5, 0.8);
+            .SetMetallic(0)
+            .SetRoughness(0.8)
+            .SetAlbedo(0.0, 0.5, 0.8);
+
         auto& cubeMeshRenderer = cube->m_MeshRenderer;
         cubeMeshRenderer.m_Mesh = cubeMesh;
         cubeMeshRenderer.m_Material = &cubeMaterial;
@@ -154,10 +166,10 @@ public:
         brickNormalMap = LoadTextureFromPath(graphics, L"Data\\Brick_Wall_014_NORM.jpg");
 
         planeMaterial
-            .SetDiffuse(1, 1, 1)
-            .SetSpecular(0.5, 0.5, 0.5)
-            .SetShininess(32)
-            .UseDiffuseMap(brickTexture.get())
+            .SetAlbedo(1, 1, 1)
+            .SetMetallic(0)
+            .SetRoughness(0.5)
+            .UseAlbedoMap(brickTexture.get())
             .UseNormalMap(brickNormalMap.get());
         auto& planeMeshRenderer = plane->m_MeshRenderer;
         planeMeshRenderer.m_Mesh = planeMesh;

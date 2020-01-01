@@ -1,7 +1,7 @@
 #pragma once
 
 class Mesh;
-class PhongMaterial;
+class PBRMaterial;
 class Texture;
 
 struct Component
@@ -11,7 +11,7 @@ struct Component
 
 struct MeshRenderer : public Component
 {
-    PhongMaterial* m_Material;
+    PBRMaterial* m_Material;
     Mesh* m_Mesh;
 };
 

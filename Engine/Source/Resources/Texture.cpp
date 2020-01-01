@@ -56,7 +56,7 @@ Texture* Texture::LoadTextureFromPath(Graphics& graphics, const LPCWSTR& texture
     }
     else
     {
-        hr = LoadFromWICFile(texturePath, WIC_FLAGS_FORCE_RGB, &metadata, image);
+        hr = LoadFromWICFile(texturePath, DDS_FLAGS_NONE, &metadata, image);
     }
 
     if (FAILED(hr))

@@ -2,7 +2,7 @@
 #include "ForwardPass.h"
 #include "LowLevel/Graphics.h"
 #include "Scene/Scene.h"
-#include "Scene/Material/PhongMaterial.h"
+#include "Scene/Material/PBRMaterial.h"
 #include "Scene/Light.h"
 #include "Resources/Mesh.h"
 #include "Resources/Shader.h"
@@ -11,8 +11,8 @@
 ForwardPass::ForwardPass(Graphics& graphics, Texture& renderTarget) :
     m_RenderTarget(renderTarget)
 {
-    shader = std::make_unique<Shader>(L"VertexShader.cso", L"PixelShader.cso", graphics);
-    m_Buffer = graphics.CreateBuffer(sizeof(MaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
+    shader = std::make_unique<Shader>(L"VertexShader.cso", L"Forward.ps.cso", graphics);
+    m_Buffer = graphics.CreateBuffer(sizeof(PBRMaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
 }
 
 ForwardPass::~ForwardPass()
@@ -41,22 +41,19 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     {
         if (!sceneObj->m_MeshRenderer.m_IsEnabled) continue;
 
-        PhongMaterial* phongMat = sceneObj->m_MeshRenderer.m_Material;
-        graphics.UpdateBuffer(m_Buffer, &(phongMat->m_MaterialInfo));
+        PBRMaterial* mat = sceneObj->m_MeshRenderer.m_Material;
+        graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        if (phongMat->m_Diffuse)
-            phongMat->m_Diffuse->UseSRV(deviceContext, 0);
-        if (phongMat->m_Normal)
-            phongMat->m_Normal->UseSRV(deviceContext, 1);
-        if (phongMat->m_Specular)
-            phongMat->m_Specular->UseSRV(deviceContext, 2);
+        if (mat->m_Albedo)
+            mat->m_Albedo->UseSRV(deviceContext, 0);
+        if (mat->m_Normal)
+            mat->m_Normal->UseSRV(deviceContext, 1);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
         sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
     }
 
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindShaderResourceView(1);
-    graphics.UnbindShaderResourceView(2);
     graphics.UnbindShaderResourceView(4);
     graphics.UnbindRenderTargetView();
 }

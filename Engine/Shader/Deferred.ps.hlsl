@@ -1,5 +1,7 @@
 #include "Common/Sampler.hlsli"
 #include "Common/Lighting.hlsli"
+#include "Common/Shading.hlsli"
+#include "Common/BRDF.hlsli"
 
 struct PixelShaderInput // see Fullscreen.vs.hlsl
 {
@@ -16,7 +18,7 @@ cbuffer DeferredCBuffer : register(b3)
 
 Texture2D DepthTexture : register(t0);
 Texture2D Diffuse : register(t1);
-Texture2D Specular : register(t2);
+Texture2D MetalRough : register(t2);
 Texture2D Normals : register(t3);
 Texture2D AO : register(t5);
 
@@ -39,53 +41,53 @@ float3 CalculateWorldFromDepth(float depth, float2 texCoord)
     return worldSpace.xyz;
 }
 
-static const float2 SpecPowerRange = { 0.0, 250.0 };
-
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
     float depth = DepthTexture.Sample(PointSampler, IN.texCoord).r;
     float3 posW = CalculateWorldFromDepth(depth, IN.texCoord);
-    float4 matDiffuse = float4(Diffuse.Sample(PointSampler, IN.texCoord).rgb, 1);
-    float4 matSpecularAndPow = Specular.Sample(PointSampler, IN.texCoord);
-    float4 matSpecular = float4(matSpecularAndPow.rgb, 1);
-    float specPow = matSpecularAndPow.a * SpecPowerRange.y + SpecPowerRange.x;
+    float4 matMetalRough = MetalRough.Sample(PointSampler, IN.texCoord);
+    float3 albedo = Diffuse.Sample(PointSampler, IN.texCoord).rgb;
+    float metallic = matMetalRough.r;
+    float roughness = matMetalRough.g;
     float3 normal = Normals.Sample(PointSampler, IN.texCoord).rgb;
     normal = normalize(normal * 2.0 - 1.0);
 
-    ShadingInfo shadingInfo;
-    shadingInfo.posW = float4(posW, 1);
-    shadingInfo.normal = normal;
-    shadingInfo.viewDir = normalize(eyePosition.xyz - posW);
-    shadingInfo.matShininess = specPow;
+    SurfaceInfo surf;
+    surf.posW = float4(posW, 1);
+    surf.N = normal;
+    surf.V = normalize(eyePosition.xyz - posW);
+    surf.NdotV = dot(surf.N, surf.V);
 
-    float4 diffuse = float4(0, 0, 0, 0);
-    float4 specular = float4(0, 0, 0, 0);
-
-    int count = 0;
+    float3 Lo = float3(0, 0, 0);
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, albedo, metallic);
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light light = Lights[i];
         if (light.status == LIGHT_DISABLED)
             continue;
-        count++;
-        switch (abs(light.lightType))
-        {
-            case DIRECTIONAL_LIGHT:
-                CalculateDirectionalLight(light, shadingInfo, diffuse, specular);
-                break;
-            case POINT_LIGHT:
-                CalculatePointLight(light, shadingInfo, diffuse, specular);
-                break;
-            case SPOT_LIGHT:
-                CalculateSpotLight(light, shadingInfo, diffuse, specular);
-                break;
-            default:
-                return float4(1, 0, 1, 1);
-        }
-    }
-    float ambientOcclusion = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
-    float4 ambient = globalAmbient * matDiffuse * ambientOcclusion;
-    float4 finalColour = ambient + saturate(diffuse) * matDiffuse + saturate(specular) * matSpecular;
-    return float4(finalColour);
+        LightingInfo li = EvalLightingInfo(surf, light);
 
+        // cook-torrance brdf
+        float NDF = DistributionGGX(max(0.0, li.NdotH), roughness);
+        float G = GeometrySmith(max(0.0, surf.NdotV), max(0.0, li.NdotL), roughness);
+        float3 F = fresnelSchlick(min(1.0, max(dot(li.H, surf.V), 0.0)), F0);
+        float3 kS = F;
+        float3 kD = float3(1.0, 1.0, 1.0) - kS;
+        kD *= 1.0 - metallic;
+
+        float NdotL = max(li.NdotL, 0.0); // clamped n dot l
+
+        float3 numerator = NDF * G * F;
+        float denominator = 4.0 * max(surf.NdotV, 0.0) * NdotL;
+        float3 specular = numerator / max(denominator, 0.001);
+
+        Lo += (kD * albedo / PI + specular) * light.color.rgb * li.attenuation * NdotL * (li.shadowFactor);
+
+    }
+    float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
+    float3 ambient = globalAmbient.rgb * albedo * ao;
+    float3 colour = ambient + Lo;
+
+    return float4(colour, 1.0);
 }

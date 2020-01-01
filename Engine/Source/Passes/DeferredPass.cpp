@@ -15,9 +15,9 @@ struct DeferredPassCBuffer
     int m_UseAO = 0;
 };
 
-DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& specular, Texture& normals) :
+DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals) :
     m_Diffuse(diffuse),
-    m_Specular(specular),
+    m_MetalRough(metalRough),
     m_Normals(normals),
     m_RenderTarget(renderTarget)
 {
@@ -68,7 +68,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     graphics.m_DepthStencilBuffer->UseSRV(deviceContext, 0);
     m_Diffuse.UseSRV(deviceContext, 1);
-    m_Specular.UseSRV(deviceContext, 2);
+    m_MetalRough.UseSRV(deviceContext, 2);
     m_Normals.UseSRV(deviceContext, 3);
     if (m_UseAO)
     {

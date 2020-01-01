@@ -19,6 +19,6 @@ private:
     friend class ModelLoader;
     Model() = default;
     std::vector<Mesh*> m_Meshes;
-    std::vector<PhongMaterial*> m_Materials;
+    std::vector<PBRMaterial*> m_Materials;
     std::vector<Texture*> m_Textures;
 };

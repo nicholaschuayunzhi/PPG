@@ -93,42 +93,39 @@ void ModelLoader::ProcessNode(aiNode* node, SceneObject::Index parentIndex)
         Mesh* meshPtr = new Mesh(vertices, indices, m_Graphics, false);
         m_Model->m_Meshes.push_back(meshPtr);
 
-        PhongMaterial* materialPtr = new PhongMaterial();
+        PBRMaterial* materialPtr = new PBRMaterial();
         if (mesh->mMaterialIndex >= 0)
         {
             aiMaterial* mat = m_AiScene->mMaterials[mesh->mMaterialIndex];
-            Texture* diffuse = loadTexture(aiTextureType_DIFFUSE, mat);
-            Texture* normal = loadTexture(aiTextureType_NORMALS, mat);
-            Texture* bump = loadTexture(aiTextureType_HEIGHT, mat);
             Texture* specular = loadTexture(aiTextureType_SPECULAR, mat);
 
-            if (diffuse) materialPtr->UseDiffuseMap(diffuse);
+            Texture* albedo = loadTexture(aiTextureType_DIFFUSE, mat);
+            if (albedo) materialPtr->UseAlbedoMap(albedo);
 
+            Texture* normal = loadTexture(aiTextureType_NORMALS, mat);
+            Texture* bump = loadTexture(aiTextureType_HEIGHT, mat);
             if (normal) materialPtr->UseNormalMap(normal);
             else if (bump) materialPtr->UseBumpMap(bump);
-
-            if (specular) materialPtr->UseSpecularMap(specular);
 
             aiColor3D colour;
 
             aiReturn res = mat->Get(AI_MATKEY_COLOR_DIFFUSE, colour);
             if (res == aiReturn_SUCCESS)
-                materialPtr->SetDiffuse(colour[0], colour[1], colour[2]);
-
-            res = mat->Get(AI_MATKEY_COLOR_SPECULAR, colour);
-            if (res == aiReturn_SUCCESS)
-                materialPtr->SetSpecular(colour[0], colour[1], colour[2]);
+                materialPtr->SetAlbedo(colour[0], colour[1], colour[2]);
 
             float shininess;
             res = mat->Get(AI_MATKEY_SHININESS, shininess);
             if (res == aiReturn_SUCCESS)
-                materialPtr->SetShininess(shininess);
+            {
+                // convert shininess to roughness
+                float roughness = sqrt(2.0f / (shininess + 2.0f));
+                materialPtr->SetRoughness(roughness);
+            }
         }
         else
         {
             materialPtr
-                ->SetDiffuse(1, 0, 1)
-                .SetSpecular(1, 0, 1);
+                ->SetAlbedo(1, 0, 1);
         }
         m_Model->m_Materials.push_back(materialPtr);
         auto object = m_Scene.CreateSceneObject(node->mName.C_Str(), parentIndex);
@@ -195,7 +192,7 @@ Model::~Model()
     for (Mesh* mesh : m_Meshes)
         delete mesh;
 
-    for (PhongMaterial* mat : m_Materials)
+    for (PBRMaterial* mat : m_Materials)
         delete mat;
 
     for (Texture* tex : m_Textures)

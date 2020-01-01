@@ -6,7 +6,7 @@ This is a Dx11 rendering engine for self learning.
 
 Implemented:
 * Forward Rendering
-* Phong Shading
+* ~~Phong Shading~~ PBR (WIP)
 * Models
 * Directional, Spot, Point light source
 * Texture, Specular, Normal & Bump Mapping

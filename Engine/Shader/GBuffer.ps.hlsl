@@ -1,13 +1,30 @@
 #include "Common/Lighting.hlsli"
-#include "Common/Material.hlsli"
+#include "Common/Shading.hlsli"
+
+#define VERTEX_NORMALS 0
+#define NORMAL_MAP 1
+#define BUMP_MAP 2
+
+Texture2D Albedo : register(t0);
+Texture2D NormalMap : register(t1);
+
+cbuffer PBRMaterial : register(b0)
+{
+    float4 gAlbedo;
+    float gMetallic;
+    float gRoughness;
+
+    int gUseAlbedoMap;
+    int gNormalState;
+}
 
 struct PixelShaderInput
 {
     float4 position : SV_POSITION;
-    float4 pos      : POSITION0;
-    float4 wPosition: POSITION1;
-    float3 normal   : NORMAL;
-    float3 tangent  : TANGENT;
+    float4 pos : POSITION0;
+    float4 wPosition : POSITION1;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
     float2 texCoord : TEXCOORD0;
 };
@@ -15,33 +32,39 @@ struct PixelShaderInput
 struct GBufferOutput
 {
     float4 diffuse : SV_TARGET0;
-    float4 specular: SV_TARGET1;
-    float4 normal  : SV_TARGET2;
+    float4 metalRough : SV_TARGET1;
+    float4 normal : SV_TARGET2;
 };
-
-static const float2 SpecPowerRange = { 0.0, 250.0 };
 
 GBufferOutput main(PixelShaderInput IN)
 {
     GBufferOutput OUT;
     float3 N = normalize(IN.normal);
-    if (normalState != VERTEX_NORMALS)
+    SurfaceInfo surf;
+    surf.posW = IN.wPosition;
+    surf.N = normalize(IN.normal);
+    surf.T = normalize(IN.tangent);
+    surf.B = normalize(IN.binormal);
+    surf.V = normalize(eyePosition.xyz - surf.posW.xyz);
+    surf.NdotV = dot(surf.N, surf.V);
+
+    if (gNormalState == NORMAL_MAP)
     {
-        N = CalculateNormal(IN.normal, IN.tangent, IN.binormal, IN.texCoord);
+        surf.N = CalcNormalFromNormMap(NormalMap, IN.texCoord, surf);
     }
-    float specPow = (matShininess - SpecPowerRange.x) / SpecPowerRange.y;
+    else if (gNormalState == BUMP_MAP)
+    {
+        surf.N = CalcNormalFromBumpMap(NormalMap, IN.texCoord, surf);
+    }
 
     // PACK GBUFFER
-    float4 diffuse = matDiffuse;
-    if (useDiffuse)
-        diffuse *= Diffuse.Sample(LinearSampler, IN.texCoord);
-    float4 specular = float4(matSpecular.xyz, 0);
-    if (useSpecular)
-        specular *= Specular.Sample(LinearSampler, IN.texCoord).rrrr;
+    float4 albedo = gAlbedo;
+    if (gUseAlbedoMap)
+        albedo = Albedo.Sample(LinearSampler, IN.texCoord);
 
-    OUT.diffuse = float4(diffuse.rgb, 0);
-    OUT.specular.rgb = specular;
-    OUT.specular.a = specPow;
-    OUT.normal = float4(N * 0.5 + 0.5, 1);
+    OUT.diffuse = float4(albedo.rgb, 0);
+    OUT.metalRough.r = gMetallic;
+    OUT.metalRough.g = gRoughness;
+    OUT.normal = float4(surf.N * 0.5 + 0.5, 1);
     return OUT;
 }

@@ -85,7 +85,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     }
 
     m_BackBuffer = std::make_unique<Texture>(backBuffer, "Back Buffer");
-    m_BackBuffer->CreateRTV(*this, DXGI_FORMAT_R8G8B8A8_UNORM);
+    m_BackBuffer->CreateRTV(*this, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
 
     Texture* depthStencil = Texture::CreateTexture(*this, clientWidth, clientHeight, "Depth Stencil Buffer",
         DXGI_FORMAT_R24G8_TYPELESS, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE);

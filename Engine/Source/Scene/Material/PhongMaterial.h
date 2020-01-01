@@ -4,7 +4,7 @@
 
 using namespace DirectX;
 
-_declspec(align(16)) struct MaterialInfo
+_declspec(align(16)) struct PhongMaterialInfo
 {
     XMFLOAT4 m_Diffuse = XMFLOAT4(0, 0, 0, 0);
     XMFLOAT4 m_Specular = XMFLOAT4(0, 0, 0, 0);
@@ -34,6 +34,6 @@ public:
     Texture* m_Normal = nullptr;
     Texture* m_Specular = nullptr;
 
-    MaterialInfo m_MaterialInfo;
+    PhongMaterialInfo m_MaterialInfo;
 };
 
