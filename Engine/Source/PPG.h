@@ -21,3 +21,4 @@
 #include "Passes/GBufferPass.h"
 #include "Passes/DeferredPass.h"
 #include "Passes/SSAOPass.h"
+#include "Passes/ToneMapPass.h"

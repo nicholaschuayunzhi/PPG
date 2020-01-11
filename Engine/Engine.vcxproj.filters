@@ -99,6 +99,9 @@
     <ClInclude Include="Source\Scene\Material\PBRMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Passes\ToneMapPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\stdafx.cpp">
@@ -170,6 +173,9 @@
     <ClCompile Include="Source\Scene\Material\PBRMaterial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Passes\ToneMapPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Data\Brick_Wall_014_COLOR.jpg">
@@ -198,6 +204,7 @@
     <FxCompile Include="Shader\Deferred.ps.hlsl" />
     <FxCompile Include="Shader\SSAO.ps.hlsl" />
     <FxCompile Include="Shader\Forward.ps.hlsl" />
+    <FxCompile Include="Shader\ToneMapReinhard.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Common\Lighting.hlsli" />
