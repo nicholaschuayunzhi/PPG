@@ -71,7 +71,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         // cook-torrance brdf
         float NDF = DistributionGGX(max(0.0, li.NdotH), roughness);
         float G = GeometrySmith(max(0.0, surf.NdotV), max(0.0, li.NdotL), roughness);
-        float3 F = fresnelSchlick(min(1.0, max(dot(li.H, surf.V), 0.0)), F0);
+        float3 F = fresnelSchlick(clamp(surf.NdotV, 0.0, 1.0), F0);
         float3 kS = F;
         float3 kD = float3(1.0, 1.0, 1.0) - kS;
         kD *= 1.0 - metallic;
@@ -83,7 +83,6 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         float3 specular = numerator / max(denominator, 0.001);
 
         Lo += (kD * albedo / PI + specular) * light.color.rgb * li.attenuation * NdotL * (li.shadowFactor);
-
     }
     float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
     float3 ambient = globalAmbient.rgb * albedo * ao;
