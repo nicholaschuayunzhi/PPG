@@ -174,10 +174,9 @@ Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& gra
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(fileName,
         aiProcess_Triangulate |
-        aiProcess_GenNormals |
+        aiProcess_GenSmoothNormals |
         aiProcess_CalcTangentSpace |
-        aiProcess_MakeLeftHanded |
-        aiProcess_FlipUVs
+        aiProcess_ConvertToLeftHanded
     );
     if (assimpScene == NULL)
         throw std::exception("ModelLoader::Model file not found");

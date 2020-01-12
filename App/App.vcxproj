@@ -180,6 +180,11 @@
     <Image Include="Data\Brick_Wall_014_NORM.jpg" />
     <Image Include="Data\container.jpg" />
     <Image Include="Data\Directx9.png" />
+    <Image Include="Data\Models\boblampclean\guard1_body.tga" />
+    <Image Include="Data\Models\boblampclean\guard1_face.tga" />
+    <Image Include="Data\Models\boblampclean\guard1_helmet.tga" />
+    <Image Include="Data\Models\boblampclean\iron_grill.tga" />
+    <Image Include="Data\Models\boblampclean\round_grill.tga" />
     <Image Include="Data\Models\stormtrooper\BackAvatar.png" />
     <Image Include="Data\Models\stormtrooper\backbebap.png" />
     <Image Include="Data\Models\stormtrooper\Stormtrooper_D.tga" />
@@ -194,6 +199,10 @@
     <Media Include="Data\Models\stormtrooper\stormtrooper.obj">
       <FileType>Document</FileType>
     </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Data\Models\boblampclean\boblampclean.md5anim" />
+    <Text Include="Data\Models\boblampclean\boblampclean.md5mesh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

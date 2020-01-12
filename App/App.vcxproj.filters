@@ -28,9 +28,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Dll\assimp-vc142-mtd.dll">
-      <Filter>Dll</Filter>
-    </None>
     <None Include="Data\Models\stormtrooper\stormtrooper.mtl" />
   </ItemGroup>
   <ItemGroup>
@@ -56,8 +53,20 @@
     <Image Include="Data\Models\stormtrooper\Stormtrooper_D.tga" />
     <Image Include="Data\Models\stormtrooper\Stormtrooper_N.tga" />
     <Image Include="Data\Models\stormtrooper\Stormtrooper_S.tga" />
+    <Image Include="Data\Models\boblampclean\guard1_body.tga" />
+    <Image Include="Data\Models\boblampclean\guard1_face.tga" />
+    <Image Include="Data\Models\boblampclean\guard1_helmet.tga" />
+    <Image Include="Data\Models\boblampclean\iron_grill.tga" />
+    <Image Include="Data\Models\boblampclean\round_grill.tga" />
   </ItemGroup>
   <ItemGroup>
-    <Object Include="Data\Models\stormtrooper\stormtrooper.obj" />
+    <Media Include="Data\Models\stormtrooper\stormtrooper.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\Dll\assimp-vc142-mtd.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Data\Models\boblampclean\boblampclean.md5mesh" />
+    <Text Include="Data\Models\boblampclean\boblampclean.md5anim" />
   </ItemGroup>
 </Project>

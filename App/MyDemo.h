@@ -185,7 +185,12 @@ public:
         sponzaObj->m_Transform
             .UniformScale(0.01);*/
 
-        stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
+        //stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
+        stormtrooper = Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics);
+        auto stormTrooperObj = scene.GetSceneObjectByIndex(stormtrooper->m_RootIndex);
+        stormTrooperObj->m_Transform
+            .RotateEulerAngles(3.412 / 2.0, 0, 0)
+            .UniformScale(0.05);
 
         scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
 
@@ -210,7 +215,8 @@ public:
         //forwardPass->Render(graphics, scene);
         gBufferPass->Render(graphics, scene);
         ssaoPass->Render(graphics, scene);
-        deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
+        //deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
+        deferredPass->DisableAmbientOcclusion();
         deferredPass->Render(graphics, scene);
         toneMapPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);

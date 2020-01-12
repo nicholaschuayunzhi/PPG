@@ -114,7 +114,7 @@ Graphics::Graphics(HINSTANCE hInstance, BOOL vSync, Window& window)
     rasterizerDesc.DepthBiasClamp = 0.0f;
     rasterizerDesc.DepthClipEnable = TRUE;
     rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-    rasterizerDesc.FrontCounterClockwise = TRUE;
+    rasterizerDesc.FrontCounterClockwise = FALSE;
     rasterizerDesc.MultisampleEnable = FALSE;
     rasterizerDesc.ScissorEnable = FALSE;
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
