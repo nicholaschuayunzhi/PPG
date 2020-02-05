@@ -4,14 +4,20 @@ This is a Dx11 rendering engine for self learning.
 
 ![alt text](Docs/screenshot.png "Screenshot")
 
-Implemented:
-* Forward Rendering
-* ~~Phong Shading~~ PBR (WIP)
-* Models
+* Forward and Deferred Rendering
+* PBR (WIP)
 * Directional, Spot, Point light source
 * Texture, Specular, Normal & Bump Mapping
 * Skybox
 * Directional Shadow Map
 * Sprites
-* Deferred Rendering
 * SSAO
+* Skeletal Animation
+
+## Screen Shots
+
+![alt text](Docs/albedo.png "Albedo")
+![alt text](Docs/normal.png "Normal")
+![alt text](Docs/ssao.png "SSAO")
+![alt text](Docs/colour.png "Colour")
+![alt text](Docs/skeletal_anim.png "Skeletal Animation")

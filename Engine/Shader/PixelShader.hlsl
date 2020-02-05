@@ -1,5 +1,4 @@
 #include "Common/Sampler.hlsli"
-<<<<<<< HEAD
 #include "Common/Lighting.hlsli"
 #include "Common/Shading.hlsli"
 
