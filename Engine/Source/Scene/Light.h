@@ -67,6 +67,7 @@ private:
 
     friend class ForwardPass;
     friend class DeferredPass;
+
     bool hasLightWithShadows = false;
     ID3D11Buffer* m_OneShadowMapCBuffer;
     ShadowMapRenderDesc m_OneShadowMapDesc;

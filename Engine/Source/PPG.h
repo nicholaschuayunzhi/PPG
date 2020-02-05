@@ -7,7 +7,7 @@
 #include "Scene/Camera.h"
 #include "Scene/Light.h"
 #include "Scene/Material/Material.h"
-#include "Scene/Model.h"
+#include "Scene/Model/Model.h"
 
 #include "Resources/Mesh.h"
 #include "Resources/Texture.h"
@@ -22,3 +22,6 @@
 #include "Passes/DeferredPass.h"
 #include "Passes/SSAOPass.h"
 #include "Passes/ToneMapPass.h"
+
+#include "Jobs/AnimationJob.h"
+

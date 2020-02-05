@@ -19,5 +19,6 @@ private:
     Texture& m_MetalRough;
     Texture& m_Normals;
     ID3D11Buffer* m_Buffer = nullptr;
+    ID3D11Buffer* m_BoneBuffer = nullptr;
     ID3D11RenderTargetView* m_RenderTargets[3];
 };

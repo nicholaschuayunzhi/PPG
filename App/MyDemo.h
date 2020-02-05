@@ -19,6 +19,7 @@ private:
     Mesh* planeMesh;
 
     Mesh* cubeMesh;
+    Mesh* sphereMesh;
     PBRMaterial cubeMaterial;
 
     Model* stormtrooper;
@@ -41,6 +42,8 @@ private:
     std::unique_ptr<Texture> normals;
     std::unique_ptr<Texture> ambientOcclusion;
     std::unique_ptr<Texture> toneMappedColour;
+
+    AnimationJob animJob;
 
     std::unique_ptr<Texture> LoadTextureFromPath(Graphics& graphics, const LPCWSTR& path)
     {
@@ -146,8 +149,8 @@ public:
             .SetAlbedo(0.0, 0.3, 1.0);
 
         auto& cubeMeshRenderer = cube->m_MeshRenderer;
-        cubeMeshRenderer.m_Mesh = cubeMesh;
-        cubeMeshRenderer.m_Material = &cubeMaterial;
+        cubeMeshRenderer.m_Meshes.push_back(cubeMesh);
+        cubeMeshRenderer.m_Materials.push_back(&cubeMaterial);
         cubeMeshRenderer.m_IsEnabled = true;
         cube->m_Transform
             .UniformScale(0.5)
@@ -176,9 +179,10 @@ public:
             .UseAlbedoMap(brickTexture.get())
             .UseNormalMap(brickNormalMap.get());
         auto& planeMeshRenderer = plane->m_MeshRenderer;
-        planeMeshRenderer.m_Mesh = planeMesh;
-        planeMeshRenderer.m_Material = &planeMaterial;
+        planeMeshRenderer.m_Meshes.push_back(planeMesh);
+        planeMeshRenderer.m_Materials.push_back(&planeMaterial);
         planeMeshRenderer.m_IsEnabled = true;
+
 
        /* sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
         auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
@@ -187,13 +191,12 @@ public:
 
         //stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
         stormtrooper = Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics);
-        auto stormTrooperObj = scene.GetSceneObjectByIndex(stormtrooper->m_RootIndex);
+        auto stormTrooperObj = stormtrooper->m_SceneObject;
         stormTrooperObj->m_Transform
             .RotateEulerAngles(3.412 / 2.0, 0, 0)
             .UniformScale(0.05);
 
         scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
-
         scene.Start(graphics);
     }
 
@@ -212,11 +215,13 @@ public:
         pointSampler->Use(deviceContext, 1);
 
         scene.Update(graphics, input, deltaTime);
+
+
+        animJob.Update(scene, deltaTime);
         //forwardPass->Render(graphics, scene);
         gBufferPass->Render(graphics, scene);
         ssaoPass->Render(graphics, scene);
-        //deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
-        deferredPass->DisableAmbientOcclusion();
+        deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
         deferredPass->Render(graphics, scene);
         toneMapPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
@@ -228,6 +233,7 @@ public:
     {
         if (planeMesh) delete planeMesh;
         if (cubeMesh) delete cubeMesh;
+        if (sphereMesh) delete sphereMesh;
         if (stormtrooper) delete stormtrooper;
         if (sponza) delete sponza;
     }

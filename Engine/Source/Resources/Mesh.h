@@ -11,10 +11,12 @@ struct Vertex
     XMFLOAT2 TexCoord;
     XMFLOAT3 Tangent;
     XMFLOAT3 Binormal;
+    XMFLOAT4 BoneIds = { 0.0, 0.0, 0.0, 0.0 };
+    XMFLOAT4 BoneWeights = { 0.0, 0.0, 0.0, 0.0 };
 
     Vertex() = default;
     Vertex(XMFLOAT3 pos, XMFLOAT3 norm, XMFLOAT2 texC) :
-        Position(pos), Normal(norm), TexCoord(texC), Tangent(), Binormal()
+        Position(pos), Normal(norm), TexCoord(texC), Tangent(), Binormal(), BoneIds(), BoneWeights()
     {}
 };
 

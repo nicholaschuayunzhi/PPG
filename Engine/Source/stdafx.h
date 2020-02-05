@@ -57,3 +57,39 @@ inline void SetDebugName(ID3D11DeviceChild* child, const std::string& name)
     if (child != nullptr)
         child->SetPrivateData(WKPDID_D3DDebugObjectName, name.size(), name.c_str());
 }
+
+inline float GetFloatAtIndex(DirectX::XMFLOAT4& vec, int i)
+{
+    switch (i)
+    {
+        case 0:
+            return vec.x;
+        case 1:
+            return vec.y;
+        case 2:
+            return vec.z;
+        case 3:
+            return vec.w;
+    }
+    assert(0);
+    return 0.0;
+};
+
+inline void SetFloatAtIndex(DirectX::XMFLOAT4& vec, int i, float val)
+{
+    switch (i)
+    {
+        case 0:
+            vec.x = val;
+            return;
+        case 1:
+            vec.y = val;
+            return;
+        case 2:
+            vec.z = val;
+            return;
+        case 3:
+            vec.w = val;
+            return;
+    }
+};

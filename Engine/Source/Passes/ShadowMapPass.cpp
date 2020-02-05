@@ -31,7 +31,10 @@ void ShadowMapPass::Render(Graphics& graphics, Scene& scene, Texture& shadowMapT
     {
         if (!sceneObj->m_MeshRenderer.m_IsEnabled) continue;
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
+        for (Mesh* mesh : sceneObj->m_MeshRenderer.m_Meshes)
+        {
+            mesh->Draw(deviceContext);
+        }
     }
 
     graphics.Clear(DirectX::Colors::Transparent, 1.0f, 0);

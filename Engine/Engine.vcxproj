@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Jobs\AnimationJob.h" />
     <ClInclude Include="Source\Passes\BlitPass.h" />
     <ClInclude Include="Source\Passes\DeferredPass.h" />
     <ClInclude Include="Source\Passes\ForwardPass.h" />
@@ -171,9 +172,13 @@
     <ClInclude Include="Source\Resources\Mesh.h" />
     <ClInclude Include="Source\Scene\Material\Material.h" />
     <ClInclude Include="Source\Scene\Material\PBRMaterial.h" />
-    <ClInclude Include="Source\Scene\Model.h" />
+    <ClInclude Include="Source\Scene\Model\AnimationLoader.h" />
+    <ClInclude Include="Source\Scene\Model\ModelLoader.h" />
+    <ClInclude Include="Source\Scene\Model\Skeleton.h" />
+    <ClInclude Include="Source\Scene\Model\Model.h" />
     <ClInclude Include="Source\PPG.h" />
     <ClInclude Include="Source\Resources\Sampler.h" />
+    <ClInclude Include="Source\Scene\Model\SkeletonLoader.h" />
     <ClInclude Include="Source\Scene\Scene.h" />
     <ClInclude Include="Source\Resources\Shader.h" />
     <ClInclude Include="Source\Scene\SceneObject.h" />
@@ -183,6 +188,7 @@
     <ClInclude Include="Source\LowLevel\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Jobs\AnimationJob.cpp" />
     <ClCompile Include="Source\Passes\BlitPass.cpp" />
     <ClCompile Include="Source\Passes\DeferredPass.cpp" />
     <ClCompile Include="Source\Passes\ForwardPass.cpp" />
@@ -198,8 +204,9 @@
     <ClCompile Include="Source\Scene\Light.cpp" />
     <ClCompile Include="Source\Resources\Mesh.cpp" />
     <ClCompile Include="Source\Scene\Material\PBRMaterial.cpp" />
-    <ClCompile Include="Source\Scene\Model.cpp" />
+    <ClCompile Include="Source\Scene\Model\Model.cpp" />
     <ClCompile Include="Source\Resources\Sampler.cpp" />
+    <ClCompile Include="Source\Scene\Model\Skeleton.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
     <ClCompile Include="Source\Resources\Shader.cpp" />
     <ClCompile Include="Source\Scene\SceneObject.cpp" />
@@ -287,6 +294,8 @@
     <FxCompile Include="Shader\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

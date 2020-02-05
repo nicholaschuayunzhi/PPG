@@ -17,4 +17,5 @@ private:
     std::unique_ptr<Shader> shader;
     Texture& m_RenderTarget;
     ID3D11Buffer* m_Buffer = nullptr;
+    ID3D11Buffer* m_BoneBuffer = nullptr;
 };

@@ -7,6 +7,7 @@
 #include "Resources/Mesh.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
+#include "Scene/Model/Skeleton.h"
 
 GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRough, Texture& normals) :
     m_Diffuse(diffuse),
@@ -15,7 +16,7 @@ GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRou
 {
     shader = std::make_unique<Shader>(L"VertexShader.cso", L"GBuffer.ps.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(PBRMaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
-
+    m_BoneBuffer = graphics.CreateBuffer(sizeof(XMMATRIX) * Skeleton::NUM_BONES, D3D11_BIND_CONSTANT_BUFFER, nullptr);
     m_RenderTargets[0] = m_Diffuse.m_TextureRTV;
     m_RenderTargets[1] = m_MetalRough.m_TextureRTV;
     m_RenderTargets[2] = m_Normals.m_TextureRTV;
@@ -24,6 +25,7 @@ GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRou
 GBufferPass::~GBufferPass()
 {
     SafeRelease(m_Buffer);
+    SafeRelease(m_BoneBuffer);
 }
 
 void GBufferPass::Render(Graphics& graphics, Scene& scene)
@@ -39,20 +41,29 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
     scene.lightManager.Use(deviceContext, 1);
     scene.UseModel(graphics);
     shader->Use(deviceContext);
+    deviceContext->VSSetConstantBuffers(3, 1, &m_BoneBuffer);
 
     for (auto sceneObj : scene.m_Objects)
     {
         if (!sceneObj->m_MeshRenderer.m_IsEnabled) continue;
 
-        PBRMaterial* mat = sceneObj->m_MeshRenderer.m_Material;
-        graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
+        MeshRenderer& meshRenderer = sceneObj->m_MeshRenderer;
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        if (mat->m_Albedo)
-            mat->m_Albedo->UseSRV(deviceContext, 0);
-        if (mat->m_Normal)
-            mat->m_Normal->UseSRV(deviceContext, 1);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
-        sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
+        if (sceneObj->m_Animator.m_IsEnabled)
+        {
+            graphics.UpdateBuffer(m_BoneBuffer, sceneObj->m_Animator.m_FinalTransforms);
+        }
+        for (int i = 0; i < meshRenderer.m_Meshes.size(); ++i)
+        {
+            PBRMaterial* mat = meshRenderer.m_Materials[i];
+            graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
+            if (mat->m_Albedo)
+                mat->m_Albedo->UseSRV(deviceContext, 0);
+            if (mat->m_Normal)
+                mat->m_Normal->UseSRV(deviceContext, 1);
+            meshRenderer.m_Meshes[i]->Draw(deviceContext);
+        }
     }
 
     graphics.UnbindShaderResourceView(0);

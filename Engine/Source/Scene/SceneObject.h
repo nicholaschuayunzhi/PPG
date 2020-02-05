@@ -24,6 +24,7 @@ public:
 
     MeshRenderer m_MeshRenderer;
     SpriteRenderer m_SpriteRenderer;
+    Animator m_Animator;
 
 private:
     friend class Scene;

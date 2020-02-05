@@ -7,17 +7,20 @@
 #include "Resources/Mesh.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture.h"
+#include "Scene/Model/Skeleton.h"
 
 ForwardPass::ForwardPass(Graphics& graphics, Texture& renderTarget) :
     m_RenderTarget(renderTarget)
 {
     shader = std::make_unique<Shader>(L"VertexShader.cso", L"Forward.ps.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(PBRMaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
+    m_BoneBuffer = graphics.CreateBuffer(sizeof(XMMATRIX) * Skeleton::NUM_BONES, D3D11_BIND_CONSTANT_BUFFER, nullptr);
 }
 
 ForwardPass::~ForwardPass()
 {
     SafeRelease(m_Buffer);
+    SafeRelease(m_BoneBuffer);
 }
 
 void ForwardPass::Render(Graphics& graphics, Scene& scene)
@@ -30,6 +33,8 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     scene.lightManager.Use(deviceContext, 1); // should be linked to material + shader
     scene.UseModel(graphics); // not so good...
     shader->Use(deviceContext);
+    deviceContext->VSSetConstantBuffers(3, 1, &m_BoneBuffer);
+
     auto& lightManager = scene.lightManager;
     if (lightManager.hasLightWithShadows)
     {
@@ -41,15 +46,23 @@ void ForwardPass::Render(Graphics& graphics, Scene& scene)
     {
         if (!sceneObj->m_MeshRenderer.m_IsEnabled) continue;
 
-        PBRMaterial* mat = sceneObj->m_MeshRenderer.m_Material;
-        graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
+        MeshRenderer& meshRenderer = sceneObj->m_MeshRenderer;
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        if (mat->m_Albedo)
-            mat->m_Albedo->UseSRV(deviceContext, 0);
-        if (mat->m_Normal)
-            mat->m_Normal->UseSRV(deviceContext, 1);
         deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
-        sceneObj->m_MeshRenderer.m_Mesh->Draw(deviceContext);
+        if (sceneObj->m_Animator.m_IsEnabled)
+        {
+            graphics.UpdateBuffer(m_BoneBuffer, sceneObj->m_Animator.m_FinalTransforms);
+        }
+        for (int i = 0; i < meshRenderer.m_Meshes.size(); ++i)
+        {
+            PBRMaterial* mat = meshRenderer.m_Materials[i];
+            graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
+            if (mat->m_Albedo)
+                mat->m_Albedo->UseSRV(deviceContext, 0);
+            if (mat->m_Normal)
+                mat->m_Normal->UseSRV(deviceContext, 1);
+            meshRenderer.m_Meshes[i]->Draw(deviceContext);
+        }
     }
 
     graphics.UnbindShaderResourceView(0);
