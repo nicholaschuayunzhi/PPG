@@ -38,12 +38,9 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 {
     SurfaceInfo surf;
     surf.posW = IN.wPosition;
-    surf.N = normalize(IN.normal);
     surf.T = normalize(IN.tangent);
     surf.B = normalize(IN.binormal);
-    surf.V = normalize(eyePosition.xyz - IN.wPosition.xyz);
-    surf.NdotV = dot(surf.N, surf.V);
-
+    surf.N = normalize(IN.normal);
     if (gNormalState == NORMAL_MAP)
     {
         surf.N = CalcNormalFromNormMap(NormalMap, IN.texCoord, surf);
@@ -52,6 +49,8 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     {
         surf.N = CalcNormalFromBumpMap(NormalMap, IN.texCoord, surf);
     }
+    surf.V = normalize(eyePosition.xyz - IN.wPosition.xyz);
+    surf.NdotV = dot(surf.N, surf.V);
 
     float3 Lo = float3(0, 0, 0);
     float3 albedo = gAlbedo.rgb;
