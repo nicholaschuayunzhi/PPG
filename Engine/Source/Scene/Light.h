@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Passes/ShadowMapPass.h"
-#define MAX_LIGHTS 3
+#define MAX_LIGHTS 4
 
 enum LightType
 {

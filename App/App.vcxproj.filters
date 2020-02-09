@@ -26,6 +26,9 @@
     <ClInclude Include="MyDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PBRSpheres.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Models\stormtrooper\stormtrooper.mtl" />

@@ -15,11 +15,13 @@ public:
     void Present();
     void Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearStencil);
     void ClearRenderTargetView(ID3D11RenderTargetView* rtv, const FLOAT clearColor[4]);
+    void ClearDepthStencil(FLOAT clearDepth, UINT8 clearStencil);
     void SetUp();
 
     ID3D11Buffer* CreateBuffer(UINT byteWidth, UINT bindFlags, const void* data);
     void UpdateBuffer(ID3D11Buffer* buffer, const void* resource);
     void SetRenderTarget(Texture& texture, bool enableDepthTest = true);
+    void SetRenderTarget(ID3D11RenderTargetView* rtv, bool enableDepthTest = true);
     void UnbindRenderTargetView();
     void UnbindShaderResourceView(UINT startSlot);
 

@@ -183,8 +183,13 @@ void Graphics::UpdateBuffer(ID3D11Buffer* buffer, const void* resource)
 
 void Graphics::SetRenderTarget(Texture& texture, bool enableDepthTest /*= true*/)
 {
+    SetRenderTarget(texture.GetRTV(), enableDepthTest);
+}
+
+void Graphics::SetRenderTarget(ID3D11RenderTargetView* rtv, bool enableDepthTest /*= true*/)
+{
     ID3D11DepthStencilView* dsv = enableDepthTest ? m_DepthStencilBuffer->m_TextureDSV : NULL;
-    m_DeviceContext->OMSetRenderTargets(1, &(texture.m_TextureRTV), dsv);
+    m_DeviceContext->OMSetRenderTargets(1, &(rtv), dsv);
 }
 
 void Graphics::UnbindShaderResourceView(UINT startSlot)
@@ -220,13 +225,18 @@ void Graphics::Present()
 
 void Graphics::Clear(const FLOAT clearColor[4], FLOAT clearDepth, UINT8 clearStencil)
 {
-    m_DeviceContext->ClearRenderTargetView(m_BackBuffer->m_TextureRTV, clearColor);
-    m_DeviceContext->ClearDepthStencilView(m_DepthStencilBuffer->m_TextureDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
+    ClearRenderTargetView(m_BackBuffer->GetRTV(), clearColor);
+    ClearDepthStencil(clearDepth, clearStencil);
 }
 
 void Graphics::ClearRenderTargetView(ID3D11RenderTargetView* rtv, const FLOAT clearColor[4])
 {
     m_DeviceContext->ClearRenderTargetView(rtv, clearColor);
+}
+
+void Graphics::ClearDepthStencil(FLOAT clearDepth, UINT8 clearStencil)
+{
+    m_DeviceContext->ClearDepthStencilView(m_DepthStencilBuffer->m_TextureDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
 }
 
 // This function was inspired by:

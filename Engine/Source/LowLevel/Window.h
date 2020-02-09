@@ -11,7 +11,7 @@ public:
         LPCSTR windowClassName,
         LPCSTR windowName,
         LONG windowWidth = 1280,
-        LONG windowHeight = 780
+        LONG windowHeight = 720
     );
     HWND m_WindowHandle = 0;
     RECT GetWindowRect();

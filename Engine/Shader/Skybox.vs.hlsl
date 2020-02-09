@@ -15,9 +15,13 @@ cbuffer PerApplication : register(b2)
 
 struct AppData
 {
-    float3 position: POSITION;
-    float3 normal  : NORMAL;
-    float2 texCoord: TEXCOORD;
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float2 texCoord : TEXCOORD;
+    float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
+    float4 boneIds : BLENDINDICES;
+    float4 boneWeight : BLENDWEIGHT;
 };
 
 struct VertexShaderOutput

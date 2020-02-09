@@ -164,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyDemo.h" />
+    <ClInclude Include="PBRSpheres.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\Dll\assimp-vc142-mtd.dll">

@@ -17,9 +17,9 @@ GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRou
     shader = std::make_unique<Shader>(L"VertexShader.cso", L"GBuffer.ps.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(PBRMaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
     m_BoneBuffer = graphics.CreateBuffer(sizeof(XMMATRIX) * Skeleton::NUM_BONES, D3D11_BIND_CONSTANT_BUFFER, nullptr);
-    m_RenderTargets[0] = m_Diffuse.m_TextureRTV;
-    m_RenderTargets[1] = m_MetalRough.m_TextureRTV;
-    m_RenderTargets[2] = m_Normals.m_TextureRTV;
+    m_RenderTargets[0] = m_Diffuse.GetRTV();
+    m_RenderTargets[1] = m_MetalRough.GetRTV();
+    m_RenderTargets[2] = m_Normals.GetRTV();
 }
 
 GBufferPass::~GBufferPass()
@@ -31,9 +31,9 @@ GBufferPass::~GBufferPass()
 void GBufferPass::Render(Graphics& graphics, Scene& scene)
 {
     auto deviceContext = graphics.m_DeviceContext;
-    graphics.ClearRenderTargetView(m_Diffuse.m_TextureRTV, Colors::Transparent);
-    graphics.ClearRenderTargetView(m_MetalRough.m_TextureRTV, Colors::Transparent);
-    graphics.ClearRenderTargetView(m_Normals.m_TextureRTV, Colors::Transparent);
+    graphics.ClearRenderTargetView(m_Diffuse.GetRTV(), Colors::Transparent);
+    graphics.ClearRenderTargetView(m_MetalRough.GetRTV(), Colors::Transparent);
+    graphics.ClearRenderTargetView(m_Normals.GetRTV(), Colors::Transparent);
 
     deviceContext->OMSetRenderTargets(3, &(m_RenderTargets[0]), graphics.m_DepthStencilBuffer->m_TextureDSV);
 

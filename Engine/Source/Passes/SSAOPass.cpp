@@ -67,7 +67,7 @@ SSAOPass::~SSAOPass()
 
 void SSAOPass::Render(Graphics& graphics, Scene& scene)
 {
-    graphics.ClearRenderTargetView(m_RenderTarget.m_TextureRTV, Colors::Transparent);
+    graphics.ClearRenderTargetView(m_RenderTarget.GetRTV(), Colors::Transparent);
     graphics.SetRenderTarget(m_RenderTarget, false);
 
     auto deviceContext = graphics.m_DeviceContext;

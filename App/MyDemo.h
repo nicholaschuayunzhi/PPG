@@ -68,7 +68,7 @@ public:
         unsigned int clientHeight = clientRect.bottom - clientRect.top;
         colour = CreateRenderTexture(graphics, clientWidth, clientHeight, "Colour", DXGI_FORMAT_R16G16B16A16_FLOAT);
         diffuse = CreateRenderTexture(graphics, clientWidth, clientHeight, "Diffuse", DXGI_FORMAT_R16G16B16A16_FLOAT);
-        normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R11G11B10_FLOAT);
+        normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R16G16B16A16_FLOAT);
         metalRough = CreateRenderTexture(graphics, clientWidth, clientHeight, "MetalRough", DXGI_FORMAT_R16G16B16A16_FLOAT);
         toneMappedColour = CreateRenderTexture(graphics, clientWidth, clientHeight, "Tone Mapped Colour", DXGI_FORMAT_R16G16B16A16_FLOAT);
         Texture* ao = Texture::CreateTexture(graphics, clientWidth, clientHeight, "Ambient Occlusion",
@@ -173,7 +173,7 @@ public:
         planeMesh = new Mesh(QuadVertices(), QuadIndices(), graphics);
 
         planeMaterial
-            .SetAlbedo(1, 1, 1)
+            .SetAlbedo(0.5, 0.5, 0.5)
             .SetMetallic(0)
             .SetRoughness(0.5)
             .UseAlbedoMap(brickTexture.get())
@@ -189,12 +189,12 @@ public:
         sponzaObj->m_Transform
             .UniformScale(0.01);*/
 
-        //stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
-        stormtrooper = Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics);
-        auto stormTrooperObj = stormtrooper->m_SceneObject;
-        stormTrooperObj->m_Transform
-            .RotateEulerAngles(3.412 / 2.0, 0, 0)
-            .UniformScale(0.05);
+        stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
+        //stormtrooper = Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics);
+        //auto stormTrooperObj = stormtrooper->m_SceneObject;
+        //stormTrooperObj->m_Transform
+        //    .RotateEulerAngles(3.412 / 2.0, 0, 0)
+        //    .UniformScale(0.05);
 
         scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
         scene.Start(graphics);
