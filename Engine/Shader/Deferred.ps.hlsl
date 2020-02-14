@@ -14,6 +14,7 @@ cbuffer DeferredCBuffer : register(b3)
     float4x4 inverseProjection;
     float4x4 inverseView;
     int useAO;
+    int useEnvMap;
 }
 
 Texture2D DepthTexture : register(t0);
@@ -21,6 +22,7 @@ Texture2D Diffuse : register(t1);
 Texture2D MetalRough : register(t2);
 Texture2D Normals : register(t3);
 Texture2D AO : register(t5);
+TextureCube EnvMap : register(t6);
 
 float3 CalculateWorldFromDepth(float depth, float2 texCoord)
 {
@@ -85,9 +87,19 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         Lo += (kD * albedo / PI + specular) * light.color.rgb * li.attenuation * NdotL * (li.shadowFactor);
 
     }
-    float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
-    float3 ambient = globalAmbient.rgb * albedo * ao;
-    float3 colour = ambient + Lo;
+    float3 ambient = globalAmbient.rgb * albedo;
+    if (useEnvMap)
+    {
+        float3 kS = fresnelSchlick(clamp(surf.NdotV, 0.0, 1.0), F0);
+        float3 kD = 1.0 - kS;
+        kD *= 1.0 - metallic;
+        float3 irradiance = EnvMap.Sample(LinearSampler, surf.N).rgb;
+        float3 diffuse = irradiance * albedo;
+        ambient = (kD * diffuse);
+    }
 
+    float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
+    ambient *= ao;
+    float3 colour = ambient + Lo;
     return float4(colour, 1.0);
 }

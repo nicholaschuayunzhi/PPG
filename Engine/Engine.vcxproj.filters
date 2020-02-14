@@ -227,6 +227,7 @@
     <FxCompile Include="Shader\Forward.ps.hlsl" />
     <FxCompile Include="Shader\ToneMapReinhard.ps.hlsl" />
     <FxCompile Include="Shader\RectToCubeMap.ps.hlsl" />
+    <FxCompile Include="Shader\IrradianceMap.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Common\Lighting.hlsli" />

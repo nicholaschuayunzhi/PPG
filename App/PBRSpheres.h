@@ -71,8 +71,8 @@ public:
         deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get());
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
         toneMapPass = std::make_unique<ToneMapPass>(graphics, colourTexture, toneMappedTexture);
-        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
-        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, toneMappedTexture);
         blitPass = std::make_unique<BlitPass>(graphics, toneMappedTexture, *(graphics.m_BackBuffer.get()));
         // Lighting
@@ -133,6 +133,13 @@ public:
 
         scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
         scene.Start(graphics);
+        auto deviceContext = graphics.m_DeviceContext;
+        linearSampler->Use(deviceContext, 0);
+        pointSampler->Use(deviceContext, 1);
+        skyboxPass->GenerateCubeMap(graphics, scene);
+        Texture* envMap = skyboxPass->GenerateEnvMap(graphics, scene);
+        deferredPass->UseEnvMap(envMap);
+        deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -140,14 +147,11 @@ public:
         auto deviceContext = graphics.m_DeviceContext;
         linearSampler->Use(deviceContext, 0);
         pointSampler->Use(deviceContext, 1);
-        skyboxPass->GenerateCubeMap(graphics, scene);
 
         scene.Update(graphics, input, deltaTime);
         //forwardPass->Render(graphics, scene);
         gBufferPass->Render(graphics, scene);
         ssaoPass->Render(graphics, scene);
-        deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
-        deferredPass->DisableAmbientOcclusion();
         deferredPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
         toneMapPass->Render(graphics, scene);

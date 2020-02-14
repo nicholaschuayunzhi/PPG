@@ -7,7 +7,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmdLine,
     UNREFERENCED_PARAMETER(prevInstance);
     UNREFERENCED_PARAMETER(cmdLine);
     Application app(hInstance, cmdShow);
-    PBRSpheres demo;
+    MyDemo demo;
     app.Run(demo);
     return 0;
 }

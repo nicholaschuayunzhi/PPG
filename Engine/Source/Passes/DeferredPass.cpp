@@ -13,6 +13,7 @@ struct DeferredPassCBuffer
     XMMATRIX m_InverseProjection;
     XMMATRIX m_InverseView;
     int m_UseAO = 0;
+    int m_UseEnvMap = 0;
 };
 
 DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals) :
@@ -35,6 +36,12 @@ void DeferredPass::UseAmbientOcclusion(Texture& aoMap)
 {
     m_AO = &aoMap;
     m_UseAO = true;
+}
+
+void DeferredPass::UseEnvMap(Texture* envMap)
+{
+    m_EnvMap = envMap;
+    m_UseEnvMap = true;
 }
 
 void DeferredPass::DisableAmbientOcclusion()
@@ -62,6 +69,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     deferredCBuf.m_InverseProjection = XMMatrixInverse(NULL, camera.CalculateProjection());
     deferredCBuf.m_InverseView = XMMatrixInverse(NULL, camera.CalculateView());
     deferredCBuf.m_UseAO = m_UseAO;
+    deferredCBuf.m_UseEnvMap = m_UseEnvMap;
     deviceContext->PSSetConstantBuffers(3, 1, &m_Buffer);
     graphics.UpdateBuffer(m_Buffer, &(deferredCBuf));
 
@@ -73,6 +81,10 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     if (m_UseAO)
     {
         m_AO->UseSRV(deviceContext, 5);
+    }
+    if (m_UseEnvMap)
+    {
+        m_EnvMap->UseSRV(deviceContext, 6);
     }
     m_Shader->Use(deviceContext);
     deviceContext->Draw(4, 0);

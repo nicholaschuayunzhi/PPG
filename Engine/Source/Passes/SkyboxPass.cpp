@@ -6,6 +6,26 @@
 #include "Resources/Texture.h"
 #include "Resources/Shader.h"
 
+XMVECTOR forward[6] =
+{
+    { 1, 0, 0, 0 },
+    { -1, 0, 0, 0 },
+    { 0, 1, 0, 0 },
+    { 0, -1, 0, 0 },
+    { 0, 0, 1, 0 },
+    { 0, 0, -1, 0 },
+};
+
+XMVECTOR up[6] =
+{
+    { 0, 1, 0, 0 },
+    { 0, 1, 0, 0 },
+    { 0, 0, -1, 0 },
+    { 0, 0, 1, 0 },
+    { 0, 1, 0,  0 },
+    { 0, 1, 0, 0 },
+};
+
 SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR& fileName, float size /*=50*/) :
     m_RenderTarget(renderTarget)
 {
@@ -22,6 +42,7 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR&
     skyboxMesh = std::make_unique<Mesh>(CubeVertices(), std::move(skyboxIndices), graphics);
     scaleMatrix = XMMatrixScaling(size, size, size);
     shader = std::make_unique<Shader>(L"Skybox.vs.cso", L"Skybox.ps.cso", graphics);
+    cubeToEnvMapShader = std::make_unique<Shader>(L"Skybox.vs.cso", L"IrradianceMap.ps.cso", graphics);
 
     WCHAR ext[_MAX_EXT];
     _wsplitpath_s(fileName, nullptr, 0, nullptr, 0, nullptr, 0, ext, _MAX_EXT);
@@ -40,6 +61,10 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR&
         skyboxCubeMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
         m_CubeMapGenerationRequired = true;
     }
+    m_EnvMap = std::unique_ptr<Texture>(Texture::CreateTextureCube(
+        graphics, m_CubeMapSize, "Cube Map", DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
+    m_EnvMap->CreateSRV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_SRV_DIMENSION_TEXTURECUBE);
+    m_EnvMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
 }
 
 void SkyboxPass::GenerateCubeMap(Graphics& graphics, Scene& scene)
@@ -48,26 +73,6 @@ void SkyboxPass::GenerateCubeMap(Graphics& graphics, Scene& scene)
     {
         return;
     }
-
-    XMVECTOR forward[6] =
-    {
-        { 1, 0, 0, 0 },
-        { -1, 0, 0, 0 },
-        { 0, 1, 0, 0 },
-        { 0, -1, 0, 0 },
-        { 0, 0, 1, 0 },
-        { 0, 0, -1, 0 },
-    };
-
-    XMVECTOR up[6] =
-    {
-        { 0, 1, 0, 0 },
-        { 0, 1, 0, 0 },
-        { 0, 0, -1, 0 },
-        { 0, 0, 1, 0 },
-        { 0, 1, 0,  0 },
-        { 0, 1, 0, 0 },
-    };
 
     auto deviceContext = graphics.m_DeviceContext;
     D3D11_VIEWPORT viewport = { 0 };
@@ -103,6 +108,44 @@ void SkyboxPass::GenerateCubeMap(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindRenderTargetView();
     m_CubeMapGenerationRequired = false;
+    GenerateEnvMap(graphics, scene);
+}
+
+Texture* SkyboxPass::GenerateEnvMap(Graphics& graphics, Scene& scene)
+{
+    auto deviceContext = graphics.m_DeviceContext;
+    D3D11_VIEWPORT viewport = { 0 };
+    viewport.Width = m_CubeMapSize;
+    viewport.Height = m_CubeMapSize;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    deviceContext->RSSetViewports(1, &viewport);
+
+    for (int i = 0; i < 6; ++i)
+    {
+        graphics.SetRenderTarget(m_EnvMap->GetRTV(i), false);
+        OrthographicCamera ortho;
+        ortho.m_EyePosition = XMVectorSet(0, 0, 0, 0);
+        ortho.m_LookAt = forward[i];
+        ortho.m_Up = up[i];
+        ortho.m_NearZ = 0;
+        ortho.m_FarZ = 10;
+        ortho.m_ViewHeight = 2;
+        ortho.m_ViewWidth = 2;
+        cubeToEnvMapShader->Use(deviceContext);
+        skyboxCubeMap->UseSRV(deviceContext, 0);
+        scene.UseModel(graphics);
+        scene.UseCamera(graphics, ortho);
+        scene.UpdateModel(graphics, XMMatrixIdentity());
+        skyboxMesh->Draw(deviceContext);
+    }
+
+    graphics.SetUp();
+    graphics.UnbindShaderResourceView(0);
+    graphics.UnbindRenderTargetView();
+    return m_EnvMap.get();
 }
 
 void SkyboxPass::Render(Graphics& graphics, Scene& scene)
