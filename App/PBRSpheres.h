@@ -71,8 +71,10 @@ public:
         deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get());
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
         toneMapPass = std::make_unique<ToneMapPass>(graphics, colourTexture, toneMappedTexture);
-        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
-        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Theatre-Center_8k_TMap.jpg");
+
         spritePass = std::make_unique<SpritePass>(graphics, toneMappedTexture);
         blitPass = std::make_unique<BlitPass>(graphics, toneMappedTexture, *(graphics.m_BackBuffer.get()));
         // Lighting
@@ -104,7 +106,7 @@ public:
         const int rows = 6;
         const int cols = 6;
         const float spacing = 2;
-        Mesh* sphereMesh = sphere->m_SceneObject->m_MeshRenderer.m_Meshes[0];
+        Mesh* sphereMesh = sphere->m_SceneObject->m_MeshRenderer.m_Mesh;
 
         for (int row = 0; row <= rows; ++row)
         {
@@ -113,7 +115,7 @@ public:
             {
                 float roughness = std::max((float)col / (float)cols, 0.05f);
                 PBRMaterial* mat = new PBRMaterial();
-                mat->SetAlbedo(1.0f, 0.0f, 0.0f);
+                mat->SetAlbedo(1, 0, 0);
                 mat->SetMetallic(metallic);
                 mat->SetRoughness(roughness);
                 mats.emplace_back(mat);
@@ -121,13 +123,13 @@ public:
                 auto ball = scene.CreateSceneObject("ball");
                 auto& meshRenderer = ball->m_MeshRenderer;
                 meshRenderer.m_IsEnabled = true;
-                meshRenderer.m_Meshes.push_back(sphereMesh);
-                meshRenderer.m_Materials.push_back(mat);
+                meshRenderer.m_Mesh = sphereMesh;
+                meshRenderer.m_Material = mat;
                 ball->m_Transform.Translate(
                     (col - (cols / 2)) * spacing,
                     (row - (rows / 2)) * spacing,
                     0.0f
-                ).UniformScale(0.2);
+                ).UniformScale(0.3);
             }
         }
 
@@ -138,7 +140,9 @@ public:
         pointSampler->Use(deviceContext, 1);
         skyboxPass->GenerateCubeMap(graphics, scene);
         Texture* envMap = skyboxPass->GenerateEnvMap(graphics, scene);
-        deferredPass->UseEnvMap(envMap);
+        Texture* specMap = skyboxPass->GenerateEnvPreFilter(graphics, scene);
+        Texture* brdfLut = skyboxPass->GenerateBrdfLUT(graphics, scene);
+        deferredPass->UseEnvMap(envMap, specMap, brdfLut);
         deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
     }
 

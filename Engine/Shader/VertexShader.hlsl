@@ -50,6 +50,9 @@ VertexShaderOutput main(AppData IN)
             boneTransform += IN.boneWeight[i] * BoneTransforms[IN.boneIds[i]];
         }
         IN.position = mul(boneTransform, float4(IN.position, 1.0f));
+        IN.normal = normalize(mul(boneTransform, float4(IN.normal, 0.0f)));
+        IN.tangent = normalize(mul(boneTransform, float4(IN.tangent, 0.0f)));
+        IN.binormal = normalize(mul(boneTransform, float4(IN.binormal, 0.0f)));
     }
 
     VertexShaderOutput OUT;

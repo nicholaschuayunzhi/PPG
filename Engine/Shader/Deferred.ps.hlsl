@@ -23,6 +23,8 @@ Texture2D MetalRough : register(t2);
 Texture2D Normals : register(t3);
 Texture2D AO : register(t5);
 TextureCube EnvMap : register(t6);
+TextureCube PrefilteredSpecMap : register(t7);
+Texture2D BrdfLUT : register(t8);
 
 float3 CalculateWorldFromDepth(float depth, float2 texCoord)
 {
@@ -51,6 +53,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 albedo = Diffuse.Sample(PointSampler, IN.texCoord).rgb;
     float metallic = matMetalRough.r;
     float roughness = matMetalRough.g;
+    float occlusion = matMetalRough.b;
     float3 normal = Normals.Sample(PointSampler, IN.texCoord).rgb;
     normal = normalize(normal * 2.0 - 1.0);
 
@@ -90,16 +93,21 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 ambient = globalAmbient.rgb * albedo;
     if (useEnvMap)
     {
-        float3 kS = fresnelSchlick(clamp(surf.NdotV, 0.0, 1.0), F0);
+        float3 kS = fresnelSchlickRoughness(clamp(surf.NdotV, 0.0, 1.0), F0, roughness);
         float3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
         float3 irradiance = EnvMap.Sample(LinearSampler, surf.N).rgb;
         float3 diffuse = irradiance * albedo;
-        ambient = (kD * diffuse);
+
+        float3 R = reflect(-surf.V, surf.N);
+        float3 prefilterdColour = PrefilteredSpecMap.SampleLevel(LinearSampler, R, roughness * 5.0).rgb;
+        float2 envBrdf = BrdfLUT.Sample(LinearSampler, float2(max(surf.NdotV, 0.0), roughness)).rg;
+        float3 specular = prefilterdColour * (kS * envBrdf.x + envBrdf.y);
+        ambient = (kD * diffuse + specular);
     }
 
     float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
-    ambient *= ao;
+    ambient *= ao * occlusion;
     float3 colour = ambient + Lo;
     return float4(colour, 1.0);
 }

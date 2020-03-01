@@ -42,6 +42,9 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
     scene.UseModel(graphics);
     shader->Use(deviceContext);
     deviceContext->VSSetConstantBuffers(3, 1, &m_BoneBuffer);
+    deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
+
+    Animator* currentAnimator = nullptr;
 
     for (auto sceneObj : scene.m_Objects)
     {
@@ -49,21 +52,24 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
 
         MeshRenderer& meshRenderer = sceneObj->m_MeshRenderer;
         scene.UpdateModel(graphics, sceneObj->m_Transform.GetModel());
-        deviceContext->PSSetConstantBuffers(0, 1, &m_Buffer);
-        if (sceneObj->m_Animator.m_IsEnabled)
+        Animator* animator = meshRenderer.m_Animator;
+        if (animator != nullptr && animator->m_IsEnabled)
         {
-            graphics.UpdateBuffer(m_BoneBuffer, sceneObj->m_Animator.m_FinalTransforms);
+            if (animator != currentAnimator)
+            {
+                graphics.UpdateBuffer(m_BoneBuffer, animator->m_FinalTransforms);
+                currentAnimator = animator;
+            }
         }
-        for (int i = 0; i < meshRenderer.m_Meshes.size(); ++i)
-        {
-            PBRMaterial* mat = meshRenderer.m_Materials[i];
-            graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
-            if (mat->m_Albedo)
-                mat->m_Albedo->UseSRV(deviceContext, 0);
-            if (mat->m_Normal)
-                mat->m_Normal->UseSRV(deviceContext, 1);
-            meshRenderer.m_Meshes[i]->Draw(deviceContext);
-        }
+        PBRMaterial* mat = meshRenderer.m_Material;
+        graphics.UpdateBuffer(m_Buffer, &(mat->m_MaterialInfo));
+        if (mat->m_Albedo)
+            mat->m_Albedo->UseSRV(deviceContext, 0);
+        if (mat->m_Normal)
+            mat->m_Normal->UseSRV(deviceContext, 1);
+        if (mat->m_OccRoughMetal)
+            mat->m_OccRoughMetal->UseSRV(deviceContext, 2);
+        meshRenderer.m_Mesh->Draw(deviceContext);
     }
 
     graphics.UnbindShaderResourceView(0);

@@ -22,6 +22,7 @@ public:
     XMMATRIX GetModel();
     const XMMATRIX& GetLocalModel();
     const XMVECTOR& GetWorldPosition();
+    void SetLocalModel(const XMMATRIX& model);
     void SetAndDecomposeModel(const XMMATRIX& model);
 private:
     friend class Scene;

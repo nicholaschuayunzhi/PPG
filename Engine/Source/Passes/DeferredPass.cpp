@@ -38,9 +38,11 @@ void DeferredPass::UseAmbientOcclusion(Texture& aoMap)
     m_UseAO = true;
 }
 
-void DeferredPass::UseEnvMap(Texture* envMap)
+void DeferredPass::UseEnvMap(Texture* envMap, Texture* preFilter, Texture* brdfLut)
 {
     m_EnvMap = envMap;
+    m_PreFilter = preFilter;
+    m_BrdfLut = brdfLut;
     m_UseEnvMap = true;
 }
 
@@ -85,6 +87,8 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     if (m_UseEnvMap)
     {
         m_EnvMap->UseSRV(deviceContext, 6);
+        m_PreFilter->UseSRV(deviceContext, 7);
+        m_BrdfLut->UseSRV(deviceContext, 8);
     }
     m_Shader->Use(deviceContext);
     deviceContext->Draw(4, 0);

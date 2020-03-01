@@ -22,8 +22,8 @@ private:
     Mesh* sphereMesh;
     PBRMaterial cubeMaterial;
 
-    Model* stormtrooper;
-    Model* sponza;
+    std::unique_ptr<Model> bobLamp;
+    std::unique_ptr<Model> flightHelmet;
 
     std::shared_ptr<SceneObject> lightBulb;
 
@@ -89,9 +89,9 @@ public:
         deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get());
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
         toneMapPass = std::make_unique<ToneMapPass>(graphics, colourTexture, toneMappedTexture);
-        //skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\Malibu_Overlook_3k.hdr");
+        skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
         //skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\Theatre-Center_8k_TMap.jpg");
-        skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\sky.dds");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, toneMappedTexture);
         blitPass = std::make_unique<BlitPass>(graphics, toneMappedTexture, *(graphics.m_BackBuffer.get()));
         // Lighting
@@ -151,8 +151,8 @@ public:
             .SetAlbedo(0.0, 0.3, 1.0);
 
         auto& cubeMeshRenderer = cube->m_MeshRenderer;
-        cubeMeshRenderer.m_Meshes.push_back(cubeMesh);
-        cubeMeshRenderer.m_Materials.push_back(&cubeMaterial);
+        cubeMeshRenderer.m_Mesh = cubeMesh;
+        cubeMeshRenderer.m_Material = &cubeMaterial;
         cubeMeshRenderer.m_IsEnabled = true;
         cube->m_Transform
             .UniformScale(0.5)
@@ -175,28 +175,27 @@ public:
         planeMesh = new Mesh(QuadVertices(), QuadIndices(), graphics);
 
         planeMaterial
-            .SetAlbedo(0.5, 0.5, 0.5)
-            .SetMetallic(0)
-            .SetRoughness(0.5)
-            .UseAlbedoMap(brickTexture.get())
-            .UseNormalMap(brickNormalMap.get());
+            .SetAlbedo(0.8, 0.5, 0.5)
+            .SetMetallic(0.2)
+            .SetRoughness(0.7);
         auto& planeMeshRenderer = plane->m_MeshRenderer;
-        planeMeshRenderer.m_Meshes.push_back(planeMesh);
-        planeMeshRenderer.m_Materials.push_back(&planeMaterial);
+        planeMeshRenderer.m_Mesh = planeMesh;
+        planeMeshRenderer.m_Material = &planeMaterial;
         planeMeshRenderer.m_IsEnabled = true;
 
+        flightHelmet = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\FlightHelmet\\glTF\\FlightHelmet.gltf", scene, graphics));
+        auto flightHelmetObj = flightHelmet->m_SceneObject;
+        flightHelmetObj->m_Transform
+            .RotateEulerAngles(0.f, 3.412f, 0.f)
+            .Translate(0.f, 2.f, 0.f)
+            .UniformScale(4.0);
 
-       /* sponza = Model::LoadModelToScene("Data\\Models\\sponza\\sponza.obj", scene, graphics);
-        auto sponzaObj = scene.GetSceneObjectByIndex(sponza->m_RootIndex);
-        sponzaObj->m_Transform
-            .UniformScale(0.01);*/
-
-        stormtrooper = Model::LoadModelToScene("Data\\Models\\stormtrooper\\stormtrooper.obj", scene, graphics);
-        //stormtrooper = Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics);
-        //auto stormTrooperObj = stormtrooper->m_SceneObject;
-        //stormTrooperObj->m_Transform
-        //    .RotateEulerAngles(3.412 / 2.0, 0, 0)
-        //    .UniformScale(0.05);
+        bobLamp = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics));
+        auto bobLampObj = bobLamp->m_SceneObject;
+        bobLampObj->m_Transform
+            .RotateEulerAngles(3.412f / 2.0f, 0.f, 0.f)
+            .Translate(2.f, 0.f, 0.f)
+            .UniformScale(0.05f);
 
         scene.m_MainCamera.m_EyePosition = XMVectorSet(0, 1, -10, 1);
         scene.Start(graphics);
@@ -205,7 +204,9 @@ public:
         pointSampler->Use(deviceContext, 1);
         skyboxPass->GenerateCubeMap(graphics, scene);
         Texture* envMap = skyboxPass->GenerateEnvMap(graphics, scene);
-        deferredPass->UseEnvMap(envMap);
+        Texture* preFilter = skyboxPass->GenerateEnvPreFilter(graphics, scene);
+        Texture* brdfLut = skyboxPass->GenerateBrdfLUT(graphics, scene);
+        deferredPass->UseEnvMap(envMap, preFilter, brdfLut);
     }
 
     void Update(Graphics& graphics, Input input, float deltaTime) override
@@ -231,8 +232,8 @@ public:
         ssaoPass->Render(graphics, scene);
         deferredPass->UseAmbientOcclusion(*ambientOcclusion.get());
         deferredPass->Render(graphics, scene);
-        toneMapPass->Render(graphics, scene);
         skyboxPass->Render(graphics, scene);
+        toneMapPass->Render(graphics, scene);
         spritePass->Render(graphics, scene);
         blitPass->Render(graphics, scene);
     }
@@ -242,7 +243,5 @@ public:
         if (planeMesh) delete planeMesh;
         if (cubeMesh) delete cubeMesh;
         if (sphereMesh) delete sphereMesh;
-        if (stormtrooper) delete stormtrooper;
-        if (sponza) delete sponza;
     }
 };

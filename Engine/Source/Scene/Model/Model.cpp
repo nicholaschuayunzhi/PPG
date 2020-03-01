@@ -24,8 +24,7 @@ Model* Model::LoadModelToScene(std::string fileName, Scene& scene, Graphics& gra
     );
     if (assimpScene == NULL)
         throw std::exception("ModelLoader::Model file not found");
-    std::string directory = fileName.substr(0, fileName.find_last_of('\\') + 1);
-    ModelLoader ml = ModelLoader(assimpScene, scene, graphics, directory, parentIndex);
+    ModelLoader ml = ModelLoader(assimpScene, scene, graphics, fileName, parentIndex);
     Model* model = ml.LoadModel();
     return ml.m_Model;
 }

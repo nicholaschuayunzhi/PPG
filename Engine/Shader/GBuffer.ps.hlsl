@@ -7,6 +7,7 @@
 
 Texture2D Albedo : register(t0);
 Texture2D NormalMap : register(t1);
+Texture2D OcclusionRoughnessMetal : register(t2);
 
 cbuffer PBRMaterial : register(b0)
 {
@@ -15,6 +16,7 @@ cbuffer PBRMaterial : register(b0)
     float gRoughness;
 
     int gUseAlbedoMap;
+    int gUseMetalRough;
     int gNormalState;
 }
 
@@ -32,7 +34,7 @@ struct PixelShaderInput
 struct GBufferOutput
 {
     float4 diffuse : SV_TARGET0;
-    float4 metalRough : SV_TARGET1;
+    float4 metalRoughOcclusion : SV_TARGET1;
     float4 normal : SV_TARGET2;
 };
 
@@ -62,9 +64,22 @@ GBufferOutput main(PixelShaderInput IN)
     if (gUseAlbedoMap)
         albedo = Albedo.Sample(LinearSampler, IN.texCoord);
 
+    float occlusion = 1;
+
+    float metallic = gMetallic;
+    float roughness = gRoughness;
+    if (gUseMetalRough)
+    {
+        float3 occRoughMetal = OcclusionRoughnessMetal.Sample(LinearSampler, IN.texCoord).rgb;
+        occlusion = occRoughMetal.r;
+        roughness = occRoughMetal.g;
+        metallic = occRoughMetal.b;
+    }
+
     OUT.diffuse = float4(albedo.rgb, 0);
-    OUT.metalRough.r = gMetallic;
-    OUT.metalRough.g = gRoughness;
+    OUT.metalRoughOcclusion.r = metallic;
+    OUT.metalRoughOcclusion.g = roughness;
+    OUT.metalRoughOcclusion.b = occlusion;
     OUT.normal = float4(surf.N * 0.5 + 0.5, 1);
     return OUT;
 }

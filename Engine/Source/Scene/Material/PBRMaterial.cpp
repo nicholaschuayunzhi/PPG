@@ -51,3 +51,10 @@ PBRMaterial& PBRMaterial::UseBumpMap(Texture* bump)
     m_MaterialInfo.m_NormalState = 2;
     return *this;
 }
+
+PBRMaterial& PBRMaterial::UseOccRoughMetal(Texture* occMetalRough)
+{
+    m_OccRoughMetal = occMetalRough;
+    m_MaterialInfo.m_UseOccRoughMetal = 1;
+    return *this;
+}

@@ -10,5 +10,5 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
-    return float4(SkyboxTexture.Sample(LinearSampler, IN.texCoord).rgb, 1);
+    return float4(SkyboxTexture.SampleLevel(LinearSampler, IN.texCoord, 0.0).rgb, 1);
 }

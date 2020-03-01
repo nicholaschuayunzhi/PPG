@@ -33,13 +33,13 @@ Texture* Texture::CreateTexture(Graphics& graphics, int width, int height, const
 }
 
 Texture* Texture::CreateTextureCube(Graphics& graphics, int size, const std::string& name,
-    DXGI_FORMAT texFormat, UINT bindFlags, D3D11_SUBRESOURCE_DATA* data /*= NULL*/)
+    DXGI_FORMAT texFormat, UINT bindFlags, UINT mipLevels /* = 1*/, D3D11_SUBRESOURCE_DATA* data /*= NULL*/)
 {
     D3D11_TEXTURE2D_DESC textureDesc;
     ZeroMemory(&textureDesc, sizeof(textureDesc));
     textureDesc.Width = size;
     textureDesc.Height = size;
-    textureDesc.MipLevels = 1;
+    textureDesc.MipLevels = mipLevels;
     textureDesc.ArraySize = 6; // 6 faces
     textureDesc.Format = texFormat;
     textureDesc.SampleDesc.Count = 1;
@@ -86,7 +86,7 @@ Texture* Texture::LoadTextureFromPath(Graphics& graphics, const LPCWSTR& texture
     }
     else
     {
-        hr = LoadFromWICFile(texturePath, DDS_FLAGS_NONE, &metadata, image);
+        hr = LoadFromWICFile(texturePath, WIC_FLAGS_NONE, &metadata, image);
     }
 
     if (FAILED(hr))
@@ -112,7 +112,7 @@ Texture::Texture(ID3D11Texture2D* texture, const std::string& name) :
     SetDebugName(m_Texture, name);
 }
 
-bool Texture::CreateSRV(Graphics& graphics, DXGI_FORMAT texFormat, D3D11_SRV_DIMENSION viewDimension /*= D3D11_SRV_DIMENSION_TEXTURE2D*/)
+bool Texture::CreateSRV(Graphics& graphics, DXGI_FORMAT texFormat, D3D11_SRV_DIMENSION viewDimension /*= D3D11_SRV_DIMENSION_TEXTURE2D*/, UINT mipLevels /*= 1*/)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
     shaderResourceViewDesc.Format = texFormat;
@@ -121,12 +121,12 @@ bool Texture::CreateSRV(Graphics& graphics, DXGI_FORMAT texFormat, D3D11_SRV_DIM
     if (viewDimension == D3D11_SRV_DIMENSION_TEXTURECUBE)
     {
         shaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
-        shaderResourceViewDesc.TextureCube.MipLevels = 1;
+        shaderResourceViewDesc.TextureCube.MipLevels = mipLevels;
     }
     else
     {
         shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-        shaderResourceViewDesc.Texture2D.MipLevels = 1;
+        shaderResourceViewDesc.Texture2D.MipLevels = mipLevels;
     }
     // Create the shader resource view.
     HRESULT result = graphics.m_Device->CreateShaderResourceView(m_Texture, &shaderResourceViewDesc, &m_TextureSRV);
@@ -147,24 +147,28 @@ bool Texture::CreateRTV(Graphics& graphics, DXGI_FORMAT texFormat)
     return SUCCEEDED(result);
 }
 
-bool Texture::CreateTextureCubeRTVs(Graphics& graphics, DXGI_FORMAT texFormat)
+bool Texture::CreateTextureCubeRTVs(Graphics& graphics, DXGI_FORMAT texFormat, UINT mipLevels/* = 1*/)
 {
-    D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-    renderTargetViewDesc.Format = texFormat;
-    renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-    renderTargetViewDesc.Texture2DArray.MipSlice = 0;
-    renderTargetViewDesc.Texture2DArray.ArraySize = 1;
-    for (UINT i = 0; i < 6; ++i)
+    for (UINT mipSlice = 0; mipSlice < mipLevels; ++mipSlice)
     {
-        renderTargetViewDesc.Texture2DArray.FirstArraySlice = i;
-        ID3D11RenderTargetView* rtv;
-        HRESULT result = graphics.m_Device->CreateRenderTargetView(m_Texture, &renderTargetViewDesc, &rtv);
-        SetDebugName(rtv, m_Name + " RTV " + std::to_string(i));
-        m_TextureRTVs.push_back(rtv);
-        if (FAILED(result))
+        D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        renderTargetViewDesc.Format = texFormat;
+        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+        renderTargetViewDesc.Texture2DArray.MipSlice = mipSlice;
+        renderTargetViewDesc.Texture2DArray.ArraySize = 1;
+        for (UINT i = 0; i < 6; ++i)
         {
-            return false;
+            renderTargetViewDesc.Texture2DArray.FirstArraySlice = i;
+            ID3D11RenderTargetView* rtv;
+            HRESULT result = graphics.m_Device->CreateRenderTargetView(m_Texture, &renderTargetViewDesc, &rtv);
+            SetDebugName(rtv, m_Name + " RTV " + std::to_string(i));
+            m_TextureRTVs.push_back(rtv);
+            if (FAILED(result))
+            {
+                return false;
+            }
         }
+
     }
     return true;
 }

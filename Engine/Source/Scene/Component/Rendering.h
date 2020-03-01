@@ -5,6 +5,7 @@ class Mesh;
 class PBRMaterial;
 class Texture;
 class Skeleton;
+class Animator;
 
 struct Component
 {
@@ -13,18 +14,19 @@ struct Component
 
 struct MeshRenderer : public Component
 {
-    std::vector<PBRMaterial*> m_Materials;
-    std::vector<Mesh*> m_Meshes;
+    PBRMaterial* m_Material;
+    Mesh* m_Mesh;
+    Animator* m_Animator = nullptr;
 };
 
 struct SpriteRenderer : public Component
 {
-    Texture* m_Sprite;
+    Texture* m_Sprite = nullptr;
 };
 
 struct Animator : public Component
 {
-    Skeleton* m_Skeleton;
+    Skeleton* m_Skeleton = nullptr;
     float m_TimeElapsed = 0;
     UINT m_AnimIndexChosen = 0;
     XMMATRIX m_FinalTransforms[50];

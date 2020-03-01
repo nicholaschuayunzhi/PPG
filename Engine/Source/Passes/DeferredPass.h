@@ -14,7 +14,7 @@ public:
     DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals);
     ~DeferredPass();
     void UseAmbientOcclusion(Texture& aoMap);
-    void UseEnvMap(Texture* envMap);
+    void UseEnvMap(Texture* envMap, Texture* preFilter, Texture* brdfLut);
     void DisableAmbientOcclusion();
     void Render(Graphics& graphics, Scene& scene);
 private:
@@ -25,6 +25,8 @@ private:
     Texture& m_RenderTarget;
     Texture* m_AO;
     Texture* m_EnvMap;
+    Texture* m_PreFilter;
+    Texture* m_BrdfLut;
     bool m_UseAO = false;
     bool m_UseEnvMap = false;
     ID3D11Buffer* m_Buffer = nullptr;

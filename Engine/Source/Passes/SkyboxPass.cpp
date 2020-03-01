@@ -43,6 +43,8 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR&
     scaleMatrix = XMMatrixScaling(size, size, size);
     shader = std::make_unique<Shader>(L"Skybox.vs.cso", L"Skybox.ps.cso", graphics);
     cubeToEnvMapShader = std::make_unique<Shader>(L"Skybox.vs.cso", L"IrradianceMap.ps.cso", graphics);
+    prefilterShader = std::make_unique<Shader>(L"Skybox.vs.cso", L"SpecularPreFilter.ps.cso", graphics);
+    brdfIntegrateShader = std::make_unique<Shader>(L"Fullscreen.vs.cso", L"IntegrateBRDF.ps.cso", graphics);
 
     WCHAR ext[_MAX_EXT];
     _wsplitpath_s(fileName, nullptr, 0, nullptr, 0, nullptr, 0, ext, _MAX_EXT);
@@ -61,10 +63,20 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR&
         skyboxCubeMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
         m_CubeMapGenerationRequired = true;
     }
-    m_EnvMap = std::unique_ptr<Texture>(Texture::CreateTextureCube(
-        graphics, m_CubeMapSize, "Cube Map", DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
-    m_EnvMap->CreateSRV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_SRV_DIMENSION_TEXTURECUBE);
-    m_EnvMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
+    m_EnvironmentMap = std::unique_ptr<Texture>(Texture::CreateTextureCube(
+        graphics, m_CubeMapSize, "Env Map", DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
+    m_EnvironmentMap->CreateSRV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_SRV_DIMENSION_TEXTURECUBE);
+    m_EnvironmentMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
+    m_SpecularMap = std::unique_ptr<Texture>(Texture::CreateTextureCube(
+        graphics, m_CubeMapSize, "Specular Map", DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 6));
+    m_SpecularMap->CreateSRV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_SRV_DIMENSION_TEXTURECUBE, 6);
+    m_SpecularMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, 6);
+
+    m_BrdfLUT = std::unique_ptr<Texture>(Texture::CreateTexture(
+        graphics, 512, 512, "Brdf LUT", DXGI_FORMAT_R16G16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
+    m_BrdfLUT->CreateSRV(graphics, DXGI_FORMAT_R16G16_FLOAT);
+    m_BrdfLUT->CreateRTV(graphics, DXGI_FORMAT_R16G16_FLOAT);
 }
 
 void SkyboxPass::GenerateCubeMap(Graphics& graphics, Scene& scene)
@@ -125,7 +137,7 @@ Texture* SkyboxPass::GenerateEnvMap(Graphics& graphics, Scene& scene)
 
     for (int i = 0; i < 6; ++i)
     {
-        graphics.SetRenderTarget(m_EnvMap->GetRTV(i), false);
+        graphics.SetRenderTarget(m_EnvironmentMap->GetRTV(i), false);
         OrthographicCamera ortho;
         ortho.m_EyePosition = XMVectorSet(0, 0, 0, 0);
         ortho.m_LookAt = forward[i];
@@ -145,7 +157,79 @@ Texture* SkyboxPass::GenerateEnvMap(Graphics& graphics, Scene& scene)
     graphics.SetUp();
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindRenderTargetView();
-    return m_EnvMap.get();
+    return m_EnvironmentMap.get();
+}
+
+Texture* SkyboxPass::GenerateEnvPreFilter(Graphics& graphics, Scene& scene)
+{
+    int mapSize = m_CubeMapSize;
+
+    _declspec(align(16)) struct PrefilterCBuffer
+    {
+        float roughness;
+    };
+    ID3D11Buffer* buffer = graphics.CreateBuffer(sizeof(PrefilterCBuffer), D3D11_BIND_CONSTANT_BUFFER, nullptr);
+
+    PrefilterCBuffer cbuffer;
+    auto deviceContext = graphics.m_DeviceContext;
+    deviceContext->PSSetConstantBuffers(0, 1, &buffer);
+    for (int i = 0; i < 6; ++i)
+    {
+        cbuffer.roughness = (float)i / 5.0;
+        graphics.UpdateBuffer(buffer, &cbuffer);
+        D3D11_VIEWPORT viewport = { 0 };
+        viewport.Width = mapSize;
+        viewport.Height = mapSize;
+        viewport.TopLeftX = 0.0f;
+        viewport.TopLeftY = 0.0f;
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+        deviceContext->RSSetViewports(1, &viewport);
+        for (int j = 0; j < 6; ++j)
+        {
+            graphics.SetRenderTarget(m_SpecularMap->GetRTV(i * 6 + j), false);
+            OrthographicCamera ortho;
+            ortho.m_EyePosition = XMVectorSet(0, 0, 0, 0);
+            ortho.m_LookAt = forward[j];
+            ortho.m_Up = up[j];
+            ortho.m_NearZ = 0;
+            ortho.m_FarZ = 10;
+            ortho.m_ViewHeight = 2;
+            ortho.m_ViewWidth = 2;
+            prefilterShader->Use(deviceContext);
+            skyboxCubeMap->UseSRV(deviceContext, 0);
+            scene.UseModel(graphics);
+            scene.UseCamera(graphics, ortho);
+            scene.UpdateModel(graphics, XMMatrixIdentity());
+            skyboxMesh->Draw(deviceContext);
+        }
+        mapSize /= 2;
+    }
+    graphics.SetUp();
+    graphics.UnbindShaderResourceView(0);
+    graphics.UnbindRenderTargetView();
+    SafeRelease(buffer);
+    return m_SpecularMap.get();
+}
+
+Texture* SkyboxPass::GenerateBrdfLUT(Graphics& graphics, Scene& scene)
+{
+    D3D11_VIEWPORT viewport = { 0 };
+    viewport.Width = 512;
+    viewport.Height = 512;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    auto deviceContext = graphics.m_DeviceContext;
+    deviceContext->RSSetViewports(1, &viewport);
+    graphics.SetRenderTarget(m_BrdfLUT->GetRTV(), false);
+    brdfIntegrateShader->Use(deviceContext);
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    deviceContext->Draw(4, 0);
+    graphics.SetUp();
+    graphics.UnbindRenderTargetView();
+    return m_BrdfLUT.get();
 }
 
 void SkyboxPass::Render(Graphics& graphics, Scene& scene)
@@ -159,7 +243,7 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
     auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.m_MainCamera.m_EyePosition));
     shader->Use(deviceContext);
     scene.UpdateModel(graphics, model);
-    skyboxCubeMap->UseSRV(deviceContext, 0);
+    m_SpecularMap->UseSRV(deviceContext, 0);
     skyboxMesh->Draw(deviceContext);
 
     graphics.UnbindShaderResourceView(0);

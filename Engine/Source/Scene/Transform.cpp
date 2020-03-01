@@ -63,6 +63,12 @@ const XMMATRIX& Transform::GetLocalModel()
     return localModel;
 }
 
+void Transform::SetLocalModel(const XMMATRIX& model)
+{
+    dirty = false;
+    localModel = model;
+}
+
 void Transform::SetAndDecomposeModel(const XMMATRIX& model)
 {
     this->model = model;
