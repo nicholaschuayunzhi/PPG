@@ -77,8 +77,8 @@ public:
 
         spritePass = std::make_unique<SpritePass>(graphics, toneMappedTexture);
         blitPass = std::make_unique<BlitPass>(graphics, toneMappedTexture, *(graphics.m_BackBuffer.get()));
-        // Lighting
 
+        // Lighting
 
         XMFLOAT4 lightPos[4] = {
             { -10.0f, 10.0f, -10.0f, 1.0f },
@@ -100,13 +100,13 @@ public:
             .SetGlobalAmbient(XMFLOAT4(0.1, 0.1, 0.1, 1));
 
         sphere = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\sphere.obj", scene, graphics));
-        sphere->m_SceneObject->m_Transform.UniformScale(0.5);
-        sphere->m_SceneObject->m_MeshRenderer.m_IsEnabled = false;
+        auto sphereMeshObj = scene.GetSceneObjectByIndex(sphere->m_SceneObject->m_ChildrenIndices[0]);
+        sphereMeshObj->m_MeshRenderer.m_IsEnabled = false;
+        Mesh* sphereMesh = sphereMeshObj->m_MeshRenderer.m_Mesh;
 
         const int rows = 6;
         const int cols = 6;
         const float spacing = 2;
-        Mesh* sphereMesh = sphere->m_SceneObject->m_MeshRenderer.m_Mesh;
 
         for (int row = 0; row <= rows; ++row)
         {
