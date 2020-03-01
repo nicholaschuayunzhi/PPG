@@ -5,7 +5,7 @@ This is a Dx11 rendering engine for self learning.
 ![alt text](Docs/screenshot.png "Screenshot")
 
 * Forward and Deferred Rendering
-* PBR (WIP)
+* PBR + IBL
 * Directional, Spot, Point light source
 * Texture, Specular, Normal & Bump Mapping
 * Skybox
@@ -21,3 +21,4 @@ This is a Dx11 rendering engine for self learning.
 ![alt text](Docs/ssao.png "SSAO")
 ![alt text](Docs/colour.png "Colour")
 ![alt text](Docs/skeletal_anim.png "Skeletal Animation")
+![alt text](Docs/metalrough.png "Metallic Roughness")
