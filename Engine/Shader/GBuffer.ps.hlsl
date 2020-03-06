@@ -9,6 +9,7 @@ Texture2D Albedo : register(t0);
 Texture2D NormalMap : register(t1);
 Texture2D OcclusionRoughnessMetal : register(t2);
 Texture2D AoMap : register(t3);
+Texture2D Emissive : register(t4);
 
 cbuffer PBRMaterial : register(b0)
 {
@@ -19,6 +20,7 @@ cbuffer PBRMaterial : register(b0)
     int gUseAlbedoMap;
     int gUseOccMetalRough;
     int gUseAoMap;
+    int gUseEmmisive;
     int gNormalState;
     int gConvertToLinear;
 }
@@ -39,6 +41,7 @@ struct GBufferOutput
     float4 diffuse : SV_TARGET0;
     float4 metalRoughOcclusion : SV_TARGET1;
     float4 normal : SV_TARGET2;
+    float4 emissive : SV_TARGET3;
 };
 
 GBufferOutput main(PixelShaderInput IN)
@@ -88,10 +91,22 @@ GBufferOutput main(PixelShaderInput IN)
     {
         occlusion = AoMap.Sample(LinearSampler, IN.texCoord).r;
     }
+
+    float4 emissive = float4(0.0, 0.0, 0.0, 0.0);
+    if (gUseEmmisive)
+    {
+        emissive = Emissive.Sample(LinearSampler, IN.texCoord);
+        if (gConvertToLinear)
+            emissive = SRGBtoLINEAR(emissive);
+
+    }
+
+
     OUT.diffuse = pow(float4(albedo.rgb, 0), 2.2);
     OUT.metalRoughOcclusion.r = metallic;
     OUT.metalRoughOcclusion.g = roughness;
     OUT.metalRoughOcclusion.b = occlusion;
     OUT.normal = float4(surf.N * 0.5 + 0.5, 1);
+    OUT.emissive = emissive;
     return OUT;
 }

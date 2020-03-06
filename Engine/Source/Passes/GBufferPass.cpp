@@ -9,10 +9,11 @@
 #include "Resources/Texture.h"
 #include "Scene/Model/Skeleton.h"
 
-GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRough, Texture& normals) :
+GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRough, Texture& normals, Texture& emissive) :
     m_Diffuse(diffuse),
     m_MetalRough(metalRough),
-    m_Normals(normals)
+    m_Normals(normals),
+    m_Emissive(emissive)
 {
     shader = std::make_unique<Shader>(L"VertexShader.cso", L"GBuffer.ps.cso", graphics);
     m_Buffer = graphics.CreateBuffer(sizeof(PBRMaterialInfo), D3D11_BIND_CONSTANT_BUFFER, nullptr);
@@ -20,6 +21,7 @@ GBufferPass::GBufferPass(Graphics& graphics, Texture& diffuse, Texture& metalRou
     m_RenderTargets[0] = m_Diffuse.GetRTV();
     m_RenderTargets[1] = m_MetalRough.GetRTV();
     m_RenderTargets[2] = m_Normals.GetRTV();
+    m_RenderTargets[3] = m_Emissive.GetRTV();
 }
 
 GBufferPass::~GBufferPass()
@@ -34,8 +36,9 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
     graphics.ClearRenderTargetView(m_Diffuse.GetRTV(), Colors::Transparent);
     graphics.ClearRenderTargetView(m_MetalRough.GetRTV(), Colors::Transparent);
     graphics.ClearRenderTargetView(m_Normals.GetRTV(), Colors::Transparent);
+    graphics.ClearRenderTargetView(m_Emissive.GetRTV(), Colors::Transparent);
 
-    deviceContext->OMSetRenderTargets(3, &(m_RenderTargets[0]), graphics.m_DepthStencilBuffer->m_TextureDSV);
+    deviceContext->OMSetRenderTargets(GBufferPass::NUM_RENDER_TARGETS, &(m_RenderTargets[0]), graphics.m_DepthStencilBuffer->m_TextureDSV);
 
     scene.UseCamera(graphics, scene.m_MainCamera);
     scene.lightManager.Use(deviceContext, 1);
@@ -71,6 +74,8 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
             mat->m_OccRoughMetal->UseSRV(deviceContext, 2);
         if (mat->m_AoMap)
             mat->m_AoMap->UseSRV(deviceContext, 3);
+        if (mat->m_Emissive)
+            mat->m_Emissive->UseSRV(deviceContext, 4);
         meshRenderer.m_Mesh->Draw(deviceContext);
     }
 
@@ -78,5 +83,6 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(1);
     graphics.UnbindShaderResourceView(2);
     graphics.UnbindShaderResourceView(3);
+    graphics.UnbindShaderResourceView(4);
     graphics.UnbindRenderTargetView();
 }

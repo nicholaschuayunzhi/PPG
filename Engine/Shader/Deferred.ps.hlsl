@@ -22,9 +22,11 @@ Texture2D Diffuse : register(t1);
 Texture2D MetalRough : register(t2);
 Texture2D Normals : register(t3);
 Texture2D AO : register(t5);
+
 TextureCube EnvMap : register(t6);
 TextureCube PrefilteredSpecMap : register(t7);
 Texture2D BrdfLUT : register(t8);
+Texture2D Emissive : register(t9);
 
 float3 CalculateWorldFromDepth(float depth, float2 texCoord)
 {
@@ -56,6 +58,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float occlusion = matMetalRough.b;
     float3 normal = Normals.Sample(PointSampler, IN.texCoord).rgb;
     normal = normalize(normal * 2.0 - 1.0);
+    float3 emissive = Emissive.Sample(PointSampler, IN.texCoord).rgb;
 
     SurfaceInfo surf;
     surf.posW = float4(posW, 1);
@@ -109,6 +112,6 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
     float ao = useAO ? AO.Sample(PointSampler, IN.texCoord).r : 1.0;
     ambient *= ao * occlusion;
-    float3 colour = ambient + Lo;
+    float3 colour = ambient + Lo + emissive;
     return float4(colour, 1.0);
 }

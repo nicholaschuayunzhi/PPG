@@ -216,8 +216,11 @@ PBRMaterial* ModelLoader::GenerateMaterial(aiMesh* mesh)
         if (normal) material->UseNormalMap(normal);
         else if (bump) material->UseBumpMap(bump);
 
-        Texture* ao = loadTexture(mat, aiTextureType_LIGHTMAP, 0);
+        Texture* ao = loadTexture(mat, aiTextureType_LIGHTMAP);
         if (ao) material->UseAoMap(ao);
+
+        Texture* emissive = loadTexture(mat, aiTextureType_EMISSIVE);
+        if (emissive) material->UseEmissiveMap(emissive);
 
         if (m_LoadType == LoadType::GLTF)
         {

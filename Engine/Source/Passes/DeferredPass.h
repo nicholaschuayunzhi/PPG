@@ -11,7 +11,7 @@ class Sampler;
 class DeferredPass
 {
 public:
-    DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals);
+    DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals, Texture& emissive);
     ~DeferredPass();
     void UseAmbientOcclusion(Texture& aoMap);
     void UseEnvMap(Texture* envMap, Texture* preFilter, Texture* brdfLut);
@@ -22,6 +22,7 @@ private:
     Texture& m_Diffuse;
     Texture& m_MetalRough;
     Texture& m_Normals;
+    Texture& m_Emissive;
     Texture& m_RenderTarget;
     Texture* m_AO;
     Texture* m_EnvMap;

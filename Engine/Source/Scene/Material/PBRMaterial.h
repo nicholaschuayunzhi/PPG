@@ -12,6 +12,7 @@ _declspec(align(16)) struct PBRMaterialInfo
     int m_UseAlbedo = 0;
     int m_UseOccRoughMetal = 0;
     int m_UseAOMap = 0;
+    int m_UseEmissive = 0;
     int m_NormalState = 0;
     int m_ConvertToLinear = 0;
 };
@@ -31,12 +32,14 @@ public:
     PBRMaterial& UseBumpMap(Texture* bump);
     PBRMaterial& UseOccRoughMetal(Texture* occMetalRough);
     PBRMaterial& UseAoMap(Texture* aoMap);
+    PBRMaterial& UseEmissiveMap(Texture* emissive);
     PBRMaterial& ConvertToLinear(bool convertToLinear);
 
     Texture* m_Albedo = nullptr;
     Texture* m_Normal = nullptr;
     Texture* m_OccRoughMetal = nullptr;
     Texture* m_AoMap = nullptr;
+    Texture* m_Emissive = nullptr;
 
     PBRMaterialInfo m_MaterialInfo;
 };

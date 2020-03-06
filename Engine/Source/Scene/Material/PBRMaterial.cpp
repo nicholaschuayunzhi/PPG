@@ -66,6 +66,13 @@ PBRMaterial& PBRMaterial::UseAoMap(Texture* aoMap)
     return *this;
 }
 
+PBRMaterial& PBRMaterial::UseEmissiveMap(Texture* emissive)
+{
+    m_Emissive = emissive;
+    m_MaterialInfo.m_UseEmissive = 1;
+    return *this;
+}
+
 PBRMaterial& PBRMaterial::ConvertToLinear(bool convertToLinear)
 {
     m_MaterialInfo.m_ConvertToLinear = convertToLinear;

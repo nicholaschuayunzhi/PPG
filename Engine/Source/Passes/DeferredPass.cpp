@@ -16,10 +16,11 @@ struct DeferredPassCBuffer
     int m_UseEnvMap = 0;
 };
 
-DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals) :
+DeferredPass::DeferredPass(Graphics& graphics, Texture& renderTarget, Texture& diffuse, Texture& metalRough, Texture& normals, Texture& emissive) :
     m_Diffuse(diffuse),
     m_MetalRough(metalRough),
     m_Normals(normals),
+    m_Emissive(emissive),
     m_RenderTarget(renderTarget)
 {
     m_Shader = std::make_unique<Shader>(L"Fullscreen.vs.cso", L"Deferred.ps.cso", graphics);
@@ -80,6 +81,7 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     m_Diffuse.UseSRV(deviceContext, 1);
     m_MetalRough.UseSRV(deviceContext, 2);
     m_Normals.UseSRV(deviceContext, 3);
+    m_Emissive.UseSRV(deviceContext, 9);
     if (m_UseAO)
     {
         m_AO->UseSRV(deviceContext, 5);
@@ -99,5 +101,9 @@ void DeferredPass::Render(Graphics& graphics, Scene& scene)
     graphics.UnbindShaderResourceView(3);
     graphics.UnbindShaderResourceView(4);
     graphics.UnbindShaderResourceView(5);
+    graphics.UnbindShaderResourceView(6);
+    graphics.UnbindShaderResourceView(7);
+    graphics.UnbindShaderResourceView(8);
+    graphics.UnbindShaderResourceView(9);
     graphics.UnbindRenderTargetView();
 }
