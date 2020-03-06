@@ -125,4 +125,21 @@ LightingInfo EvalLightingInfo(SurfaceInfo surf, Light light)
     return li;
 }
 
+static const float GAMMA = 2.2;
+static const float INV_GAMMA = 1.0 / GAMMA;
+
+// linear to sRGB approximation
+// see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+float3 LINEARtoSRGB(float3 color)
+{
+    return pow(color, INV_GAMMA);
+}
+
+// sRGB to linear approximation
+// see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+float4 SRGBtoLINEAR(float4 srgbIn)
+{
+    return float4(pow(srgbIn.xyz, GAMMA), srgbIn.w);
+}
+
 #endif

@@ -9,6 +9,7 @@ struct PixelShaderInput
 };
 
 static const float PI = 3.14159265359;
+static const float SAMPLE_DELTA = 0.05;
 
 
 float4 main(PixelShaderInput IN) : SV_TARGET
@@ -20,11 +21,10 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 right = cross(up, normal);
     up = cross(normal, right);
 
-    float sampleDelta = 0.05;
     float nrSamples = 0.0;
-    for (float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
+    for (float phi = 0.0; phi < 2.0 * PI; phi += SAMPLE_DELTA)
     {
-        for (float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
+        for (float theta = 0.0; theta < 0.5 * PI; theta += SAMPLE_DELTA)
         {
             // spherical to cartesian (in tangent space)
             float3 tangentSample = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));

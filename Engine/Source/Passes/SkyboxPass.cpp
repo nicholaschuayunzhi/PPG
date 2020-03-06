@@ -74,9 +74,9 @@ SkyboxPass::SkyboxPass(Graphics& graphics, Texture& renderTarget, const LPCWSTR&
     m_SpecularMap->CreateTextureCubeRTVs(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT, 6);
 
     m_BrdfLUT = std::unique_ptr<Texture>(Texture::CreateTexture(
-        graphics, 512, 512, "Brdf LUT", DXGI_FORMAT_R16G16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
-    m_BrdfLUT->CreateSRV(graphics, DXGI_FORMAT_R16G16_FLOAT);
-    m_BrdfLUT->CreateRTV(graphics, DXGI_FORMAT_R16G16_FLOAT);
+        graphics, 512, 512, "Brdf LUT", DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
+    m_BrdfLUT->CreateSRV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
+    m_BrdfLUT->CreateRTV(graphics, DXGI_FORMAT_R16G16B16A16_FLOAT);
 }
 
 void SkyboxPass::GenerateCubeMap(Graphics& graphics, Scene& scene)
@@ -152,6 +152,7 @@ Texture* SkyboxPass::GenerateEnvMap(Graphics& graphics, Scene& scene)
         scene.UseCamera(graphics, ortho);
         scene.UpdateModel(graphics, XMMatrixIdentity());
         skyboxMesh->Draw(deviceContext);
+        deviceContext->Flush();
     }
 
     graphics.SetUp();
@@ -243,7 +244,7 @@ void SkyboxPass::Render(Graphics& graphics, Scene& scene)
     auto model = XMMatrixMultiply(scaleMatrix, XMMatrixTranslationFromVector(scene.m_MainCamera.m_EyePosition));
     shader->Use(deviceContext);
     scene.UpdateModel(graphics, model);
-    m_SpecularMap->UseSRV(deviceContext, 0);
+    skyboxCubeMap->UseSRV(deviceContext, 0);
     skyboxMesh->Draw(deviceContext);
 
     graphics.UnbindShaderResourceView(0);

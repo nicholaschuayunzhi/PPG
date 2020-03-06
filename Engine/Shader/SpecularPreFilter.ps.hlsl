@@ -30,7 +30,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         float3 H = ImportanceSampleGGX(st, N, roughness);
         float3 L = normalize(2.0 * dot(V, H) * H - V);
 
-        float NdotL = max(dot(N, L), 0.0);
+        float NdotL = saturate(dot(N, L));
         if (NdotL > 0.0)
         {
             prefilteredColor += SkyboxTexture.Sample(LinearSampler, L).rgb * NdotL;

@@ -23,7 +23,7 @@ private:
     PBRMaterial cubeMaterial;
 
     std::unique_ptr<Model> bobLamp;
-    std::unique_ptr<Model> flightHelmet;
+    std::unique_ptr<Model> damagedHelmet;
 
     std::shared_ptr<SceneObject> lightBulb;
 
@@ -90,12 +90,13 @@ public:
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
         toneMapPass = std::make_unique<ToneMapPass>(graphics, colourTexture, toneMappedTexture);
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");
-        //skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\Theatre-Center_8k_TMap.jpg");
-        //skyboxPass = std::make_unique<SkyboxPass>(graphics, toneMappedTexture, L"Data\\sky.dds");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\studio_small.hdr");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Theatre-Center_8k_TMap.jpg");
+        //skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\sky.dds");
         spritePass = std::make_unique<SpritePass>(graphics, toneMappedTexture);
         blitPass = std::make_unique<BlitPass>(graphics, toneMappedTexture, *(graphics.m_BackBuffer.get()));
         // Lighting
-        auto lightColour = XMFLOAT4(Colors::LightSkyBlue);
+        auto lightColour = XMFLOAT4(5.0f, 5.0f, 5.0f, 1.0f);
 
         Light pointLight;
         pointLight.m_Color = XMFLOAT4(1, 1, 0, 0);
@@ -183,12 +184,11 @@ public:
         planeMeshRenderer.m_Material = &planeMaterial;
         planeMeshRenderer.m_IsEnabled = true;
 
-        flightHelmet = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\FlightHelmet\\glTF\\FlightHelmet.gltf", scene, graphics));
-        auto flightHelmetObj = flightHelmet->m_SceneObject;
-        flightHelmetObj->m_Transform
-            .RotateEulerAngles(0.f, 3.412f, 0.f)
-            .Translate(0.f, 2.f, 0.f)
-            .UniformScale(4.0);
+        damagedHelmet = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\DamagedHelmet\\glTF\\DamagedHelmet.gltf", scene, graphics));
+        auto damagedHelmetObj = damagedHelmet->m_SceneObject;
+        damagedHelmetObj->m_Transform
+            .RotateEulerAngles(-3.412/2.0f, 0.f, 0.f)
+            .Translate(0.f, 2.f, 0.f);
 
         bobLamp = std::unique_ptr<Model>(Model::LoadModelToScene("Data\\Models\\boblampclean\\boblampclean.md5mesh", scene, graphics));
         auto bobLampObj = bobLamp->m_SceneObject;

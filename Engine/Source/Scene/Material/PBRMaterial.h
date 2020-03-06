@@ -7,11 +7,13 @@ using namespace DirectX;
 _declspec(align(16)) struct PBRMaterialInfo
 {
     XMFLOAT4 m_Albedo = XMFLOAT4(0, 0, 0, 0);
-    float m_Metallic = 0;
-    float m_Roughness = 0;
+    float m_Metallic = 0.0f;
+    float m_Roughness = 1.0f;
     int m_UseAlbedo = 0;
     int m_UseOccRoughMetal = 0;
+    int m_UseAOMap = 0;
     int m_NormalState = 0;
+    int m_ConvertToLinear = 0;
 };
 
 class PBRMaterial
@@ -28,10 +30,13 @@ public:
     PBRMaterial& UseNormalMap(Texture* normal);
     PBRMaterial& UseBumpMap(Texture* bump);
     PBRMaterial& UseOccRoughMetal(Texture* occMetalRough);
+    PBRMaterial& UseAoMap(Texture* aoMap);
+    PBRMaterial& ConvertToLinear(bool convertToLinear);
 
     Texture* m_Albedo = nullptr;
     Texture* m_Normal = nullptr;
     Texture* m_OccRoughMetal = nullptr;
+    Texture* m_AoMap = nullptr;
 
     PBRMaterialInfo m_MaterialInfo;
 };

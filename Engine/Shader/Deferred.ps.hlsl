@@ -66,6 +66,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 Lo = float3(0, 0, 0);
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, albedo, metallic);
+
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light light = Lights[i];
@@ -74,17 +75,17 @@ float4 main(PixelShaderInput IN) : SV_TARGET
         LightingInfo li = EvalLightingInfo(surf, light);
 
         // cook-torrance brdf
-        float NDF = DistributionGGX(max(0.0, li.NdotH), roughness);
-        float G = GeometrySmith(max(0.0, surf.NdotV), max(0.0, li.NdotL), roughness);
-        float3 F = fresnelSchlick(min(1.0, max(dot(li.H, surf.V), 0.0)), F0);
+        float NDF = DistributionGGX(saturate(li.NdotH), roughness);
+        float G = GeometrySmith(saturate(surf.NdotV), saturate(li.NdotL), roughness);
+        float3 F = fresnelSchlick(saturate(dot(li.H, surf.V)), F0);
         float3 kS = F;
         float3 kD = float3(1.0, 1.0, 1.0) - kS;
         kD *= 1.0 - metallic;
 
-        float NdotL = max(li.NdotL, 0.0); // clamped n dot l
+        float NdotL = saturate(li.NdotL); // clamped n dot l
 
         float3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(surf.NdotV, 0.0) * NdotL;
+        float denominator = 4.0 * saturate(surf.NdotV) * NdotL;
         float3 specular = numerator / max(denominator, 0.001);
 
         Lo += (kD * albedo / PI + specular) * light.color.rgb * li.attenuation * NdotL * (li.shadowFactor);
@@ -93,15 +94,15 @@ float4 main(PixelShaderInput IN) : SV_TARGET
     float3 ambient = globalAmbient.rgb * albedo;
     if (useEnvMap)
     {
-        float3 kS = fresnelSchlickRoughness(clamp(surf.NdotV, 0.0, 1.0), F0, roughness);
+        float3 kS = fresnelSchlickRoughness(saturate(surf.NdotV), F0, roughness);
         float3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
         float3 irradiance = EnvMap.Sample(LinearSampler, surf.N).rgb;
         float3 diffuse = irradiance * albedo;
 
-        float3 R = reflect(-surf.V, surf.N);
+        float3 R = normalize(reflect(-surf.V, surf.N));
         float3 prefilterdColour = PrefilteredSpecMap.SampleLevel(LinearSampler, R, roughness * 5.0).rgb;
-        float2 envBrdf = BrdfLUT.Sample(LinearSampler, float2(max(surf.NdotV, 0.0), roughness)).rg;
+        float2 envBrdf = BrdfLUT.Sample(PointSampler, float2(saturate(surf.NdotV), roughness)).rg;
         float3 specular = prefilterdColour * (kS * envBrdf.x + envBrdf.y);
         ambient = (kD * diffuse + specular);
     }

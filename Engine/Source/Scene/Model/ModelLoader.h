@@ -210,18 +210,23 @@ PBRMaterial* ModelLoader::GenerateMaterial(aiMesh* mesh)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* mat = m_AiScene->mMaterials[mesh->mMaterialIndex];
+
         Texture* normal = loadTexture(mat, aiTextureType_NORMALS);
         Texture* bump = loadTexture(mat, aiTextureType_HEIGHT);
         if (normal) material->UseNormalMap(normal);
         else if (bump) material->UseBumpMap(bump);
 
+        Texture* ao = loadTexture(mat, aiTextureType_LIGHTMAP, 0);
+        if (ao) material->UseAoMap(ao);
+
         if (m_LoadType == LoadType::GLTF)
         {
+            material->ConvertToLinear(true);
             Texture* albedo = loadTexture(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE);
             if (albedo) material->UseAlbedoMap(albedo);
 
-            Texture* metalRough = loadTexture(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
-            if (metalRough) material->UseOccRoughMetal(metalRough);
+            Texture* occlusionMetalRough = loadTexture(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
+            if (occlusionMetalRough) material->UseOccRoughMetal(occlusionMetalRough);
 
             float metallic;
             if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallic) == AI_SUCCESS)
@@ -244,6 +249,9 @@ PBRMaterial* ModelLoader::GenerateMaterial(aiMesh* mesh)
             if (res == aiReturn_SUCCESS)
                 material->SetAlbedo(colour[0], colour[1], colour[2]);
 
+            material->SetRoughness(0.9f);
+            material->SetMetallic(0.0f);
+
             float shininess;
             res = mat->Get(AI_MATKEY_SHININESS, shininess);
             if (res == aiReturn_SUCCESS)
@@ -251,10 +259,6 @@ PBRMaterial* ModelLoader::GenerateMaterial(aiMesh* mesh)
                 // convert shininess to roughness
                 float roughness = sqrt(2.0f / (shininess + 2.0f));
                 material->SetRoughness(roughness);
-            }
-            else
-            {
-                material->SetRoughness(0.5f);
             }
         }
     }

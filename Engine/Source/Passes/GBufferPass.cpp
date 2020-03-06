@@ -69,11 +69,14 @@ void GBufferPass::Render(Graphics& graphics, Scene& scene)
             mat->m_Normal->UseSRV(deviceContext, 1);
         if (mat->m_OccRoughMetal)
             mat->m_OccRoughMetal->UseSRV(deviceContext, 2);
+        if (mat->m_AoMap)
+            mat->m_AoMap->UseSRV(deviceContext, 3);
         meshRenderer.m_Mesh->Draw(deviceContext);
     }
 
     graphics.UnbindShaderResourceView(0);
     graphics.UnbindShaderResourceView(1);
     graphics.UnbindShaderResourceView(2);
+    graphics.UnbindShaderResourceView(3);
     graphics.UnbindRenderTargetView();
 }

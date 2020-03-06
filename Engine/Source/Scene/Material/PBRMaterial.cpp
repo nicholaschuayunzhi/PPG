@@ -58,3 +58,16 @@ PBRMaterial& PBRMaterial::UseOccRoughMetal(Texture* occMetalRough)
     m_MaterialInfo.m_UseOccRoughMetal = 1;
     return *this;
 }
+
+PBRMaterial& PBRMaterial::UseAoMap(Texture* aoMap)
+{
+    m_AoMap = aoMap;
+    m_MaterialInfo.m_UseAOMap = 1;
+    return *this;
+}
+
+PBRMaterial& PBRMaterial::ConvertToLinear(bool convertToLinear)
+{
+    m_MaterialInfo.m_ConvertToLinear = convertToLinear;
+    return *this;
+}
