@@ -26,6 +26,7 @@ private:
     std::unique_ptr<Texture> diffuse;
     std::unique_ptr<Texture> metalRough;
     std::unique_ptr<Texture> normals;
+    std::unique_ptr<Texture> emissive;
     std::unique_ptr<Texture> ambientOcclusion;
     std::unique_ptr<Texture> toneMappedColour;
 
@@ -54,6 +55,8 @@ public:
         diffuse = CreateRenderTexture(graphics, clientWidth, clientHeight, "Diffuse", DXGI_FORMAT_R16G16B16A16_FLOAT);
         normals = CreateRenderTexture(graphics, clientWidth, clientHeight, "Normals", DXGI_FORMAT_R16G16B16A16_FLOAT);
         metalRough = CreateRenderTexture(graphics, clientWidth, clientHeight, "MetalRough", DXGI_FORMAT_R16G16B16A16_FLOAT);
+        emissive = CreateRenderTexture(graphics, clientWidth, clientHeight, "Emissive", DXGI_FORMAT_R16G16B16A16_FLOAT);
+
         toneMappedColour = CreateRenderTexture(graphics, clientWidth, clientHeight, "Tone Mapped Colour", DXGI_FORMAT_R16G16B16A16_FLOAT);
         Texture* ao = Texture::CreateTexture(graphics, clientWidth, clientHeight, "Ambient Occlusion",
             DXGI_FORMAT_R16_UNORM, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
@@ -62,13 +65,13 @@ public:
         ambientOcclusion = std::unique_ptr<Texture>(ao);
 
         linearSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-        pointSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+        pointSampler = std::make_unique<Sampler>(graphics, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
 
         auto& colourTexture = *(colour.get());
         auto& toneMappedTexture = *(toneMappedColour.get());
         forwardPass = std::make_unique<ForwardPass>(graphics, colourTexture);
-        gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *metalRough.get(), *normals.get());
-        deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get());
+        gBufferPass = std::make_unique<GBufferPass>(graphics, *diffuse.get(), *metalRough.get(), *normals.get(), *emissive.get());
+        deferredPass = std::make_unique<DeferredPass>(graphics, colourTexture, *diffuse.get(), *metalRough.get(), *normals.get(), *emissive.get());
         ssaoPass = std::make_unique<SSAOPass>(graphics, *ao, *(graphics.m_DepthStencilBuffer).get(), *normals.get());
         toneMapPass = std::make_unique<ToneMapPass>(graphics, colourTexture, toneMappedTexture);
         skyboxPass = std::make_unique<SkyboxPass>(graphics, colourTexture, L"Data\\Malibu_Overlook_3k.hdr");

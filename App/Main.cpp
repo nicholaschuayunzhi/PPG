@@ -1,6 +1,6 @@
 #include "../Engine/Source/PPG.h"
 #include "MyDemo.h"
-//#include "PBRSpheres.h"
+#include "PBRSpheres.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmdLine, int cmdShow)
 {
